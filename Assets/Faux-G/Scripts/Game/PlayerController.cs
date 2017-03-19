@@ -57,7 +57,7 @@ public class PlayerController : Photon.MonoBehaviour {
 					Vector3 dir = new Vector3(x * 0.5f, y * 0.5f, z * 0.5f);
 
 					if (Physics.SphereCast(transform.position, lowerBoundRadius, dir, 
-						out hitInfo, 0.1f, Utils.LAYER_TERRAIN)) {
+						out hitInfo, 1e-3f, Utils.LAYER_TERRAIN)) {
 						float dist = Vector3.SqrMagnitude(hitInfo.point - transform.position);
 						if (dist < minSqrDist) {
 							closestPoint = hitInfo.point;

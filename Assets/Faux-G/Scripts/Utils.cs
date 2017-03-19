@@ -16,7 +16,7 @@ public class Utils : MonoBehaviour {
 
 	public static readonly int LAYER_TERRAIN = 1 << LayerMask.NameToLayer("Terrain");
 
-	public static readonly float GRAVITY = 1.6f;
+	public static readonly float GRAVITY = 1.635f;
 }
 
 public enum GameMode {
