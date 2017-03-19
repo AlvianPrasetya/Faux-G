@@ -61,16 +61,16 @@ public class LobbyManager : MonoBehaviour {
 	}
 
 	void OnPhotonCreateRoomFailed() {
-		Logger.E("Failed to create room");
+		Logger.D("Failed to create room");
 	}
 
 	void OnJoinedRoom() {
 		Logger.D("Joined room");
-		SceneManager.LoadScene(Utils.SCENE_ROOM);
+		SceneManager.LoadScene(Utils.Scene.ROOM);
 	}
 
 	void OnPhotonJoinRoomFailed() {
-		Logger.E("Failed to join room");
+		Logger.D("Failed to join room");
 	}
 
 	private void SortByRoomNumber() {
@@ -110,7 +110,7 @@ public class LobbyManager : MonoBehaviour {
 				RoomEntry roomEntry = Instantiate(prefabRoomEntry, roomList, false);
 				roomEntry.RoomNo = ++ctr;
 				roomEntry.RoomName = roomInfo.Name;
-				roomEntry.GameMode = (GameMode) roomInfo.CustomProperties[Utils.GAME_MODE];
+				roomEntry.GameMode = (GameMode) roomInfo.CustomProperties[Utils.Key.GAME_MODE];
 				roomEntry.SetNumPlayers(roomInfo.PlayerCount, roomInfo.MaxPlayers);
 				roomEntries.Add(roomEntry);
 			}
@@ -138,9 +138,9 @@ public class LobbyManager : MonoBehaviour {
 		roomOptions.MaxPlayers = (byte) (dropdownMaxPlayers.value * 2 + 2);
 
 		ExitGames.Client.Photon.Hashtable customRoomProperties = new ExitGames.Client.Photon.Hashtable();
-		customRoomProperties.Add(Utils.GAME_MODE, (GameMode) dropdownGameMode.value);
+		customRoomProperties.Add(Utils.Key.GAME_MODE, (GameMode) dropdownGameMode.value);
 		roomOptions.CustomRoomProperties = customRoomProperties;
-		roomOptions.CustomRoomPropertiesForLobby = new string[] { Utils.GAME_MODE };
+		roomOptions.CustomRoomPropertiesForLobby = new string[] { Utils.Key.GAME_MODE };
 
 		PhotonNetwork.CreateRoom(inputRoomName.text, roomOptions, TypedLobby.Default);
 	}

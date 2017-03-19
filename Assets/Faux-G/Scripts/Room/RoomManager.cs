@@ -36,7 +36,7 @@ public class RoomManager : MonoBehaviour {
 	
 	void OnLeftRoom() {
 		Logger.D("Left room");
-		SceneManager.LoadScene(Utils.SCENE_LOBBY);
+		SceneManager.LoadScene(Utils.Scene.LOBBY);
 	}
 
 	void OnPhotonPlayerConnected(PhotonPlayer joiningPlayer) {
@@ -73,7 +73,7 @@ public class RoomManager : MonoBehaviour {
 
 	private void StartMatch() {
 		Logger.D("Starting match");
-		SceneManager.LoadScene(Utils.SCENE_GAME);
+		SceneManager.LoadScene(Utils.Scene.GAME);
 	}
 
 }

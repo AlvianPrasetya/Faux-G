@@ -15,7 +15,7 @@ public class GameManager : MonoBehaviour {
 
 	void Start() {
 		// Spawn player
-		player = PhotonNetwork.Instantiate("player", Vector3.zero, Quaternion.identity, 0);
+		player = PhotonNetwork.Instantiate(Utils.Resource.PLAYER, Vector3.zero, Quaternion.identity, 0);
 	}
 
 }

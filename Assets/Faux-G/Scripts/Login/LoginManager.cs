@@ -38,7 +38,7 @@ public class LoginManager : MonoBehaviour {
 
 	void OnJoinedLobby() {
 		Logger.D("Joined Lobby");
-		SceneManager.LoadScene(Utils.SCENE_LOBBY);
+		SceneManager.LoadScene(Utils.Scene.LOBBY);
 	}
 
 }
