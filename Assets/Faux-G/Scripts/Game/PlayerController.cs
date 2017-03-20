@@ -51,9 +51,9 @@ public class PlayerController : Photon.MonoBehaviour {
 		RaycastHit hitInfo;
 		Vector3 closestPoint = transform.position;
 		float minSqrDist = Mathf.Infinity;
-		for (int x = -2; x <= 2; x++) {
-			for (int y = -2; y <= 2; y++) {
-				for (int z = -2; z <= 2; z++) {
+		for (int x = -1; x <= 1; x++) {
+			for (int y = -1; y <= 1; y++) {
+				for (int z = -1; z <= 1; z++) {
 					Vector3 dir = new Vector3(x * 0.5f, y * 0.5f, z * 0.5f);
 
 					if (Physics.SphereCast(transform.position, lowerBoundRadius, dir, 
