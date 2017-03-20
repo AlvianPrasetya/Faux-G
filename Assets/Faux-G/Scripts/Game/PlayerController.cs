@@ -54,7 +54,7 @@ public class PlayerController : Photon.MonoBehaviour {
 		for (int x = -1; x <= 1; x++) {
 			for (int y = -1; y <= 1; y++) {
 				for (int z = -1; z <= 1; z++) {
-					Vector3 dir = new Vector3(x * 0.5f, y * 0.5f, z * 0.5f);
+					Vector3 dir = new Vector3(x, y, z);
 
 					if (Physics.SphereCast(transform.position, lowerBoundRadius, dir, 
 						out hitInfo, 1e-3f, Utils.Layer.TERRAIN)) {
