@@ -30,7 +30,7 @@ public class Utils : MonoBehaviour {
 		public static readonly string INPUT_MOUSE_Y = "Mouse Y";
 	}
 
-	public static readonly float GRAVITY = 1.635f;
+	public static readonly float GRAVITY = 9.81f;
 }
 
 public enum GameMode {
