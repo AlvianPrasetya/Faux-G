@@ -10,6 +10,7 @@ public class PlayerController : Photon.MonoBehaviour {
 
 	// Cached components
 	private new Rigidbody rigidbody;
+	private Camera camera;
 
 	/*
 	 * MONOBEHAVIOUR LIFECYCLE
@@ -17,6 +18,7 @@ public class PlayerController : Photon.MonoBehaviour {
 
 	void Awake() {
 		rigidbody = GetComponent<Rigidbody>();
+		camera = Camera.main;
 	}
 
 	void Update() {
@@ -24,13 +26,13 @@ public class PlayerController : Photon.MonoBehaviour {
 			return;
 		}
 
-		InputRotate();
+		// Adjust player rotation due to gravity
+		AdjustRotation();
+
+		InputLookAround();
 		InputWalk();
 		InputJump();
 		InputShoot();
-
-		// Adjust player rotation due to gravity
-		AdjustRotation();
 	}
 
 	void FixedUpdate() {
@@ -45,7 +47,7 @@ public class PlayerController : Photon.MonoBehaviour {
 		float lowerBoundRadius = 0.0f;
 		float upperBoundRadius = 100.0f;
 		bool isTerrainFound = false;
-		while (upperBoundRadius - lowerBoundRadius > 1e-3) {
+		while (upperBoundRadius - lowerBoundRadius > 1e-4f) {
 			float castRadius = (lowerBoundRadius + upperBoundRadius) / 2.0f;
 			if (Physics.CheckSphere(transform.position, castRadius, Utils.Layer.TERRAIN)) {
 				upperBoundRadius = castRadius;
@@ -65,7 +67,7 @@ public class PlayerController : Photon.MonoBehaviour {
 						Vector3 dir = new Vector3(x, y, z);
 
 						if (Physics.SphereCast(transform.position, lowerBoundRadius, dir, 
-							out hitInfo, 1e-2f, Utils.Layer.TERRAIN)) {
+							out hitInfo, 1e-3f, Utils.Layer.TERRAIN)) {
 							float sqrDist = Vector3.SqrMagnitude(hitInfo.point - transform.position);
 							if (sqrDist < minSqrDist) {
 								closestPoint = hitInfo.point;
@@ -84,15 +86,17 @@ public class PlayerController : Photon.MonoBehaviour {
 	private void AdjustRotation() {
 		Quaternion rotationDifference = Quaternion.FromToRotation(-transform.up, gravityDirection);
 		Quaternion targetRotation = rotationDifference * transform.rotation;
-		transform.rotation = Quaternion.RotateTowards(
+		Quaternion newRotation = Quaternion.RotateTowards(
 			transform.rotation, 
 			targetRotation, 
 			rotateSpeed * Time.deltaTime
 		);
+		rigidbody.MoveRotation(newRotation);
 	}
 
-	private void InputRotate() {
+	private void InputLookAround() {
 		transform.Rotate(transform.up, Input.GetAxis(Utils.Key.INPUT_MOUSE_X), Space.World);
+		camera.transform.Rotate(-transform.right, Input.GetAxis(Utils.Key.INPUT_MOUSE_Y), Space.World);
 	}
 
 	private void InputWalk() {
