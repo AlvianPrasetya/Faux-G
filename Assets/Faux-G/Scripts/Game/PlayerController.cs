@@ -3,7 +3,7 @@ using System.Collections;
 
 public class PlayerController : Photon.MonoBehaviour {
 
-	public Rigidbody prefabProjectile;
+	public Rigidbody prefabBullet;
 
 	public Camera playerCamera;
 
@@ -16,9 +16,6 @@ public class PlayerController : Photon.MonoBehaviour {
 	public float jumpAccelerationChargeRate;
 	public float maxJumpAcceleration;
 
-	// Shoot parameters
-	public float shootAcceleration;
-
 	// The delay (ms) used to sync RPCs between clients
 	public int rpcSyncDelay;
 
@@ -30,7 +27,6 @@ public class PlayerController : Photon.MonoBehaviour {
 	private bool isJumpCharged;
 
 	private new Rigidbody rigidbody;
-	private GravityBody gravityBody;
 
 	/*
 	 * MONOBEHAVIOUR LIFECYCLE
@@ -38,10 +34,8 @@ public class PlayerController : Photon.MonoBehaviour {
 
 	void Awake() {
 		rigidbody = GetComponent<Rigidbody>();
-		gravityBody = GetComponent<GravityBody>();
 
 		if (!photonView.isMine) {
-			gravityBody.enabled = false;
 			return;
 		}
 		
@@ -54,8 +48,6 @@ public class PlayerController : Photon.MonoBehaviour {
 		jumpAcceleration = 0.0f;
 		isJumpCharging = false;
 		isJumpCharged = false;
-
-		gravityBody.enabled = true;
 	}
 
 	void Update() {
@@ -181,11 +173,10 @@ public class PlayerController : Photon.MonoBehaviour {
 		}
 
 		Rigidbody projectile = Instantiate(
-			prefabProjectile, 
+			prefabBullet, 
 			transform.position + transform.forward, 
-			Quaternion.identity
+			Quaternion.LookRotation(shootDirection)
 		);
-		projectile.AddForce(shootDirection * projectile.mass * shootAcceleration, ForceMode.Impulse);
 	}
 
 }
