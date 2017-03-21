@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public abstract class GravityBody : Photon.MonoBehaviour {
+public class GravityBody : MonoBehaviour {
 
 	public float rotateSpeed;
 
@@ -9,22 +9,26 @@ public abstract class GravityBody : Photon.MonoBehaviour {
 	private static readonly float BINARY_SEARCH_EPSILON = 1e-5f;
 	private static readonly float SPHERECAST_DISTANCE = 1e-4f;
 
-	protected Vector3 gravityDirection;
+	private Vector3 gravityDirection;
 
-	protected new Rigidbody rigidbody;
+	private new Rigidbody rigidbody;
 
-	protected virtual void Awake() {
+	/*
+	 * MONOBEHAVIOUR LIFECYCLE
+	 */
+
+	void Awake() {
 		gravityDirection = Vector3.zero;
 
 		rigidbody = GetComponent<Rigidbody>();
 	}
 
-	protected virtual void Update() {
+	void Update() {
 		// Adjust player rotation due to gravity
 		AdjustRotation();
 	}
 
-	protected virtual void FixedUpdate() {
+	void FixedUpdate() {
 		// Calculate gravity and apply to rigidbody
 		UpdateGravityDirection();
 		rigidbody.AddForce(gravityDirection * rigidbody.mass * Utils.GRAVITY, ForceMode.Force);

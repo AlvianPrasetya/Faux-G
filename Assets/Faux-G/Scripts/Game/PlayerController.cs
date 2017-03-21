@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections;
 
-public class PlayerController : GravityBody {
+public class PlayerController : Photon.MonoBehaviour {
 
 	public Rigidbody prefabProjectile;
 
@@ -29,16 +29,21 @@ public class PlayerController : GravityBody {
 	private bool isJumpCharging;
 	private bool isJumpCharged;
 
+	private new Rigidbody rigidbody;
+	private GravityBody gravityBody;
+
 	/*
 	 * MONOBEHAVIOUR LIFECYCLE
 	 */
 
-	protected override void Awake() {
+	void Awake() {
+		rigidbody = GetComponent<Rigidbody>();
+		gravityBody = GetComponent<GravityBody>();
+
 		if (!photonView.isMine) {
+			gravityBody.enabled = false;
 			return;
 		}
-
-		base.Awake();
 		
 		Camera.main.gameObject.SetActive(false);
 		playerCamera.gameObject.SetActive(true);
@@ -49,14 +54,14 @@ public class PlayerController : GravityBody {
 		jumpAcceleration = 0.0f;
 		isJumpCharging = false;
 		isJumpCharged = false;
+
+		gravityBody.enabled = true;
 	}
 
-	protected override void Update() {
+	void Update() {
 		if (!photonView.isMine) {
 			return;
 		}
-
-		base.Update();
 
 		InputLookAround();
 		InputWalk();
@@ -64,12 +69,10 @@ public class PlayerController : GravityBody {
 		InputShoot();
 	}
 
-	protected override void FixedUpdate() {
+	void FixedUpdate() {
 		if (!photonView.isMine) {
 			return;
 		}
-
-		base.FixedUpdate();
 
 		LookAround();
 		Walk();
