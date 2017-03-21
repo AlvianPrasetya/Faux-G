@@ -16,7 +16,7 @@ public class LoginManager : MonoBehaviour {
 	}
 
 	void Start() {
-		Logger.D("Connecting to Server");
+		Logger.Log("Connecting to Server");
 		textStatus.text = "Connecting to Server";
 		PhotonNetwork.ConnectUsingSettings(Utils.GAME_VERSION);
 	}
@@ -26,18 +26,18 @@ public class LoginManager : MonoBehaviour {
 	 */
 
 	void OnConnectedToPhoton() {
-		Logger.D("Connected to Server");
+		Logger.Log("Connected to Server");
 		textStatus.text = "Connected to Server";
 	}
 
 	void OnConnectedToMaster() {
-		Logger.D("Joining Lobby");
+		Logger.Log("Joining Lobby");
 		textStatus.text = "Joining Lobby";
 		PhotonNetwork.JoinLobby();
 	}
 
 	void OnJoinedLobby() {
-		Logger.D("Joined Lobby");
+		Logger.Log("Joined Lobby");
 		SceneManager.LoadScene(Utils.Scene.LOBBY);
 	}
 

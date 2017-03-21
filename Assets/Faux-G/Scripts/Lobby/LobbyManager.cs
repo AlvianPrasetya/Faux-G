@@ -57,42 +57,42 @@ public class LobbyManager : MonoBehaviour {
 	}
 	
 	void OnCreatedRoom() {
-		Logger.D("Created room");
+		Logger.Log("Created room");
 	}
 
 	void OnPhotonCreateRoomFailed() {
-		Logger.D("Failed to create room");
+		Logger.Log("Failed to create room");
 	}
 
 	void OnJoinedRoom() {
-		Logger.D("Joined room");
+		Logger.Log("Joined room");
 		SceneManager.LoadScene(Utils.Scene.ROOM);
 	}
 
 	void OnPhotonJoinRoomFailed() {
-		Logger.D("Failed to join room");
+		Logger.Log("Failed to join room");
 	}
 
 	private void SortByRoomNumber() {
-		Logger.D("Sorting by room number");
+		Logger.Log("Sorting by room number");
 	}
 
 	private void SortByRoomName() {
-		Logger.D("Sorting by room name");
+		Logger.Log("Sorting by room name");
 	}
 
 	private void SortByGameMode() {
-		Logger.D("Sorting by game mode");
+		Logger.Log("Sorting by game mode");
 	}
 
 	private void SortByNumPlayers() {
-		Logger.D("Sorting by num players");
+		Logger.Log("Sorting by num players");
 	}
 
 	private void RefreshRoomList() {
-		Logger.D("Refreshing room list");
+		Logger.Log("Refreshing room list");
 		RoomInfo[] roomsInfo = PhotonNetwork.GetRoomList();
-		Logger.D(roomsInfo.Length + " rooms found");
+		Logger.Log(roomsInfo.Length + " rooms found");
 
 		// Clear the previous list of rooms
 		foreach (RoomEntry roomEntry in roomEntries) {
@@ -130,7 +130,7 @@ public class LobbyManager : MonoBehaviour {
 	}
 
 	private void CreateRoom() {
-		Logger.D("Creating and joining room");
+		Logger.Log("Creating and joining room");
 
 		RoomOptions roomOptions = new RoomOptions();
 		roomOptions.IsOpen = true;

@@ -174,7 +174,7 @@ public class PlayerController : Photon.MonoBehaviour {
 
 		Rigidbody projectile = Instantiate(
 			prefabBullet, 
-			transform.position + transform.forward, 
+			playerCamera.transform.position + playerCamera.transform.forward, 
 			Quaternion.LookRotation(shootDirection)
 		);
 	}

@@ -35,7 +35,7 @@ public class RoomManager : MonoBehaviour {
 	 */
 	
 	void OnLeftRoom() {
-		Logger.D("Left room");
+		Logger.Log("Left room");
 		SceneManager.LoadScene(Utils.Scene.LOBBY);
 	}
 
@@ -48,9 +48,9 @@ public class RoomManager : MonoBehaviour {
 	}
 
 	private void RefreshPlayerList() {
-		Logger.D("Refreshing player list");
+		Logger.Log("Refreshing player list");
 		PhotonPlayer[] photonPlayer = PhotonNetwork.playerList;
-		Logger.D(photonPlayer.Length + " players found");
+		Logger.Log(photonPlayer.Length + " players found");
 
 		// Clear the previous list of players
 		foreach (PlayerEntry playerEntry in playerEntries) {
@@ -67,12 +67,12 @@ public class RoomManager : MonoBehaviour {
 	}
 
 	private void LeaveRoom() {
-		Logger.D("Leaving room");
+		Logger.Log("Leaving room");
 		PhotonNetwork.LeaveRoom();
 	}
 
 	private void StartMatch() {
-		Logger.D("Starting match");
+		Logger.Log("Starting match");
 		SceneManager.LoadScene(Utils.Scene.GAME);
 	}
 
