@@ -19,6 +19,8 @@ public class RoomManager : MonoBehaviour {
 	 */
 
 	void Awake() {
+		PhotonNetwork.automaticallySyncScene = true;
+
 		buttonLeave.onClick.AddListener(LeaveRoom);
 		buttonStartMatch.onClick.AddListener(StartMatch);
 

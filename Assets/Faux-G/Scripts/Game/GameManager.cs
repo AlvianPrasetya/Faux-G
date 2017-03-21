@@ -2,8 +2,6 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour {
 
-	private GameObject localPlayer;
-
 	/*
 	 * MONOBEHAVIOUR LIFECYCLE
 	 */
@@ -15,7 +13,7 @@ public class GameManager : MonoBehaviour {
 
 	void Start() {
 		// Spawn player
-		localPlayer = PhotonNetwork.Instantiate(Utils.Resource.PLAYER, Vector3.zero, Quaternion.identity, 0);
+		PhotonNetwork.Instantiate(Utils.Resource.PLAYER, Vector3.zero, Quaternion.identity, 0);
 	}
 
 }

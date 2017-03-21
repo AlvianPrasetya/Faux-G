@@ -8,6 +8,7 @@ public class PlayerController : Photon.MonoBehaviour {
 	public Camera playerCamera;
 
 	// Walk/sprint parameters
+	public float crouchSpeed;
 	public float walkSpeed;
 	public float sprintSpeed;
 
@@ -20,13 +21,14 @@ public class PlayerController : Photon.MonoBehaviour {
 	public int rpcSyncDelay;
 
 	private Vector2 lookAroundVector;
-	private Vector3 walkVector;
+	private bool isCrouching;
 	private bool isSprinting;
+	private Vector3 moveVector;
 	private float jumpAcceleration;
-	private bool isJumpCharging;
 	private bool isJumpCharged;
 
 	private new Rigidbody rigidbody;
+	private GravityBody gravityBody;
 
 	/*
 	 * MONOBEHAVIOUR LIFECYCLE
@@ -34,8 +36,11 @@ public class PlayerController : Photon.MonoBehaviour {
 
 	void Awake() {
 		rigidbody = GetComponent<Rigidbody>();
+		gravityBody = GetComponent<GravityBody>();
 
 		if (!photonView.isMine) {
+			rigidbody.isKinematic = true;
+			gravityBody.enabled = false;
 			return;
 		}
 		
@@ -43,10 +48,10 @@ public class PlayerController : Photon.MonoBehaviour {
 		playerCamera.gameObject.SetActive(true);
 
 		lookAroundVector = Vector2.zero;
-		walkVector = Vector3.zero;
+		isCrouching = false;
 		isSprinting = false;
+		moveVector = Vector3.zero;
 		jumpAcceleration = 0.0f;
-		isJumpCharging = false;
 		isJumpCharged = false;
 	}
 
@@ -56,7 +61,9 @@ public class PlayerController : Photon.MonoBehaviour {
 		}
 
 		InputLookAround();
-		InputWalk();
+		InputCrouch();
+		InputSprint();
+		InputMove();
 		InputJump();
 		InputShoot();
 	}
@@ -67,7 +74,7 @@ public class PlayerController : Photon.MonoBehaviour {
 		}
 
 		LookAround();
-		Walk();
+		Move();
 		Jump();
 	}
 
@@ -78,7 +85,17 @@ public class PlayerController : Photon.MonoBehaviour {
 		);
 	}
 
-	private void InputWalk() {
+	private void InputCrouch() {
+		if (Input.GetKeyDown(KeyCode.LeftControl)) {
+			isCrouching = true;
+		}
+
+		if (Input.GetKeyUp(KeyCode.LeftControl)) {
+			isCrouching = false;
+		}
+	}
+
+	private void InputSprint() {
 		if (Input.GetKeyDown(KeyCode.LeftShift)) {
 			isSprinting = true;
 		}
@@ -86,14 +103,15 @@ public class PlayerController : Photon.MonoBehaviour {
 		if (Input.GetKeyUp(KeyCode.LeftShift)) {
 			isSprinting = false;
 		}
+	}
 
-		walkVector = transform.forward * Input.GetAxis(Utils.Input.VERTICAL)
+	private void InputMove() {
+		moveVector = transform.forward * Input.GetAxis(Utils.Input.VERTICAL)
 			+ transform.right * Input.GetAxis(Utils.Input.HORIZONTAL);
 	}
 
 	private void InputJump() {
 		if (Input.GetKeyDown(KeyCode.Space)) {
-			isJumpCharging = true;
 			jumpAcceleration = minJumpAcceleration;
 		}
 
@@ -107,7 +125,6 @@ public class PlayerController : Photon.MonoBehaviour {
 		}
 
 		if (Input.GetKeyUp(KeyCode.Space)) {
-			isJumpCharging = false;
 			isJumpCharged = true;
 		}
 	}
@@ -123,11 +140,20 @@ public class PlayerController : Photon.MonoBehaviour {
 		playerCamera.transform.Rotate(-transform.right, lookAroundVector.y, Space.World);
 	}
 
-	private void Walk() {
-		float moveSpeed = (isSprinting) ? sprintSpeed : walkSpeed;
+	private void Move() {
+		float moveSpeed;
+		if (isCrouching) {
+			moveSpeed = crouchSpeed;
+		} else if (isSprinting) {
+			moveSpeed = sprintSpeed;
+		} else {
+			moveSpeed = walkSpeed;
+		}
+
+		Vector3 moveVelocity = Vector3.ClampMagnitude(moveVector * moveSpeed, moveSpeed);
 
 		transform.Translate(
-			Vector3.ClampMagnitude(walkVector * moveSpeed, moveSpeed) * Time.fixedDeltaTime, 
+			moveVelocity * Time.fixedDeltaTime, 
 			Space.World
 		);
 	}
@@ -172,7 +198,7 @@ public class PlayerController : Photon.MonoBehaviour {
 			yield return new WaitForSecondsRealtime(secondsToShoot);
 		}
 
-		Rigidbody projectile = Instantiate(
+		Instantiate(
 			prefabBullet, 
 			playerCamera.transform.position + playerCamera.transform.forward, 
 			Quaternion.LookRotation(shootDirection)
