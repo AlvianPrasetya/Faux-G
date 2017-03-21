@@ -26,11 +26,15 @@ public abstract class GravityBody : Photon.MonoBehaviour {
 
 	protected virtual void FixedUpdate() {
 		// Calculate gravity and apply to rigidbody
-		CalculateGravityDirection();
+		UpdateGravityDirection();
 		rigidbody.AddForce(gravityDirection * rigidbody.mass * Utils.GRAVITY, ForceMode.Force);
 	}
 
-	private void CalculateGravityDirection() {
+	private void UpdateGravityDirection() {
+		/*
+		 * Binary search to obtain largest radius of sphere centered at the player that 
+		 * does not come in contact with any terrain.
+		 */
 		float lowerBoundRadius = BINARY_SEARCH_LOWER_BOUND;
 		float upperBoundRadius = BINARY_SEARCH_UPPER_BOUND;
 		bool isTerrainFound = false;
@@ -45,6 +49,10 @@ public abstract class GravityBody : Photon.MonoBehaviour {
 		}
 
 		if (isTerrainFound) {
+			/*
+			 * Project the largest radius sphere radially to get the closest terrain 
+			 * point to the player.
+			 */
 			RaycastHit hitInfo;
 			Vector3 closestPoint = transform.position;
 			float minSqrDist = Mathf.Infinity;

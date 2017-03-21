@@ -24,10 +24,16 @@ public class Utils : MonoBehaviour {
 
 	public class Key {
 		public static readonly string GAME_MODE = "GameMode";
-		public static readonly string INPUT_HORIZONTAL = "Horizontal";
-		public static readonly string INPUT_VERTICAL = "Vertical";
-		public static readonly string INPUT_MOUSE_X = "Mouse X";
-		public static readonly string INPUT_MOUSE_Y = "Mouse Y";
+	}
+
+	public class Input {
+		public static readonly string HORIZONTAL = "Horizontal";
+		public static readonly string VERTICAL = "Vertical";
+		public static readonly string MOUSE_X = "Mouse X";
+		public static readonly string MOUSE_Y = "Mouse Y";
+		public static readonly int MOUSE_BUTTON_LEFT = 0;
+		public static readonly int MOUSE_BUTTON_RIGHT = 1;
+		public static readonly int MOUSE_BUTTON_MIDDLE = 2;
 	}
 
 	public static readonly float GRAVITY = 9.81f;
