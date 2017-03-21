@@ -14,29 +14,17 @@ public abstract class GravityBody : Photon.MonoBehaviour {
 	protected new Rigidbody rigidbody;
 
 	protected virtual void Awake() {
-		if (!photonView.isMine) {
-			return;
-		}
-
 		gravityDirection = Vector3.zero;
 
 		rigidbody = GetComponent<Rigidbody>();
 	}
 
 	protected virtual void Update() {
-		if (!photonView.isMine) {
-			return;
-		}
-
 		// Adjust player rotation due to gravity
 		AdjustRotation();
 	}
 
 	protected virtual void FixedUpdate() {
-		if (!photonView.isMine) {
-			return;
-		}
-
 		// Calculate gravity and apply to rigidbody
 		CalculateGravityDirection();
 		rigidbody.AddForce(gravityDirection * rigidbody.mass * Utils.GRAVITY, ForceMode.Force);

@@ -16,11 +16,11 @@ public class PlayerController : GravityBody {
 	 */
 
 	protected override void Awake() {
-		base.Awake();
-
 		if (!photonView.isMine) {
 			return;
 		}
+
+		base.Awake();
 		
 		Camera.main.gameObject.SetActive(false);
 		playerCamera.gameObject.SetActive(true);
@@ -30,11 +30,11 @@ public class PlayerController : GravityBody {
 	}
 
 	protected override void Update() {
-		base.Update();
-
 		if (!photonView.isMine) {
 			return;
 		}
+
+		base.Update();
 
 		InputLookAround();
 		InputWalk();
@@ -43,11 +43,11 @@ public class PlayerController : GravityBody {
 	}
 
 	protected override void FixedUpdate() {
-		base.FixedUpdate();
-
 		if (!photonView.isMine) {
 			return;
 		}
+
+		base.FixedUpdate();
 
 		float moveSpeed = (isSprinting) ? sprintSpeed : walkSpeed;
 
