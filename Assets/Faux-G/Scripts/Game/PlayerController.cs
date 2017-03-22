@@ -5,6 +5,7 @@ public class PlayerController : Photon.MonoBehaviour {
 
 	public Rigidbody prefabBullet;
 
+	public GameObject spotlight;
 	public Camera playerCamera;
 
 	// Walk/sprint parameters
@@ -137,7 +138,7 @@ public class PlayerController : Photon.MonoBehaviour {
 
 	private void LookAround() {
 		transform.Rotate(transform.up, lookAroundVector.x, Space.World);
-		playerCamera.transform.Rotate(-transform.right, lookAroundVector.y, Space.World);
+		spotlight.transform.Rotate(-transform.right, lookAroundVector.y, Space.World);
 	}
 
 	private void Move() {
@@ -162,7 +163,7 @@ public class PlayerController : Photon.MonoBehaviour {
 		if (isJumpCharged) {
 			int jumpTime = PhotonNetwork.ServerTimestamp + rpcSyncDelay;
 			Vector3 jumpForce = transform.up * rigidbody.mass * jumpAcceleration;
-			photonView.RPC("RpcJump", PhotonTargets.AllViaServer, jumpTime, jumpForce);
+			rigidbody.AddForce(jumpForce, ForceMode.Impulse);
 			isJumpCharged = false;
 		}
 	}
@@ -171,20 +172,6 @@ public class PlayerController : Photon.MonoBehaviour {
 		int shootTime = PhotonNetwork.ServerTimestamp + rpcSyncDelay;
 		Vector3 shootDirection = playerCamera.transform.forward;
 		photonView.RPC("RpcShoot", PhotonTargets.AllViaServer, shootTime, shootDirection);
-	}
-
-	[PunRPC]
-	private void RpcJump(int jumpTime, Vector3 jumpForce) {
-		float secondsToJump = (jumpTime - PhotonNetwork.ServerTimestamp) / 1000.0f;
-		StartCoroutine(WaitForJump(secondsToJump, jumpForce));
-	}
-
-	private IEnumerator WaitForJump(float secondsToJump, Vector3 jumpForce) {
-		if (secondsToJump > 0.0f) {
-			yield return new WaitForSecondsRealtime(secondsToJump);
-		}
-
-		rigidbody.AddForce(jumpForce, ForceMode.Impulse);
 	}
 
 	[PunRPC]
