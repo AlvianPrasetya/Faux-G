@@ -8,6 +8,9 @@ public class PlayerController : Photon.MonoBehaviour {
 	public GameObject spotlight;
 	public Camera playerCamera;
 
+	// Lookaround parameters
+	public float lookAroundSpeed;
+
 	// Walk/sprint parameters
 	public float crouchSpeed;
 	public float walkSpeed;
@@ -137,8 +140,8 @@ public class PlayerController : Photon.MonoBehaviour {
 	}
 
 	private void LookAround() {
-		transform.Rotate(transform.up, lookAroundVector.x, Space.World);
-		spotlight.transform.Rotate(-transform.right, lookAroundVector.y, Space.World);
+		transform.Rotate(transform.up, lookAroundVector.x * lookAroundSpeed, Space.World);
+		spotlight.transform.Rotate(-transform.right, lookAroundVector.y * lookAroundSpeed, Space.World);
 	}
 
 	private void Move() {
@@ -169,25 +172,27 @@ public class PlayerController : Photon.MonoBehaviour {
 
 	private void Shoot() {
 		int shootTime = PhotonNetwork.ServerTimestamp + rpcSyncDelay;
-		Vector3 shootDirection = playerCamera.transform.forward;
-		photonView.RPC("RpcShoot", PhotonTargets.AllViaServer, shootTime, shootDirection);
+		Vector3 shootPosition = playerCamera.transform.position + playerCamera.transform.forward;
+		Quaternion shootDirection = Quaternion.LookRotation(playerCamera.transform.forward);
+		photonView.RPC("RpcShoot", PhotonTargets.AllViaServer, 
+			shootTime, shootPosition, shootDirection);
 	}
 
 	[PunRPC]
-	private void RpcShoot(int shootTime, Vector3 shootDirection) {
+	private void RpcShoot(int shootTime, Vector3 shootPosition, Quaternion shootDirection) {
 		float secondsToShoot = (shootTime - PhotonNetwork.ServerTimestamp) / 1000.0f;
-		StartCoroutine(WaitForShoot(secondsToShoot, shootDirection));
+		StartCoroutine(WaitForShoot(secondsToShoot, shootPosition, shootDirection));
 	}
 
-	private IEnumerator WaitForShoot(float secondsToShoot, Vector3 shootDirection) {
+	private IEnumerator WaitForShoot(float secondsToShoot, Vector3 shootPosition, Quaternion shootDirection) {
 		if (secondsToShoot > 0.0f) {
 			yield return new WaitForSecondsRealtime(secondsToShoot);
 		}
 
 		Instantiate(
 			prefabBullet, 
-			playerCamera.transform.position + playerCamera.transform.forward, 
-			Quaternion.LookRotation(shootDirection)
+			shootPosition, 
+			shootDirection
 		);
 	}
 

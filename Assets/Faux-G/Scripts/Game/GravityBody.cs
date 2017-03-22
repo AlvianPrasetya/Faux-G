@@ -5,9 +5,10 @@ public class GravityBody : Photon.MonoBehaviour {
 	public float rotateSpeed;
 
 	private static readonly float BINARY_SEARCH_LOWER_BOUND = 0.0f;
-	private static readonly float BINARY_SEARCH_UPPER_BOUND = 100.0f;
-	private static readonly float BINARY_SEARCH_EPSILON = 1e-5f;
-	private static readonly float SPHERECAST_DISTANCE = 1e-4f;
+	private static readonly float BINARY_SEARCH_UPPER_BOUND = 1000.0f;
+	private static readonly float BINARY_SEARCH_EPSILON = 1e-4f;
+	private static readonly float SPHERECAST_DISTANCE = 1e-3f;
+	private static readonly Vector3 NUM_SPHERECAST_DIRECTIONS = new Vector3(4, 4, 4);
 
 	private Vector3 gravityDirection;
 
@@ -60,12 +61,16 @@ public class GravityBody : Photon.MonoBehaviour {
 			RaycastHit hitInfo;
 			Vector3 closestPoint = transform.position;
 			float minSqrDist = Mathf.Infinity;
-			for (int x = -1; x <= 1; x++) {
-				for (int y = -1; y <= 1; y++) {
-					for (int z = -1; z <= 1; z++) {
-						Vector3 dir = new Vector3(x, y, z);
+			for (int x = 0; x < NUM_SPHERECAST_DIRECTIONS.x; x++) {
+				for (int y = 0; y < NUM_SPHERECAST_DIRECTIONS.y; y++) {
+					for (int z = 0; z < NUM_SPHERECAST_DIRECTIONS.z; z++) {
+						Quaternion targetRotation = Quaternion.Euler(
+							x * 360.0f / NUM_SPHERECAST_DIRECTIONS.x, 
+							y * 360.0f / NUM_SPHERECAST_DIRECTIONS.y, 
+							z * 360.0f / NUM_SPHERECAST_DIRECTIONS.z);
+						Vector3 targetVector = targetRotation * Vector3.forward;
 
-						if (Physics.SphereCast(transform.position, lowerBoundRadius, dir,
+						if (Physics.SphereCast(transform.position, lowerBoundRadius, targetVector,
 							out hitInfo, SPHERECAST_DISTANCE, Utils.Layer.TERRAIN)) {
 							float sqrDist = Vector3.SqrMagnitude(hitInfo.point - transform.position);
 							if (sqrDist < minSqrDist) {

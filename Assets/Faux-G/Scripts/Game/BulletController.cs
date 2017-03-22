@@ -1,13 +1,11 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+using System.Collections;
 using UnityEngine;
 
 public class BulletController : MonoBehaviour {
 
-	public float lifetime;
+	public GameObject prefabExplosion;
+	
 	public float acceleration;
-
-	private Coroutine waitForLifetime;
 
 	private new Rigidbody rigidbody;
 
@@ -17,16 +15,13 @@ public class BulletController : MonoBehaviour {
 
 	void Start() {
 		rigidbody.AddForce(transform.forward * rigidbody.mass * acceleration, ForceMode.Impulse);
-		waitForLifetime = StartCoroutine(WaitForLifetime());
 	}
 
-	void OnCollisionEnter(Collision collision) {
-		StopCoroutine(waitForLifetime);
-		Destroy(gameObject);
+	void OnDestroy() {
+		Instantiate(prefabExplosion, transform.position, transform.rotation);
 	}
 
-	private IEnumerator WaitForLifetime() {
-		yield return new WaitForSeconds(lifetime);
+	void OnTriggerEnter(Collider other) {
 		Destroy(gameObject);
 	}
 
