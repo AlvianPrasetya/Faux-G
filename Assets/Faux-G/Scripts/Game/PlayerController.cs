@@ -161,7 +161,6 @@ public class PlayerController : Photon.MonoBehaviour {
 
 	private void Jump() {
 		if (isJumpCharged) {
-			int jumpTime = PhotonNetwork.ServerTimestamp + rpcSyncDelay;
 			Vector3 jumpForce = transform.up * rigidbody.mass * jumpAcceleration;
 			rigidbody.AddForce(jumpForce, ForceMode.Impulse);
 			isJumpCharged = false;

@@ -3,7 +3,7 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using System.Collections.Generic;
 
-public class RoomManager : MonoBehaviour {
+public class RoomManager : Photon.PunBehaviour {
 	
 	public PlayerEntry prefabPlayerEntry;
 
@@ -36,18 +36,22 @@ public class RoomManager : MonoBehaviour {
 	 * PHOTON LIFECYCLE
 	 */
 	
-	void OnLeftRoom() {
+	public override void OnLeftRoom() {
 		Logger.Log("Left room");
 		SceneManager.LoadScene(Utils.Scene.LOBBY);
 	}
 
-	void OnPhotonPlayerConnected(PhotonPlayer joiningPlayer) {
+	public override void OnPhotonPlayerConnected(PhotonPlayer joiningPlayer) {
 		RefreshPlayerList();
 	}
 
-	void OnPhotonPlayerDisconnected(PhotonPlayer leavingPlayer) {
+	public override void OnPhotonPlayerDisconnected(PhotonPlayer leavingPlayer) {
 		RefreshPlayerList();
 	}
+
+	/*
+	 * HELPER METHODS
+	 */
 
 	private void RefreshPlayerList() {
 		Logger.Log("Refreshing player list");

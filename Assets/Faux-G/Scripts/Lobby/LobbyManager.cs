@@ -3,7 +3,7 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using System.Collections.Generic;
 
-public class LobbyManager : MonoBehaviour {
+public class LobbyManager : Photon.PunBehaviour {
 
 	public RoomEntry prefabRoomEntry;
 
@@ -52,26 +52,30 @@ public class LobbyManager : MonoBehaviour {
 	 * PHOTON LIFECYCLE
 	 */
 
-	void OnReceivedRoomListUpdate() {
+	public override void OnReceivedRoomListUpdate() {
 		RefreshRoomList();
 	}
 	
-	void OnCreatedRoom() {
+	public override void OnCreatedRoom() {
 		Logger.Log("Created room");
 	}
 
-	void OnPhotonCreateRoomFailed() {
+	public override void OnPhotonCreateRoomFailed(object[] codeAndMsg) {
 		Logger.Log("Failed to create room");
 	}
 
-	void OnJoinedRoom() {
+	public override void OnJoinedRoom() {
 		Logger.Log("Joined room");
 		SceneManager.LoadScene(Utils.Scene.ROOM);
 	}
 
-	void OnPhotonJoinRoomFailed() {
+	public override void OnPhotonJoinRoomFailed(object[] codeAndMsg) {
 		Logger.Log("Failed to join room");
 	}
+
+	/*
+	 * HELPER METHODS
+	 */
 
 	private void SortByRoomNumber() {
 		Logger.Log("Sorting by room number");

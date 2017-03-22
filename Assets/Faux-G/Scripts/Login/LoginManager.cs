@@ -1,8 +1,7 @@
-using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-public class LoginManager : MonoBehaviour {
+public class LoginManager : Photon.PunBehaviour {
 
 	public Text textStatus;
 
@@ -25,18 +24,18 @@ public class LoginManager : MonoBehaviour {
 	 * PHOTON LIFECYCLE
 	 */
 
-	void OnConnectedToPhoton() {
+	public override void OnConnectedToPhoton() {
 		Logger.Log("Connected to Server");
 		textStatus.text = "Connected to Server";
 	}
 
-	void OnConnectedToMaster() {
+	public override void OnConnectedToMaster() {
 		Logger.Log("Joining Lobby");
 		textStatus.text = "Joining Lobby";
 		PhotonNetwork.JoinLobby();
 	}
 
-	void OnJoinedLobby() {
+	public override void OnJoinedLobby() {
 		Logger.Log("Joined Lobby");
 		SceneManager.LoadScene(Utils.Scene.LOBBY);
 	}
