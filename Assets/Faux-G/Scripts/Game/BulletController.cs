@@ -8,21 +8,25 @@ public class BulletController : MonoBehaviour {
 	public float acceleration;
 
 	private new Rigidbody rigidbody;
+	private DestroyAfterTime destroyAfterTime;
 
 	void Awake() {
 		rigidbody = GetComponent<Rigidbody>();
+		destroyAfterTime = GetComponent<DestroyAfterTime>();
+		destroyAfterTime.SetPreDestroyCallback(Explode);
 	}
 
 	void Start() {
 		rigidbody.AddForce(transform.forward * rigidbody.mass * acceleration, ForceMode.Impulse);
 	}
 
-	void OnDestroy() {
-		Instantiate(prefabExplosion, transform.position, transform.rotation);
+	void OnTriggerEnter(Collider other) {
+		Explode();
+		Destroy(gameObject);
 	}
 
-	void OnTriggerEnter(Collider other) {
-		Destroy(gameObject);
+	void Explode() {
+		Instantiate(prefabExplosion, transform.position, transform.rotation);
 	}
 
 }
