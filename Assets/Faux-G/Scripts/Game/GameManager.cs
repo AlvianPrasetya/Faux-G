@@ -15,9 +15,9 @@ public class GameManager : MonoBehaviour {
 		// Spawn player
 		PhotonNetwork.Instantiate(Utils.Resource.PLAYER, Vector3.zero, Quaternion.identity, 0);
 
-		// Hide cursor
-		Cursor.visible = false;
+		// Lock and hide cursor
 		Cursor.lockState = CursorLockMode.Locked;
+		Cursor.visible = false;
 	}
 
 }
