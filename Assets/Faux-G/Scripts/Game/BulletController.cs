@@ -21,6 +21,10 @@ public class BulletController : MonoBehaviour {
 	}
 
 	void OnTriggerEnter(Collider other) {
+		if (other.isTrigger) {
+			return;
+		}
+
 		Explode();
 		Destroy(gameObject);
 	}
