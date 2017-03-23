@@ -14,6 +14,9 @@ public class GameManager : MonoBehaviour {
 	void Start() {
 		// Spawn player
 		PhotonNetwork.Instantiate(Utils.Resource.PLAYER, Vector3.zero, Quaternion.identity, 0);
+
+		// Hide cursor
+		Cursor.visible = false;
 	}
 
 }
