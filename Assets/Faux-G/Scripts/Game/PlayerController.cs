@@ -21,9 +21,6 @@ public class PlayerController : Photon.MonoBehaviour {
 	public float jumpAccelerationChargeRate;
 	public float maxJumpAcceleration;
 
-	// The delay (ms) used to sync RPCs between clients
-	public int rpcSyncDelay;
-
 	private Vector2 lookAroundVector;
 	private bool isCrouching;
 	private bool isSprinting;
@@ -171,7 +168,7 @@ public class PlayerController : Photon.MonoBehaviour {
 	}
 
 	private void Shoot() {
-		int shootTime = PhotonNetwork.ServerTimestamp + rpcSyncDelay;
+		int shootTime = PhotonNetwork.ServerTimestamp + Utils.RPC_SYNC_DELAY;
 		Vector3 shootPosition = playerCamera.transform.position + playerCamera.transform.forward;
 		Quaternion shootDirection = Quaternion.LookRotation(playerCamera.transform.forward);
 		photonView.RPC("RpcShoot", PhotonTargets.AllViaServer, 

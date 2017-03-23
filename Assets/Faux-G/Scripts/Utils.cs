@@ -6,6 +6,8 @@ public class Utils : MonoBehaviour {
 
 	public static readonly int SEND_RATE = 15;
 	public static readonly int SEND_RATE_ON_SERIALIZE = 15;
+	// The delay (ms) used to sync RPCs between clients
+	public static readonly int RPC_SYNC_DELAY = 150;
 
 	public class Scene {
 		public static readonly string LOGIN = "Login";
