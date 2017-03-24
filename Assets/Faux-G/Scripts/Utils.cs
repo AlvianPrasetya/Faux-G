@@ -39,6 +39,8 @@ public class Utils : MonoBehaviour {
 	}
 
 	public static readonly float GRAVITY = 9.81f;
+
+	public static readonly float PI = Mathf.Acos(-1);
 }
 
 public enum GameMode {

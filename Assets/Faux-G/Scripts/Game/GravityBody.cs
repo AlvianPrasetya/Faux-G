@@ -8,7 +8,8 @@ public class GravityBody : Photon.MonoBehaviour {
 	private static readonly float BINARY_SEARCH_UPPER_BOUND = 1000.0f;
 	private static readonly float BINARY_SEARCH_EPSILON = 1e-4f;
 	private static readonly float SPHERECAST_DISTANCE = 1e-3f;
-	private static readonly Vector3 NUM_SPHERECAST_DIRECTIONS = new Vector3(4, 4, 4);
+	private static readonly int NUM_SEGMENTS_LATITUDE = 6;
+	private static readonly int NUM_SEGMENTS_LONGITUDE = 12;
 
 	private Vector3 gravityDirection;
 
@@ -61,26 +62,27 @@ public class GravityBody : Photon.MonoBehaviour {
 			RaycastHit hitInfo;
 			Vector3 closestPoint = transform.position;
 			float minSqrDist = Mathf.Infinity;
-			for (int x = 0; x < NUM_SPHERECAST_DIRECTIONS.x; x++) {
-				for (int y = 0; y < NUM_SPHERECAST_DIRECTIONS.y; y++) {
-					for (int z = 0; z < NUM_SPHERECAST_DIRECTIONS.z; z++) {
-						Quaternion targetRotation = Quaternion.Euler(
-							x * 360.0f / NUM_SPHERECAST_DIRECTIONS.x, 
-							y * 360.0f / NUM_SPHERECAST_DIRECTIONS.y, 
-							z * 360.0f / NUM_SPHERECAST_DIRECTIONS.z);
-						Vector3 targetVector = targetRotation * Vector3.forward;
+			float dLatitude = Utils.PI / NUM_SEGMENTS_LATITUDE;
+			float dLongitude = 2 * Utils.PI / NUM_SEGMENTS_LONGITUDE;
+			for (float latitude = dLatitude / 2; latitude < Utils.PI; latitude += dLatitude) {
+				for (float longitude = dLongitude / 2; longitude < 2 * Utils.PI; longitude += dLongitude) {
+					Vector3 direction = new Vector3(
+						Mathf.Sin(latitude) * Mathf.Cos(longitude),
+						Mathf.Sin(latitude) * Mathf.Sin(longitude),
+						Mathf.Cos(latitude)
+					);
 
-						if (Physics.SphereCast(transform.position, lowerBoundRadius, targetVector,
+					if (Physics.SphereCast(transform.position, lowerBoundRadius, direction,
 							out hitInfo, SPHERECAST_DISTANCE, Utils.Layer.TERRAIN)) {
-							float sqrDist = Vector3.SqrMagnitude(hitInfo.point - transform.position);
-							if (sqrDist < minSqrDist) {
-								closestPoint = hitInfo.point;
-								minSqrDist = sqrDist;
-							}
+						float sqrDist = Vector3.SqrMagnitude(hitInfo.point - transform.position);
+						if (sqrDist < minSqrDist) {
+							closestPoint = hitInfo.point;
+							minSqrDist = sqrDist;
 						}
 					}
 				}
 			}
+
 			gravityDirection = (closestPoint - transform.position).normalized;
 		} else {
 			gravityDirection = Vector3.zero;
