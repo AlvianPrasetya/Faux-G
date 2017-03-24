@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 public class GravityBody : Photon.MonoBehaviour {
 
@@ -11,18 +12,20 @@ public class GravityBody : Photon.MonoBehaviour {
 	private static readonly int NUM_SEGMENTS_LATITUDE = 6;
 	private static readonly int NUM_SEGMENTS_LONGITUDE = 12;
 
-	private Vector3 gravityDirection;
-
 	private new Rigidbody rigidbody;
+
+	private List<Vector3> sphereCastDirections;
+	private Vector3 gravityDirection;
 
 	/*
 	 * MONOBEHAVIOUR LIFECYCLE
 	 */
 
 	void Awake() {
-		gravityDirection = Vector3.zero;
-
 		rigidbody = GetComponent<Rigidbody>();
+
+		CalculateSphereCastDirections();
+		gravityDirection = Vector3.zero;
 	}
 
 	void Update() {
@@ -34,6 +37,22 @@ public class GravityBody : Photon.MonoBehaviour {
 		// Calculate gravity and apply to rigidbody
 		UpdateGravityDirection();
 		rigidbody.AddForce(gravityDirection * rigidbody.mass * Utils.GRAVITY, ForceMode.Force);
+	}
+
+	private void CalculateSphereCastDirections() {
+		sphereCastDirections = new List<Vector3>();
+
+		float dLatitude = Utils.PI / NUM_SEGMENTS_LATITUDE;
+		float dLongitude = 2 * Utils.PI / NUM_SEGMENTS_LONGITUDE;
+		for (float latitude = dLatitude / 2; latitude < Utils.PI; latitude += dLatitude) {
+			for (float longitude = dLongitude / 2; longitude < 2 * Utils.PI; longitude += dLongitude) {
+				sphereCastDirections.Add(new Vector3(
+					Mathf.Sin(latitude) * Mathf.Cos(longitude),
+					Mathf.Sin(latitude) * Mathf.Sin(longitude),
+					Mathf.Cos(latitude)
+				));
+			}
+		}
 	}
 
 	private void UpdateGravityDirection() {
@@ -62,23 +81,14 @@ public class GravityBody : Photon.MonoBehaviour {
 			RaycastHit hitInfo;
 			Vector3 closestPoint = transform.position;
 			float minSqrDist = Mathf.Infinity;
-			float dLatitude = Utils.PI / NUM_SEGMENTS_LATITUDE;
-			float dLongitude = 2 * Utils.PI / NUM_SEGMENTS_LONGITUDE;
-			for (float latitude = dLatitude / 2; latitude < Utils.PI; latitude += dLatitude) {
-				for (float longitude = dLongitude / 2; longitude < 2 * Utils.PI; longitude += dLongitude) {
-					Vector3 direction = new Vector3(
-						Mathf.Sin(latitude) * Mathf.Cos(longitude),
-						Mathf.Sin(latitude) * Mathf.Sin(longitude),
-						Mathf.Cos(latitude)
-					);
 
-					if (Physics.SphereCast(transform.position, lowerBoundRadius, direction,
+			foreach (Vector3 direction in sphereCastDirections) {
+				if (Physics.SphereCast(transform.position, lowerBoundRadius, direction,
 							out hitInfo, SPHERECAST_DISTANCE, Utils.Layer.TERRAIN)) {
-						float sqrDist = Vector3.SqrMagnitude(hitInfo.point - transform.position);
-						if (sqrDist < minSqrDist) {
-							closestPoint = hitInfo.point;
-							minSqrDist = sqrDist;
-						}
+					float sqrDist = Vector3.SqrMagnitude(hitInfo.point - transform.position);
+					if (sqrDist < minSqrDist) {
+						closestPoint = hitInfo.point;
+						minSqrDist = sqrDist;
 					}
 				}
 			}
