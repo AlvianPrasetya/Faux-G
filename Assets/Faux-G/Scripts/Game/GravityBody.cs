@@ -3,7 +3,9 @@ using System.Collections.Generic;
 
 public class GravityBody : Photon.MonoBehaviour {
 
+	public float slerpAngleThreshold;
 	public float rotateSpeed;
+	public float slerpSpeed;
 
 	private static readonly float BINARY_SEARCH_LOWER_BOUND = 0.0f;
 	private static readonly float BINARY_SEARCH_UPPER_BOUND = 1000.0f;
@@ -29,14 +31,15 @@ public class GravityBody : Photon.MonoBehaviour {
 	}
 
 	void Update() {
-		// Adjust player rotation due to gravity
-		AdjustRotation();
 	}
 
 	void FixedUpdate() {
 		// Calculate gravity and apply to rigidbody
 		UpdateGravityDirection();
 		rigidbody.AddForce(gravityDirection * rigidbody.mass * Utils.GRAVITY, ForceMode.Force);
+
+		// Adjust player rotation due to gravity
+		AdjustRotation();
 	}
 
 	private void CalculateSphereCastDirections() {
@@ -102,11 +105,20 @@ public class GravityBody : Photon.MonoBehaviour {
 	private void AdjustRotation() {
 		Quaternion rotationDifference = Quaternion.FromToRotation(-transform.up, gravityDirection);
 		Quaternion targetRotation = rotationDifference * transform.rotation;
-		Quaternion newRotation = Quaternion.RotateTowards(
-			transform.rotation,
-			targetRotation,
-			rotateSpeed * Time.deltaTime
-		);
+		Quaternion newRotation;
+		if (Vector3.Angle(-transform.up, gravityDirection) < slerpAngleThreshold) {
+			newRotation = Quaternion.RotateTowards(
+				transform.rotation,
+				targetRotation,
+				rotateSpeed * Time.fixedDeltaTime
+			);
+		} else {
+			newRotation = Quaternion.Slerp(
+				transform.rotation,
+				targetRotation,
+				slerpSpeed * Time.fixedDeltaTime
+			);
+		}
 		transform.rotation = newRotation;
 	}
 
