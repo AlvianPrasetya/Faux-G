@@ -35,7 +35,7 @@ public class GameManager : MonoBehaviour {
 	private void InputToggleCursor() {
 		if (Input.GetKeyDown(KeyCode.Escape)) {
 			isCursorLocked = false;
-		} else if (Input.anyKeyDown) {
+		} else if (Input.anyKey) {
 			isCursorLocked = true;
 		}
 	}
