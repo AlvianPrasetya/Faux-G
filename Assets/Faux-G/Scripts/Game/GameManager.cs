@@ -18,11 +18,11 @@ public class GameManager : MonoBehaviour {
 	void Start() {
 		// Spawn player
 		PhotonNetwork.Instantiate(Utils.Resource.PLAYER, Vector3.zero, Quaternion.identity, 0);
-
-		InputToggleCursor();
 	}
 
-	void OnGUI() {
+	void Update() {
+		InputToggleCursor();
+
 		if (isCursorLocked) {
 			Cursor.lockState = CursorLockMode.Locked;
 			Cursor.visible = false;
@@ -34,7 +34,9 @@ public class GameManager : MonoBehaviour {
 
 	private void InputToggleCursor() {
 		if (Input.GetKeyDown(KeyCode.Escape)) {
-			isCursorLocked = !isCursorLocked;
+			isCursorLocked = false;
+		} else if (Input.anyKeyDown) {
+			isCursorLocked = true;
 		}
 	}
 
