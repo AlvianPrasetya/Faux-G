@@ -3,9 +3,9 @@ using System.Collections.Generic;
 
 public class GravityBody : Photon.MonoBehaviour {
 
-	public float slerpAngleThreshold;
-	public float rotateSpeed;
-	public float slerpSpeed;
+	public float gravityChangeAngleThreshold;
+	public float minRotateSpeed;
+	public float maxRotateSpeed;
 
 	private static readonly float BINARY_SEARCH_LOWER_BOUND = 0.0f;
 	private static readonly float BINARY_SEARCH_UPPER_BOUND = 1000.0f;
@@ -17,7 +17,9 @@ public class GravityBody : Photon.MonoBehaviour {
 	private new Rigidbody rigidbody;
 
 	private List<Vector3> sphereCastDirections;
+	private Vector3 lastGravityDirection;
 	private Vector3 gravityDirection;
+	private float referenceAngle;
 
 	/*
 	 * MONOBEHAVIOUR LIFECYCLE
@@ -27,6 +29,7 @@ public class GravityBody : Photon.MonoBehaviour {
 		rigidbody = GetComponent<Rigidbody>();
 
 		CalculateSphereCastDirections();
+		lastGravityDirection = Vector3.zero;
 		gravityDirection = Vector3.zero;
 	}
 
@@ -59,6 +62,8 @@ public class GravityBody : Photon.MonoBehaviour {
 	}
 
 	private void UpdateGravityDirection() {
+		lastGravityDirection = gravityDirection;
+
 		/*
 		 * Binary search to obtain largest radius of sphere centered at the player that 
 		 * does not come in contact with any terrain.
@@ -103,23 +108,36 @@ public class GravityBody : Photon.MonoBehaviour {
 	}
 
 	private void AdjustRotation() {
+		float gravityChangeAngle = Vector3.Angle(lastGravityDirection, gravityDirection);
+		if (gravityChangeAngle > gravityChangeAngleThreshold) {
+			referenceAngle = gravityChangeAngle / 2.0f;
+		}
+
 		Quaternion rotationDifference = Quaternion.FromToRotation(-transform.up, gravityDirection);
 		Quaternion targetRotation = rotationDifference * transform.rotation;
-		Quaternion newRotation;
-		if (Vector3.Angle(-transform.up, gravityDirection) < slerpAngleThreshold) {
-			newRotation = Quaternion.RotateTowards(
-				transform.rotation,
-				targetRotation,
-				rotateSpeed * Time.fixedDeltaTime
+
+		float angleDifference = Vector3.Angle(-transform.up, gravityDirection);
+		float rotateSpeed;
+		if (angleDifference > referenceAngle) {
+			rotateSpeed = Mathf.Lerp(
+				minRotateSpeed,
+				maxRotateSpeed,
+				(referenceAngle * 2 - angleDifference) / referenceAngle
 			);
 		} else {
-			newRotation = Quaternion.Slerp(
-				transform.rotation,
-				targetRotation,
-				slerpSpeed * Time.fixedDeltaTime
+			rotateSpeed = Mathf.Lerp(
+				minRotateSpeed,
+				maxRotateSpeed,
+				angleDifference / referenceAngle
 			);
 		}
-		transform.rotation = newRotation;
+		
+		transform.rotation = Quaternion.RotateTowards(
+			transform.rotation,
+			targetRotation,
+			rotateSpeed * Time.fixedDeltaTime
+		);
+		;
 	}
 
 }

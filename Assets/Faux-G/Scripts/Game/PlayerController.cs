@@ -10,6 +10,8 @@ public class PlayerController : Photon.MonoBehaviour {
 
 	// Lookaround parameters
 	public float lookAroundSpeed;
+	public float maxLookUpAngle;
+	public float maxLookDownAngle;
 
 	// Walk/sprint parameters
 	public float crouchSpeed;
@@ -137,8 +139,34 @@ public class PlayerController : Photon.MonoBehaviour {
 	}
 
 	private void LookAround() {
-		transform.Rotate(transform.up, lookAroundVector.x * lookAroundSpeed, Space.World);
-		spotlight.transform.Rotate(-transform.right, lookAroundVector.y * lookAroundSpeed, Space.World);
+		LookLeftRight();
+		LookUpDown();
+	}
+
+	private void LookLeftRight() {
+		transform.Rotate(
+			transform.up,
+			lookAroundVector.x * lookAroundSpeed * Time.fixedDeltaTime,
+			Space.World
+		);
+	}
+
+	private void LookUpDown() {
+		float minSpotlightRotateAngle = -Vector3.Angle(spotlight.transform.forward, -transform.up)
+			- maxLookDownAngle + 90.0f;
+		float maxSpotlightRotateAngle = Vector3.Angle(spotlight.transform.forward, transform.up)
+			+ maxLookUpAngle - 90.0f;
+		float rotateAngle = Mathf.Clamp(
+			lookAroundVector.y * lookAroundSpeed * Time.fixedDeltaTime,
+			minSpotlightRotateAngle,
+			maxSpotlightRotateAngle
+		);
+
+		spotlight.transform.Rotate(
+			-transform.right,
+			rotateAngle,
+			Space.World
+		);
 	}
 
 	private void Move() {
