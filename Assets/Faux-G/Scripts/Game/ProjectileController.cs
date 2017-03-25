@@ -22,7 +22,12 @@ public class ProjectileController : MonoBehaviour {
 
 	void OnTriggerEnter(Collider other) {
 		Explode();
-		ApplyDamage(other);
+
+		Health healthComponent = other.GetComponentInParent<Health>();
+		if (healthComponent != null) {
+			healthComponent.Damage(damage);
+		}
+
 		Destroy(gameObject);
 	}
 
@@ -32,17 +37,6 @@ public class ProjectileController : MonoBehaviour {
 		}
 
 		Instantiate(prefabExplosion, transform.position, transform.rotation);
-	}
-
-	void ApplyDamage(Collider target) {
-		if (damage == 0.0f) {
-			return;
-		}
-
-		Health healthComponent = target.GetComponent<Health>();
-		if (healthComponent != null) {
-			healthComponent.Damage(damage);
-		}
 	}
 
 }

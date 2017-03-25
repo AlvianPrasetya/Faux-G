@@ -58,10 +58,10 @@ public class Explosion : MonoBehaviour {
 					ForceMode.Impulse
 				);
 			}
-
-			Health health = collider.GetComponent<Health>();
-			if (health != null) {
-				health.Damage(explosionDamage / distance);
+			
+			Health healthComponent = collider.GetComponentInParent<Health>();
+			if (healthComponent != null) {
+				healthComponent.Damage(explosionDamage / distance);
 			}
 		}
 	}
