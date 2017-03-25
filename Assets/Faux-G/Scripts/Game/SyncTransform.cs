@@ -91,16 +91,33 @@ public class SyncTransform : Photon.MonoBehaviour, IPunObservable {
 			if (currentNode.Value.timestamp < renderTimestamp) {
 				LinkedListNode<PositionData> nextNode = currentNode.Next;
 				if (nextNode == null) {
-					continue;
+					// Extrapolate from pair of data
+					LinkedListNode<PositionData> previousNode = currentNode.Previous;
+					if (previousNode == null) {
+						// Previous node is null, not enough information to extrapolate
+						return;
+					}
+
+					int currentTimestamp = currentNode.Value.timestamp;
+					Vector3 currentPosition = currentNode.Value.position;
+					int previousTimestamp = previousNode.Value.timestamp;
+					Vector3 previousPosition = previousNode.Value.position;
+
+					Vector3 dPosition = (currentPosition - previousPosition)
+						/ (currentTimestamp - previousTimestamp);
+					transform.position = previousPosition
+						+ dPosition * (renderTimestamp - previousTimestamp);
+				} else {
+					// Interpolate between pair of data
+					int currentTimestamp = currentNode.Value.timestamp;
+					int nextTimestamp = nextNode.Value.timestamp;
+					transform.position = Vector3.Lerp(
+						currentNode.Value.position,
+						nextNode.Value.position,
+						(float) (renderTimestamp - currentTimestamp) / (nextTimestamp - currentTimestamp)
+					);
 				}
 
-				int currentTimestamp = currentNode.Value.timestamp;
-				int nextTimestamp = nextNode.Value.timestamp;
-				transform.position = Vector3.Lerp(
-					currentNode.Value.position,
-					nextNode.Value.position,
-					(float) (renderTimestamp - currentTimestamp) / (nextTimestamp - currentTimestamp)
-				);
 				return;
 			}
 		}
@@ -113,16 +130,42 @@ public class SyncTransform : Photon.MonoBehaviour, IPunObservable {
 			if (currentNode.Value.timestamp < renderTimestamp) {
 				LinkedListNode<RotationData> nextNode = currentNode.Next;
 				if (nextNode == null) {
-					continue;
+					// Extrapolate from pair of data
+					LinkedListNode<RotationData> previousNode = currentNode.Previous;
+					if (previousNode == null) {
+						// Previous node is null, not enough information to extrapolate
+						return;
+					}
+
+					int currentTimestamp = currentNode.Value.timestamp;
+					Quaternion currentRotation = currentNode.Value.rotation;
+					int previousTimestamp = previousNode.Value.timestamp;
+					Quaternion previousRotation = previousNode.Value.rotation;
+
+					Quaternion deltaRotation = currentRotation * Quaternion.Inverse(previousRotation);
+					float deltaTime = (float) (renderTimestamp - previousTimestamp)
+						/ (currentTimestamp - previousTimestamp);
+
+					float deltaAngle;
+					Vector3 deltaAxis;
+					deltaRotation.ToAngleAxis(out deltaAngle, out deltaAxis);
+
+					if (deltaAngle > 180.0f) {
+						deltaAngle = deltaAngle - 360.0f;
+					}
+					deltaAngle = deltaAngle * deltaTime % 360.0f;
+					transform.rotation = Quaternion.AngleAxis(deltaAngle, deltaAxis) * previousRotation;
+				} else {
+					// Interpolate between pair of data
+					int currentTimestamp = currentNode.Value.timestamp;
+					int nextTimestamp = nextNode.Value.timestamp;
+					transform.rotation = Quaternion.Slerp(
+						currentNode.Value.rotation,
+						nextNode.Value.rotation,
+						(float) (renderTimestamp - currentTimestamp) / (nextTimestamp - currentTimestamp)
+					);
 				}
 
-				int currentTimestamp = currentNode.Value.timestamp;
-				int nextTimestamp = nextNode.Value.timestamp;
-				transform.rotation = Quaternion.Slerp(
-					currentNode.Value.rotation,
-					nextNode.Value.rotation,
-					(float) (renderTimestamp - currentTimestamp) / (nextTimestamp - currentTimestamp)
-				);
 				return;
 			}
 		}
