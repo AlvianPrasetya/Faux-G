@@ -5,6 +5,7 @@ public class ProjectileController : MonoBehaviour {
 	public GameObject prefabExplosion;
 	
 	public float acceleration;
+	public float damage;
 
 	private new Rigidbody rigidbody;
 	private DestroyAfterTime destroyAfterTime;
@@ -21,6 +22,7 @@ public class ProjectileController : MonoBehaviour {
 
 	void OnTriggerEnter(Collider other) {
 		Explode();
+		ApplyDamage(other);
 		Destroy(gameObject);
 	}
 
@@ -30,6 +32,17 @@ public class ProjectileController : MonoBehaviour {
 		}
 
 		Instantiate(prefabExplosion, transform.position, transform.rotation);
+	}
+
+	void ApplyDamage(Collider target) {
+		if (damage == 0.0f) {
+			return;
+		}
+
+		Health healthComponent = target.GetComponent<Health>();
+		if (healthComponent != null) {
+			healthComponent.Damage(damage);
+		}
 	}
 
 }
