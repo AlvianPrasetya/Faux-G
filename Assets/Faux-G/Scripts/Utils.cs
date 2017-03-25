@@ -36,6 +36,11 @@ public class Utils : MonoBehaviour {
 		public static readonly int MOUSE_BUTTON_LEFT = 0;
 		public static readonly int MOUSE_BUTTON_RIGHT = 1;
 		public static readonly int MOUSE_BUTTON_MIDDLE = 2;
+		public static readonly KeyCode[] KEY_CODES_CHANGE_WEAPON = {
+			KeyCode.Alpha1, 
+			KeyCode.Alpha2, 
+			KeyCode.Alpha3
+		};
 	}
 
 	public static readonly float GRAVITY = 9.81f;

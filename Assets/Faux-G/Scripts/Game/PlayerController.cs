@@ -3,9 +3,7 @@ using System.Collections;
 
 public class PlayerController : Photon.MonoBehaviour {
 
-	public Rigidbody prefabBullet;
-
-	public GameObject spotlight;
+	public GameObject flashlight;
 	public Camera playerCamera;
 
 	// Lookaround parameters
@@ -23,15 +21,17 @@ public class PlayerController : Photon.MonoBehaviour {
 	public float jumpAccelerationChargeRate;
 	public float maxJumpAcceleration;
 
+	// Cached components
+	private new Rigidbody rigidbody;
+	private GravityBody gravityBody;
+	private WeaponController weaponController;
+
 	private Vector2 lookAroundVector;
 	private bool isCrouching;
 	private bool isSprinting;
 	private Vector3 moveVector;
 	private float jumpAcceleration;
 	private bool isJumpCharged;
-
-	private new Rigidbody rigidbody;
-	private GravityBody gravityBody;
 
 	/*
 	 * MONOBEHAVIOUR LIFECYCLE
@@ -40,6 +40,7 @@ public class PlayerController : Photon.MonoBehaviour {
 	void Awake() {
 		rigidbody = GetComponent<Rigidbody>();
 		gravityBody = GetComponent<GravityBody>();
+		weaponController = GetComponent<WeaponController>();
 
 		if (!photonView.isMine) {
 			rigidbody.isKinematic = true;
@@ -69,6 +70,8 @@ public class PlayerController : Photon.MonoBehaviour {
 		InputMove();
 		InputJump();
 		InputShoot();
+		InputChangeWeapon();
+		InputReload();
 	}
 
 	void FixedUpdate() {
@@ -133,8 +136,23 @@ public class PlayerController : Photon.MonoBehaviour {
 	}
 
 	private void InputShoot() {
-		if (Input.GetMouseButtonDown(Utils.Input.MOUSE_BUTTON_LEFT)) {
-			Shoot();
+		if (Input.GetMouseButton(Utils.Input.MOUSE_BUTTON_LEFT)) {
+			weaponController.Shoot();
+		}
+	}
+
+	private void InputChangeWeapon() {
+		for (int i = 0; i < Utils.Input.KEY_CODES_CHANGE_WEAPON.Length; i++) {
+			if (Input.GetKeyDown(Utils.Input.KEY_CODES_CHANGE_WEAPON[i])) {
+				weaponController.ChangeWeapon(i);
+				break;
+			}
+		}
+	}
+
+	private void InputReload() {
+		if (Input.GetKeyDown(KeyCode.R)) {
+			weaponController.Reload();
 		}
 	}
 
@@ -152,9 +170,9 @@ public class PlayerController : Photon.MonoBehaviour {
 	}
 
 	private void LookUpDown() {
-		float minSpotlightRotateAngle = -Vector3.Angle(spotlight.transform.forward, -transform.up)
+		float minSpotlightRotateAngle = -Vector3.Angle(flashlight.transform.forward, -transform.up)
 			- maxLookDownAngle + 90.0f;
-		float maxSpotlightRotateAngle = Vector3.Angle(spotlight.transform.forward, transform.up)
+		float maxSpotlightRotateAngle = Vector3.Angle(flashlight.transform.forward, transform.up)
 			+ maxLookUpAngle - 90.0f;
 		float rotateAngle = Mathf.Clamp(
 			lookAroundVector.y * lookAroundSpeed * Time.fixedDeltaTime,
@@ -162,7 +180,7 @@ public class PlayerController : Photon.MonoBehaviour {
 			maxSpotlightRotateAngle
 		);
 
-		spotlight.transform.Rotate(
+		flashlight.transform.Rotate(
 			-transform.right,
 			rotateAngle,
 			Space.World
@@ -193,32 +211,6 @@ public class PlayerController : Photon.MonoBehaviour {
 			rigidbody.AddForce(jumpForce, ForceMode.Impulse);
 			isJumpCharged = false;
 		}
-	}
-
-	private void Shoot() {
-		int shootTime = PhotonNetwork.ServerTimestamp + Utils.RPC_SYNC_DELAY;
-		Vector3 shootPosition = playerCamera.transform.position + playerCamera.transform.forward;
-		Quaternion shootDirection = Quaternion.LookRotation(playerCamera.transform.forward);
-		photonView.RPC("RpcShoot", PhotonTargets.AllViaServer, 
-			shootTime, shootPosition, shootDirection);
-	}
-
-	[PunRPC]
-	private void RpcShoot(int shootTime, Vector3 shootPosition, Quaternion shootDirection) {
-		float secondsToShoot = (shootTime - PhotonNetwork.ServerTimestamp) / 1000.0f;
-		StartCoroutine(WaitForShoot(secondsToShoot, shootPosition, shootDirection));
-	}
-
-	private IEnumerator WaitForShoot(float secondsToShoot, Vector3 shootPosition, Quaternion shootDirection) {
-		if (secondsToShoot > 0.0f) {
-			yield return new WaitForSecondsRealtime(secondsToShoot);
-		}
-
-		Instantiate(
-			prefabBullet, 
-			shootPosition, 
-			shootDirection
-		);
 	}
 
 }

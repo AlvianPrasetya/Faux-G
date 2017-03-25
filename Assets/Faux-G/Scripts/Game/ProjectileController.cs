@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class BulletController : MonoBehaviour {
+public class ProjectileController : MonoBehaviour {
 
 	public GameObject prefabExplosion;
 	
@@ -25,6 +25,10 @@ public class BulletController : MonoBehaviour {
 	}
 
 	void Explode() {
+		if (prefabExplosion == null) {
+			return;
+		}
+
 		Instantiate(prefabExplosion, transform.position, transform.rotation);
 	}
 
