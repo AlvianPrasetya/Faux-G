@@ -110,34 +110,25 @@ public class GravityBody : Photon.MonoBehaviour {
 	private void AdjustRotation() {
 		float gravityChangeAngle = Vector3.Angle(lastGravityDirection, gravityDirection);
 		if (gravityChangeAngle > gravityChangeAngleThreshold) {
-			referenceAngle = gravityChangeAngle / 2.0f;
+			referenceAngle = gravityChangeAngle;
 		}
 
 		Quaternion rotationDifference = Quaternion.FromToRotation(-transform.up, gravityDirection);
 		Quaternion targetRotation = rotationDifference * transform.rotation;
 
 		float angleDifference = Vector3.Angle(-transform.up, gravityDirection);
-		float rotateSpeed;
-		if (angleDifference > referenceAngle) {
-			rotateSpeed = Mathf.Lerp(
-				minRotateSpeed,
-				maxRotateSpeed,
-				(referenceAngle * 2 - angleDifference) / referenceAngle
-			);
-		} else {
-			rotateSpeed = Mathf.Lerp(
-				minRotateSpeed,
-				maxRotateSpeed,
-				angleDifference / referenceAngle
-			);
-		}
+		// Calculate rotate speed based on a parabolic (dome-shaped) function of angle difference
+		float rotateSpeed = Mathf.Lerp(
+			minRotateSpeed,
+			maxRotateSpeed,
+			1 - 4 * Mathf.Pow(angleDifference - referenceAngle / 2, 2) / Mathf.Pow(referenceAngle, 2)
+		);
 		
 		transform.rotation = Quaternion.RotateTowards(
 			transform.rotation,
 			targetRotation,
 			rotateSpeed * Time.fixedDeltaTime
 		);
-		;
 	}
 
 }
