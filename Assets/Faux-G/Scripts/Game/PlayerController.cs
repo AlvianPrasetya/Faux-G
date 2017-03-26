@@ -1,9 +1,8 @@
 using UnityEngine;
-using System.Collections;
 
 public class PlayerController : Photon.MonoBehaviour {
 
-	public GameObject flashlight;
+	public Transform playerHead;
 	public Camera playerCamera;
 
 	// Lookaround parameters
@@ -170,9 +169,9 @@ public class PlayerController : Photon.MonoBehaviour {
 	}
 
 	private void LookUpDown() {
-		float minSpotlightRotateAngle = -Vector3.Angle(flashlight.transform.forward, -transform.up)
+		float minSpotlightRotateAngle = -Vector3.Angle(playerHead.transform.forward, -transform.up)
 			- maxLookDownAngle + 90.0f;
-		float maxSpotlightRotateAngle = Vector3.Angle(flashlight.transform.forward, transform.up)
+		float maxSpotlightRotateAngle = Vector3.Angle(playerHead.transform.forward, transform.up)
 			+ maxLookUpAngle - 90.0f;
 		float rotateAngle = Mathf.Clamp(
 			lookAroundVector.y * lookAroundSpeed * Time.fixedDeltaTime,
@@ -180,7 +179,7 @@ public class PlayerController : Photon.MonoBehaviour {
 			maxSpotlightRotateAngle
 		);
 
-		flashlight.transform.Rotate(
+		playerHead.transform.Rotate(
 			-transform.right,
 			rotateAngle,
 			Space.World

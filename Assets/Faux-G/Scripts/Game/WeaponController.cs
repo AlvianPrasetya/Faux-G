@@ -3,7 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 
 public class WeaponController : Photon.MonoBehaviour {
-	
+
+	public Transform weaponMuzzle;
 	public Camera playerCamera;
 	public List<Weapon> weapons;
 
@@ -54,7 +55,7 @@ public class WeaponController : Photon.MonoBehaviour {
 		}
 
 		int shootTime = PhotonNetwork.ServerTimestamp + Utils.SYNC_DELAY;
-		Vector3 shootPosition = playerCamera.transform.position + playerCamera.transform.forward;
+		Vector3 shootPosition = weaponMuzzle.transform.position;
 		Quaternion shootDirection = Quaternion.LookRotation(playerCamera.transform.forward);
 		photonView.RPC("RpcShoot", PhotonTargets.AllViaServer,
 			shootTime, currentWeaponId, shootPosition, shootDirection);
