@@ -3,6 +3,36 @@ guid: 63f4a30f5731329418b381f3df766a4e
 ModelImporter:
   serializedVersion: 19
   fileIDToRecycleName:
+    100000: //RootNode
+    100002: body
+    100004: clip
+    100006: clip_release
+    100008: cocking_grip
+    100010: front_grip
+    100012: scope_lense
+    100014: trigger
+    400000: //RootNode
+    400002: body
+    400004: clip
+    400006: clip_release
+    400008: cocking_grip
+    400010: front_grip
+    400012: scope_lense
+    400014: trigger
+    2300000: body
+    2300002: clip
+    2300004: clip_release
+    2300006: cocking_grip
+    2300008: front_grip
+    2300010: scope_lense
+    2300012: trigger
+    3300000: body
+    3300002: clip
+    3300004: clip_release
+    3300006: cocking_grip
+    3300008: front_grip
+    3300010: scope_lense
+    3300012: trigger
     4300000: cocking_grip
     4300002: trigger
     4300004: clip
@@ -10,6 +40,14 @@ ModelImporter:
     4300008: front_grip
     4300010: clip_release
     4300012: body
+    6400000: body
+    6400002: clip
+    6400004: clip_release
+    6400006: cocking_grip
+    6400008: front_grip
+    6400010: scope_lense
+    6400012: trigger
+    11100000: //RootNode
   materials:
     importMaterials: 1
     materialName: 0
@@ -34,7 +72,7 @@ ModelImporter:
     isReadable: 1
   meshes:
     lODScreenPercentages: []
-    globalScale: 1
+    globalScale: 0.01
     meshCompression: 0
     addColliders: 1
     importBlendShapes: 1
