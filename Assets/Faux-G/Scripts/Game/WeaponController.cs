@@ -53,7 +53,7 @@ public class WeaponController : Photon.MonoBehaviour {
 			return;
 		}
 
-		int shootTime = PhotonNetwork.ServerTimestamp + Utils.CURRENT_SYNC_DELAY;
+		int shootTime = PhotonNetwork.ServerTimestamp + Utils.SYNC_DELAY;
 		Vector3 shootPosition = playerCamera.transform.position + playerCamera.transform.forward;
 		Quaternion shootDirection = Quaternion.LookRotation(playerCamera.transform.forward);
 		photonView.RPC("RpcShoot", PhotonTargets.AllViaServer,
@@ -74,7 +74,7 @@ public class WeaponController : Photon.MonoBehaviour {
 			CancelReload();
 		}
 
-		int changeWeaponTime = PhotonNetwork.ServerTimestamp + Utils.CURRENT_SYNC_DELAY;
+		int changeWeaponTime = PhotonNetwork.ServerTimestamp + Utils.SYNC_DELAY;
 		photonView.RPC("RpcChangeWeapon", PhotonTargets.AllViaServer, changeWeaponTime, weaponId);
 
 		currentWeaponId = weaponId;
@@ -85,7 +85,7 @@ public class WeaponController : Photon.MonoBehaviour {
 			return;
 		}
 
-		int reloadTime = PhotonNetwork.ServerTimestamp + Utils.CURRENT_SYNC_DELAY;
+		int reloadTime = PhotonNetwork.ServerTimestamp + Utils.SYNC_DELAY;
 		photonView.RPC("RpcReload", PhotonTargets.AllViaServer, reloadTime, currentWeaponId);
 
 		isReloading = true;
@@ -97,7 +97,7 @@ public class WeaponController : Photon.MonoBehaviour {
 			return;
 		}
 		
-		int cancelReloadTime = PhotonNetwork.ServerTimestamp + Utils.CURRENT_SYNC_DELAY;
+		int cancelReloadTime = PhotonNetwork.ServerTimestamp + Utils.SYNC_DELAY;
 		photonView.RPC("RpcCancelReload", PhotonTargets.AllViaServer, cancelReloadTime, currentWeaponId);
 
 		isReloading = false;

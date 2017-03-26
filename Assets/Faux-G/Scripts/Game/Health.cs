@@ -22,7 +22,7 @@ public class Health : Photon.MonoBehaviour {
 			return;
 		}
 
-		int damageTime = PhotonNetwork.ServerTimestamp + Utils.CURRENT_SYNC_DELAY;
+		int damageTime = PhotonNetwork.ServerTimestamp + Utils.SYNC_DELAY;
 		photonView.RPC("RpcDamage", PhotonTargets.AllViaServer, damageTime, damage);
 	}
 

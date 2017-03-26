@@ -7,13 +7,8 @@ public class Utils : MonoBehaviour {
 	public static readonly int SEND_RATE = 15;
 	public static readonly int SEND_RATE_ON_SERIALIZE = 15;
 
-	// The minimum delay (ms) used to sync RPCs and serializations between clients
-	public static readonly int BASE_SYNC_DELAY = 100;
-	public static readonly int MAX_SYNC_DELAY = 400;
-	public static int CURRENT_SYNC_DELAY = 200;
-
-	// The interval (s) used to sync ping (RTT) between clients
-	public static readonly float SYNC_PING_INTERVAL = 10.0f;
+	// The delay (ms) used to sync RPCs and serializations between clients
+	public static int SYNC_DELAY = 150;
 
 	public class Scene {
 		public static readonly string LOGIN = "Login";
