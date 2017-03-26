@@ -20,10 +20,10 @@ public class ProjectileController : MonoBehaviour {
 		rigidbody.AddForce(transform.forward * rigidbody.mass * acceleration, ForceMode.Impulse);
 	}
 
-	void OnTriggerEnter(Collider other) {
+	void OnCollisionEnter(Collision collision) {
 		Explode();
 
-		Health healthComponent = other.GetComponentInParent<Health>();
+		Health healthComponent = collision.gameObject.GetComponentInParent<Health>();
 		if (healthComponent != null) {
 			healthComponent.Damage(damage);
 		}
