@@ -2,18 +2,12 @@ using UnityEngine;
 using System.Collections.Generic;
 
 public class SyncTransform : Photon.MonoBehaviour, IPunObservable {
-
-	public int renderDelay;
+	
 	public int bufferSize;
 	
 	private struct PositionData {
 		public int timestamp;
 		public Vector3 position;
-
-		public PositionData(Vector3 position) {
-			timestamp = PhotonNetwork.ServerTimestamp;
-			this.position = position;
-		}
 
 		public PositionData(int timestamp, Vector3 position) {
 			this.timestamp = timestamp;
@@ -25,17 +19,12 @@ public class SyncTransform : Photon.MonoBehaviour, IPunObservable {
 		public int timestamp;
 		public Quaternion rotation;
 
-		public RotationData(Quaternion rotation) {
-			timestamp = PhotonNetwork.ServerTimestamp;
-			this.rotation = rotation;
-		}
-
 		public RotationData(int timestamp, Quaternion rotation) {
 			this.timestamp = timestamp;
 			this.rotation = rotation;
 		}
 	}
-
+	
 	private LinkedList<PositionData> positionBuffer;
 	private LinkedList<RotationData> rotationBuffer;
 
@@ -48,31 +37,24 @@ public class SyncTransform : Photon.MonoBehaviour, IPunObservable {
 		if (photonView.isMine) {
 			return;
 		}
-		
-		int renderTimestamp = PhotonNetwork.ServerTimestamp - renderDelay;
+
+		int renderTimestamp = PhotonNetwork.ServerTimestamp - Utils.SERIALIZE_SYNC_DELAY;
 		SyncPosition(renderTimestamp);
 		SyncRotation(renderTimestamp);
 	}
 
 	public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info) {
 		if (stream.isWriting) {
-			PositionData positionData = new PositionData(transform.position);
-			stream.SendNext(positionData.timestamp);
-			stream.SendNext(positionData.position);
-
-			RotationData rotationData = new RotationData(transform.rotation);
-			stream.SendNext(rotationData.timestamp);
-			stream.SendNext(rotationData.rotation);
+			stream.SendNext(PhotonNetwork.ServerTimestamp);
+			stream.SendNext(transform.position);
+			stream.SendNext(transform.rotation);
 		} else {
-			positionBuffer.AddLast(new PositionData(
-				(int) stream.ReceiveNext(), 
-				(Vector3) stream.ReceiveNext()
-			));
+			int timestamp = (int) stream.ReceiveNext();
+			Vector3 position = (Vector3) stream.ReceiveNext();
+			Quaternion rotation = (Quaternion) stream.ReceiveNext();
 
-			rotationBuffer.AddLast(new RotationData(
-				(int) stream.ReceiveNext(), 
-				(Quaternion) stream.ReceiveNext()
-			));
+			positionBuffer.AddLast(new PositionData(timestamp, position));
+			rotationBuffer.AddLast(new RotationData(timestamp, rotation));
 
 			if (positionBuffer.Count > bufferSize) {
 				positionBuffer.RemoveFirst();
@@ -91,6 +73,7 @@ public class SyncTransform : Photon.MonoBehaviour, IPunObservable {
 			if (currentNode.Value.timestamp < renderTimestamp) {
 				LinkedListNode<PositionData> nextNode = currentNode.Next;
 				if (nextNode == null) {
+					Logger.Log("Extrapolate");
 					// Extrapolate from pair of data
 					LinkedListNode<PositionData> previousNode = currentNode.Previous;
 					if (previousNode == null) {
@@ -108,6 +91,7 @@ public class SyncTransform : Photon.MonoBehaviour, IPunObservable {
 					transform.position = previousPosition
 						+ dPosition * (renderTimestamp - previousTimestamp);
 				} else {
+					Logger.Log("Interpolate");
 					// Interpolate between pair of data
 					int currentTimestamp = currentNode.Value.timestamp;
 					int nextTimestamp = nextNode.Value.timestamp;
@@ -130,6 +114,7 @@ public class SyncTransform : Photon.MonoBehaviour, IPunObservable {
 			if (currentNode.Value.timestamp < renderTimestamp) {
 				LinkedListNode<RotationData> nextNode = currentNode.Next;
 				if (nextNode == null) {
+					Logger.Log("Extrapolate");
 					// Extrapolate from pair of data
 					LinkedListNode<RotationData> previousNode = currentNode.Previous;
 					if (previousNode == null) {
@@ -156,6 +141,7 @@ public class SyncTransform : Photon.MonoBehaviour, IPunObservable {
 					deltaAngle = deltaAngle * deltaTime % 360.0f;
 					transform.rotation = Quaternion.AngleAxis(deltaAngle, deltaAxis) * previousRotation;
 				} else {
+					Logger.Log("Interpolate");
 					// Interpolate between pair of data
 					int currentTimestamp = currentNode.Value.timestamp;
 					int nextTimestamp = nextNode.Value.timestamp;
