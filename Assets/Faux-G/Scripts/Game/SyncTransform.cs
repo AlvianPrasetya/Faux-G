@@ -38,7 +38,7 @@ public class SyncTransform : Photon.MonoBehaviour, IPunObservable {
 			return;
 		}
 
-		int renderTimestamp = PhotonNetwork.ServerTimestamp - Utils.SERIALIZE_SYNC_DELAY;
+		int renderTimestamp = PhotonNetwork.ServerTimestamp - Utils.CURRENT_SYNC_DELAY;
 		SyncPosition(renderTimestamp);
 		SyncRotation(renderTimestamp);
 	}
@@ -114,7 +114,6 @@ public class SyncTransform : Photon.MonoBehaviour, IPunObservable {
 			if (currentNode.Value.timestamp < renderTimestamp) {
 				LinkedListNode<RotationData> nextNode = currentNode.Next;
 				if (nextNode == null) {
-					Logger.Log("Extrapolate");
 					// Extrapolate from pair of data
 					LinkedListNode<RotationData> previousNode = currentNode.Previous;
 					if (previousNode == null) {
@@ -141,7 +140,6 @@ public class SyncTransform : Photon.MonoBehaviour, IPunObservable {
 					deltaAngle = deltaAngle * deltaTime % 360.0f;
 					transform.rotation = Quaternion.AngleAxis(deltaAngle, deltaAxis) * previousRotation;
 				} else {
-					Logger.Log("Interpolate");
 					// Interpolate between pair of data
 					int currentTimestamp = currentNode.Value.timestamp;
 					int nextTimestamp = nextNode.Value.timestamp;
