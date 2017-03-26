@@ -4,6 +4,7 @@ using System.Collections.Generic;
 
 public class WeaponController : Photon.MonoBehaviour {
 
+	public Transform weaponMesh;
 	public Transform weaponMuzzle;
 	public Camera playerCamera;
 	public List<Weapon> weapons;
@@ -14,6 +15,8 @@ public class WeaponController : Photon.MonoBehaviour {
 	private int currentWeaponId;
 	private bool[] isOnCooldown;
 	private int[] ammo;
+	private bool isAiming;
+	private Coroutine toggleAimCoroutine;
 	private bool isReloading;
 	private Coroutine reloadCoroutine;
 
@@ -31,6 +34,8 @@ public class WeaponController : Photon.MonoBehaviour {
 		currentWeaponId = 0;
 		isOnCooldown = new bool[weapons.Count];
 		ammo = new int[weapons.Count];
+		isAiming = false;
+		toggleAimCoroutine = null;
 		isReloading = false;
 		reloadCoroutine = null;
 
@@ -66,6 +71,18 @@ public class WeaponController : Photon.MonoBehaviour {
 		ammo[currentWeaponId] = ammo[currentWeaponId] - 1;
 	}
 
+	public void ToggleAim() {
+		if (isReloading) {
+			return;
+		}
+
+		int toggleAimTime = PhotonNetwork.ServerTimestamp + Utils.SYNC_DELAY;
+		photonView.RPC("RpcToggleAim", PhotonTargets.AllViaServer, 
+			toggleAimTime, currentWeaponId, isAiming);
+
+		isAiming = !isAiming;
+	}
+
 	public void ChangeWeapon(int weaponId) {
 		if (weaponId == currentWeaponId) {
 			return;
@@ -73,6 +90,10 @@ public class WeaponController : Photon.MonoBehaviour {
 
 		if (isReloading) {
 			CancelReload();
+		}
+
+		if (isAiming) {
+			ToggleAim();
 		}
 
 		int changeWeaponTime = PhotonNetwork.ServerTimestamp + Utils.SYNC_DELAY;
@@ -84,6 +105,10 @@ public class WeaponController : Photon.MonoBehaviour {
 	public void Reload() {
 		if (isReloading) {
 			return;
+		}
+
+		if (isAiming) {
+			ToggleAim();
 		}
 
 		int reloadTime = PhotonNetwork.ServerTimestamp + Utils.SYNC_DELAY;
@@ -132,6 +157,64 @@ public class WeaponController : Photon.MonoBehaviour {
 		if (weapons[weaponId].fireSound != null) {
 			audioSource.PlayOneShot(weapons[weaponId].fireSound);
 		}
+	}
+
+	[PunRPC]
+	private void RpcToggleAim(int toggleAimTime, int weaponId, bool isAiming) {
+		float secondsToToggleAim = (toggleAimTime - PhotonNetwork.ServerTimestamp) / 1000.0f;
+		StartCoroutine(WaitForToggleAim(secondsToToggleAim, weaponId, isAiming));
+	}
+
+	private IEnumerator WaitForToggleAim(float secondsToToggleAim, int weaponId, bool isAiming) {
+		if (secondsToToggleAim > 0.0f) {
+			yield return new WaitForSecondsRealtime(secondsToToggleAim);
+		}
+
+		LocalToggleAim(weaponId, isAiming);
+	}
+
+	private void LocalToggleAim(int weaponId, bool isAiming) {
+		if (toggleAimCoroutine != null) {
+			StopCoroutine(toggleAimCoroutine);
+		}
+
+		if (isAiming) {
+			// Aiming to not aiming
+			toggleAimCoroutine = StartCoroutine(AimCoroutine(
+				weapons[weaponId].aimTime, 
+				weapons[weaponId].weaponPosition, 
+				weapons[weaponId].cameraPosition, 
+				weapons[weaponId].cameraFieldOfView
+			));
+		} else {
+			// Not aiming to aiming
+			toggleAimCoroutine = StartCoroutine(AimCoroutine(
+				weapons[weaponId].aimTime, 
+				weapons[weaponId].aimWeaponPosition,
+				weapons[weaponId].aimCameraPosition,
+				weapons[weaponId].aimCameraFieldOfView
+			));
+		}
+	}
+
+	private IEnumerator AimCoroutine(float aimTime, Vector3 weaponEndPosition, Vector3 cameraEndPosition, float cameraEndFieldOfView) {
+		Vector3 weaponStartPosition = weaponMesh.localPosition;
+		Vector3 cameraStartPosition = playerCamera.transform.localPosition;
+		float cameraStartFieldOfView = playerCamera.fieldOfView;
+
+		float time = 0.0f;
+		while (time < aimTime) {
+			weaponMesh.localPosition = Vector3.Lerp(weaponStartPosition, weaponEndPosition, time / aimTime);
+			playerCamera.transform.localPosition = Vector3.Lerp(cameraStartPosition, cameraEndPosition, time / aimTime);
+			playerCamera.fieldOfView = Mathf.Lerp(cameraStartFieldOfView, cameraEndFieldOfView, time / aimTime);
+			time += Time.deltaTime;
+			yield return null;
+		}
+		weaponMesh.localPosition = weaponEndPosition;
+		playerCamera.transform.localPosition = cameraEndPosition;
+		playerCamera.fieldOfView = cameraEndFieldOfView;
+
+		toggleAimCoroutine = null;
 	}
 
 	[PunRPC]

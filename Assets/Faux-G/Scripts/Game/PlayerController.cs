@@ -69,6 +69,7 @@ public class PlayerController : Photon.MonoBehaviour {
 		InputMove();
 		InputJump();
 		InputShoot();
+		InputToggleAim();
 		InputChangeWeapon();
 		InputReload();
 	}
@@ -137,6 +138,12 @@ public class PlayerController : Photon.MonoBehaviour {
 	private void InputShoot() {
 		if (Input.GetMouseButton(Utils.Input.MOUSE_BUTTON_LEFT)) {
 			weaponController.Shoot();
+		}
+	}
+
+	private void InputToggleAim() {
+		if (Input.GetMouseButtonDown(Utils.Input.MOUSE_BUTTON_RIGHT)) {
+			weaponController.ToggleAim();
 		}
 	}
 
