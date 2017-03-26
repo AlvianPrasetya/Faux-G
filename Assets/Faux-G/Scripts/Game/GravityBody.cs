@@ -33,9 +33,6 @@ public class GravityBody : Photon.MonoBehaviour {
 		gravityDirection = Vector3.zero;
 	}
 
-	void Update() {
-	}
-
 	void FixedUpdate() {
 		// Calculate gravity and apply to rigidbody
 		UpdateGravityDirection();
