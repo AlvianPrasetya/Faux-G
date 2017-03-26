@@ -37,7 +37,7 @@ public class GameManager : Photon.MonoBehaviour {
 	private void InputToggleCursor() {
 		if (Input.GetKeyDown(KeyCode.Escape)) {
 			isCursorLocked = false;
-		} else if (Input.anyKey) {
+		} else if (Input.anyKeyDown) {
 			isCursorLocked = true;
 		}
 	}
