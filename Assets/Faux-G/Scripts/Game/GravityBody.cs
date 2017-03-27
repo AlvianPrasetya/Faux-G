@@ -36,7 +36,7 @@ public class GravityBody : Photon.MonoBehaviour {
 	void FixedUpdate() {
 		// Calculate gravity and apply to rigidbody
 		UpdateGravityDirection();
-		rigidbody.AddForce(gravityDirection * rigidbody.mass * Utils.GRAVITY, ForceMode.Force);
+		rigidbody.AddForce(gravityDirection * Utils.GRAVITY, ForceMode.Acceleration);
 
 		// Adjust player rotation due to gravity
 		AdjustRotation();

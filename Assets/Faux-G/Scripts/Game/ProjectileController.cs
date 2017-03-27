@@ -4,7 +4,7 @@ public class ProjectileController : MonoBehaviour {
 
 	public GameObject prefabExplosion;
 	
-	public float acceleration;
+	public float speed;
 	public float damage;
 
 	private new Rigidbody rigidbody;
@@ -17,7 +17,7 @@ public class ProjectileController : MonoBehaviour {
 	}
 
 	void Start() {
-		rigidbody.AddForce(transform.forward * rigidbody.mass * acceleration, ForceMode.Impulse);
+		rigidbody.AddForce(transform.forward * speed, ForceMode.VelocityChange);
 	}
 
 	void OnCollisionEnter(Collision collision) {
