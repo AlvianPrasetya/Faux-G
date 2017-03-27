@@ -51,6 +51,14 @@ public class WeaponController : Photon.MonoBehaviour {
 		}
 	}
 
+	void Start() {
+		if (!photonView.isMine) {
+			return;
+		}
+
+		ChangeWeapon(currentWeaponId);
+	}
+
 	void Update() {
 		if (!photonView.isMine) {
 			return;
