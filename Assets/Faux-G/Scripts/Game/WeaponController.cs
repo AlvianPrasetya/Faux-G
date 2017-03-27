@@ -6,6 +6,7 @@ public class WeaponController : Photon.MonoBehaviour {
 
 	public Transform weaponMesh;
 	public Transform weaponMuzzle;
+	public Transform playerHead;
 	public Camera playerCamera;
 	public List<Weapon> weapons;
 
@@ -19,6 +20,7 @@ public class WeaponController : Photon.MonoBehaviour {
 	private Coroutine toggleAimCoroutine;
 	private bool isReloading;
 	private Coroutine reloadCoroutine;
+	private Vector2 currentRecoil;
 
 	void Awake() {
 		audioSource = GetComponent<AudioSource>();
@@ -29,6 +31,10 @@ public class WeaponController : Photon.MonoBehaviour {
 			audioSource.rolloffMode = AudioRolloffMode.Logarithmic;
 			audioSource.spatialBlend = 1.0f;
 			audioSource.spatialize = true;
+		}
+
+		if (!photonView.isMine) {
+			return;
 		}
 
 		currentWeaponId = 0;
@@ -43,6 +49,14 @@ public class WeaponController : Photon.MonoBehaviour {
 			isOnCooldown[i] = false;
 			ammo[i] = weapons[i].ammo;
 		}
+	}
+
+	void Update() {
+		if (!photonView.isMine) {
+			return;
+		}
+
+		RecoverRecoil(weapons[currentWeaponId].recoilRecovery * Time.deltaTime);
 	}
 
 	public void Shoot() {
@@ -156,6 +170,11 @@ public class WeaponController : Photon.MonoBehaviour {
 
 		if (weapons[weaponId].fireSound != null) {
 			audioSource.PlayOneShot(weapons[weaponId].fireSound);
+		}
+
+		if (photonView.isMine) {
+			// Only apply recoil to local player since position and rotation data are synced anyway
+			ApplyRecoil(Vector2.Lerp(weapons[weaponId].minRecoil, weapons[weaponId].maxRecoil, Random.value));
 		}
 	}
 
@@ -287,6 +306,28 @@ public class WeaponController : Photon.MonoBehaviour {
 		ammo[weaponId] = weapons[weaponId].ammo;
 		isReloading = false;
 		reloadCoroutine = null;
+	}
+
+	private void ApplyRecoil(Vector2 angle) {
+		currentRecoil = currentRecoil + angle;
+		transform.Rotate(transform.up, angle.x, Space.World);
+		playerHead.Rotate(-playerHead.right, angle.y, Space.World);
+	}
+
+	private void RecoverRecoil(Vector2 angle) {
+		Vector2 clampedAngle = Vector2.Min(
+			angle, 
+			new Vector2(Mathf.Abs(currentRecoil.x), Mathf.Abs(currentRecoil.y))
+		);
+
+		Vector2 deltaAngle = new Vector2(
+			(currentRecoil.x > 0) ? -clampedAngle.x : clampedAngle.x, 
+			(currentRecoil.y > 0) ? -clampedAngle.y : clampedAngle.y
+		);
+
+		currentRecoil = currentRecoil + deltaAngle;
+		transform.Rotate(transform.up, deltaAngle.x, Space.World);
+		playerHead.Rotate(-playerHead.right, deltaAngle.y, Space.World);
 	}
 
 }

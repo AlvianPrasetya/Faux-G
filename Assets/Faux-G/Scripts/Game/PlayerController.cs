@@ -185,9 +185,9 @@ public class PlayerController : Photon.MonoBehaviour {
 	}
 
 	private void LookUpDown() {
-		float minSpotlightRotateAngle = -Vector3.Angle(playerHead.transform.forward, -transform.up)
+		float minSpotlightRotateAngle = -Vector3.Angle(playerHead.forward, -transform.up)
 			- maxLookDownAngle + 90.0f;
-		float maxSpotlightRotateAngle = Vector3.Angle(playerHead.transform.forward, transform.up)
+		float maxSpotlightRotateAngle = Vector3.Angle(playerHead.forward, transform.up)
 			+ maxLookUpAngle - 90.0f;
 		float rotateAngle = Mathf.Clamp(
 			lookAroundVector.y * lookAroundSpeed * Time.fixedDeltaTime,
@@ -195,8 +195,8 @@ public class PlayerController : Photon.MonoBehaviour {
 			maxSpotlightRotateAngle
 		);
 
-		playerHead.transform.Rotate(
-			-transform.right,
+		playerHead.Rotate(
+			-playerHead.right,
 			rotateAngle,
 			Space.World
 		);
