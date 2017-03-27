@@ -9,6 +9,7 @@ public class Utils : MonoBehaviour {
 
 	// The delay (ms) used to sync RPCs and serializations between clients
 	public static int SYNC_DELAY = 150;
+	public static int SYNC_BUFFER_SIZE = 10;
 
 	public class Scene {
 		public static readonly string LOGIN = "Login";

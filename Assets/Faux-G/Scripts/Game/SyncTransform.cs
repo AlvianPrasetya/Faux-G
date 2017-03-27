@@ -5,7 +5,6 @@ public class SyncTransform : Photon.MonoBehaviour, IPunObservable {
 
 	public List<Transform> positionTransforms;
 	public List<Transform> rotationTransforms;
-	public int bufferSize;
 	
 	private struct PositionData {
 		public int timestamp;
@@ -69,7 +68,7 @@ public class SyncTransform : Photon.MonoBehaviour, IPunObservable {
 				Vector3 position = (Vector3) stream.ReceiveNext();
 				positionBuffers[i].AddLast(new PositionData(timestamp, position));
 
-				if (positionBuffers[i].Count > bufferSize) {
+				if (positionBuffers[i].Count > Utils.SYNC_BUFFER_SIZE) {
 					positionBuffers[i].RemoveFirst();
 				}
 			}
@@ -78,7 +77,7 @@ public class SyncTransform : Photon.MonoBehaviour, IPunObservable {
 				Quaternion rotation = (Quaternion) stream.ReceiveNext();
 				rotationBuffers[i].AddLast(new RotationData(timestamp, rotation));
 
-				if (rotationBuffers[i].Count > bufferSize) {
+				if (rotationBuffers[i].Count > Utils.SYNC_BUFFER_SIZE) {
 					rotationBuffers[i].RemoveFirst();
 				}
 			}
