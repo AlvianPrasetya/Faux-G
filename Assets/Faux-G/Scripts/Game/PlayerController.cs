@@ -46,7 +46,9 @@ public class PlayerController : Photon.MonoBehaviour {
 		weaponController = GetComponent<WeaponController>();
 
 		if (!photonView.isMine) {
-			rigidbody.isKinematic = true;
+			foreach (Rigidbody rigidbody in GetComponentsInChildren<Rigidbody>()) {
+				rigidbody.isKinematic = true;
+			}
 			gravityBody.enabled = false;
 			return;
 		}
