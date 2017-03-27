@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 public class WeaponController : Photon.MonoBehaviour {
 
-	public Transform weaponMesh;
+	public Transform weaponTransform;
 	public Transform weaponMuzzle;
 	public Transform playerHead;
 	public Camera playerCamera;
@@ -217,19 +217,19 @@ public class WeaponController : Photon.MonoBehaviour {
 	}
 
 	private IEnumerator AimCoroutine(float aimTime, Vector3 weaponEndPosition, Vector3 cameraEndPosition, float cameraEndFieldOfView) {
-		Vector3 weaponStartPosition = weaponMesh.localPosition;
+		Vector3 weaponStartPosition = weaponTransform.localPosition;
 		Vector3 cameraStartPosition = playerCamera.transform.localPosition;
 		float cameraStartFieldOfView = playerCamera.fieldOfView;
 
 		float time = 0.0f;
 		while (time < aimTime) {
-			weaponMesh.localPosition = Vector3.Lerp(weaponStartPosition, weaponEndPosition, time / aimTime);
+			weaponTransform.localPosition = Vector3.Lerp(weaponStartPosition, weaponEndPosition, time / aimTime);
 			playerCamera.transform.localPosition = Vector3.Lerp(cameraStartPosition, cameraEndPosition, time / aimTime);
 			playerCamera.fieldOfView = Mathf.Lerp(cameraStartFieldOfView, cameraEndFieldOfView, time / aimTime);
 			time += Time.deltaTime;
 			yield return null;
 		}
-		weaponMesh.localPosition = weaponEndPosition;
+		weaponTransform.localPosition = weaponEndPosition;
 		playerCamera.transform.localPosition = cameraEndPosition;
 		playerCamera.fieldOfView = cameraEndFieldOfView;
 
@@ -251,7 +251,11 @@ public class WeaponController : Photon.MonoBehaviour {
 	}
 
 	private void LocalChangeWeapon(int weaponId) {
-		// Change weapon mesh here
+		weaponTransform.GetComponent<MeshFilter>().mesh = weapons[weaponId].weaponMesh;
+		weaponTransform.GetComponent<MeshRenderer>().material = weapons[weaponId].weaponMaterial;
+		weaponTransform.localPosition = weapons[weaponId].weaponPosition;
+		playerCamera.transform.localPosition = weapons[weaponId].cameraPosition;
+		playerCamera.fieldOfView = weapons[weaponId].cameraFieldOfView;
 	}
 
 	[PunRPC]

@@ -1,7 +1,9 @@
 using UnityEngine;
 
 public class Weapon : MonoBehaviour {
-	
+
+	public Mesh weaponMesh;
+	public Material weaponMaterial;
 	public ProjectileController prefabBullet;
 	public AudioClip fireSound;
 	public AudioClip reloadSound;
