@@ -20,6 +20,9 @@ public class PlayerController : Photon.MonoBehaviour {
 	public float jumpAccelerationChargeRate;
 	public float maxJumpAcceleration;
 
+	// Check grounded parameters
+	public float maxDistanceToGround;
+
 	// Cached components
 	private new Rigidbody rigidbody;
 	private GravityBody gravityBody;
@@ -31,6 +34,7 @@ public class PlayerController : Photon.MonoBehaviour {
 	private Vector3 moveVector;
 	private float jumpAcceleration;
 	private bool isJumpCharged;
+	private bool isGrounded;
 
 	/*
 	 * MONOBEHAVIOUR LIFECYCLE
@@ -56,6 +60,7 @@ public class PlayerController : Photon.MonoBehaviour {
 		moveVector = Vector3.zero;
 		jumpAcceleration = 0.0f;
 		isJumpCharged = false;
+		isGrounded = false;
 	}
 
 	void Update() {
@@ -82,6 +87,8 @@ public class PlayerController : Photon.MonoBehaviour {
 		LookAround();
 		Move();
 		Jump();
+
+		CheckGrounded();
 	}
 
 	private void InputLookAround() {
@@ -213,9 +220,20 @@ public class PlayerController : Photon.MonoBehaviour {
 
 	private void Jump() {
 		if (isJumpCharged) {
-			Vector3 jumpForce = transform.up * rigidbody.mass * jumpAcceleration;
-			rigidbody.AddForce(jumpForce, ForceMode.Impulse);
+			if (isGrounded) {
+				// Allow jump only when player is grounded
+				Vector3 jumpForce = transform.up * rigidbody.mass * jumpAcceleration;
+				rigidbody.AddForce(jumpForce, ForceMode.Impulse);
+			}
 			isJumpCharged = false;
+		}
+	}
+
+	private void CheckGrounded() {
+		if (Physics.Raycast(transform.position, -transform.up, maxDistanceToGround, Utils.Layer.TERRAIN)) {
+			isGrounded = true;
+		} else {
+			isGrounded = false;
 		}
 	}
 
