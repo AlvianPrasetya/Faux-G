@@ -5,6 +5,7 @@ public class GameManager : MonoBehaviour {
 
 	public Image crosshairImage;
 
+	private static GameManager instance;
 	private bool isCursorLocked;
 
 	/*
@@ -15,6 +16,7 @@ public class GameManager : MonoBehaviour {
 		PhotonNetwork.sendRate = Utils.SEND_RATE;
 		PhotonNetwork.sendRateOnSerialize = Utils.SEND_RATE_ON_SERIALIZE;
 
+		instance = this;
 		isCursorLocked = true;
 	}
 
@@ -35,7 +37,11 @@ public class GameManager : MonoBehaviour {
 		}
 	}
 
-	public void setCrosshair(Sprite crosshairSprite) {
+	public static GameManager Instance() {
+		return instance;
+	}
+
+	public void SetCrosshair(Sprite crosshairSprite) {
 		crosshairImage.sprite = crosshairSprite;
 	}
 
