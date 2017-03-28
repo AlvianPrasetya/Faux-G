@@ -175,6 +175,7 @@ public class WeaponController : Photon.MonoBehaviour {
 		);
 
 		if (weapons[weaponId].fireSound != null) {
+			audioSource.volume = weapons[weaponId].fireVolume;
 			audioSource.PlayOneShot(weapons[weaponId].fireSound);
 		}
 

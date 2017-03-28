@@ -8,6 +8,7 @@ public class Weapon : MonoBehaviour {
 	public Material weaponMaterial;
 	public ProjectileController prefabBullet;
 	public AudioClip fireSound;
+	public float fireVolume;
 	public AudioClip reloadSound;
 
 	public float cooldown;
