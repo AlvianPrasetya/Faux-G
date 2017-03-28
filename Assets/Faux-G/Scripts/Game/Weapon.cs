@@ -4,6 +4,8 @@ public class Weapon : MonoBehaviour {
 
 	public Sprite crosshairSprite;
 	public Vector2 crosshairSize;
+	public Vector3 weaponMeshScale;
+	public Vector3 weaponMeshRotation;
 	public Mesh weaponMesh;
 	public Material weaponMaterial;
 	public ProjectileController prefabBullet;
@@ -17,6 +19,7 @@ public class Weapon : MonoBehaviour {
 	public float toggleAimTime;
 
 	public Vector3 weaponPosition;
+	public Vector3 weaponMuzzlePosition;
 	public Vector3 cameraPosition;
 	public float cameraFieldOfView;
 	public Vector3 aimWeaponPosition;

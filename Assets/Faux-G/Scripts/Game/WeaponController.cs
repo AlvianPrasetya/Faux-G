@@ -4,6 +4,7 @@ using System.Collections.Generic;
 
 public class WeaponController : Photon.MonoBehaviour {
 
+	public Transform weaponPivot;
 	public Transform weaponTransform;
 	public Transform weaponMuzzle;
 	public Transform playerHead;
@@ -256,16 +257,19 @@ public class WeaponController : Photon.MonoBehaviour {
 
 	private IEnumerator ChangeWeaponCoroutine(int startWeaponId, int endWeaponId) {
 		yield return StartCoroutine(TransformSlerpRotation(
-			weaponTransform, 
-			weaponTransform.localRotation,
+			weaponPivot,
+			weaponPivot.localRotation,
 			Quaternion.Euler(45.0f, 0.0f, 0.0f),
 			weapons[startWeaponId].changeWeaponTime
 		));
-
+		
 		GameManager.Instance.Crosshair.sprite = weapons[endWeaponId].crosshairSprite;
 		GameManager.Instance.Crosshair.rectTransform.sizeDelta = weapons[endWeaponId].crosshairSize;
-		weaponTransform.GetComponentInChildren<MeshFilter>().mesh = weapons[endWeaponId].weaponMesh;
-		weaponTransform.GetComponentInChildren<MeshRenderer>().material = weapons[endWeaponId].weaponMaterial;
+		weaponTransform.localScale = weapons[endWeaponId].weaponMeshScale;
+		weaponTransform.localRotation = Quaternion.Euler(weapons[endWeaponId].weaponMeshRotation);
+		weaponTransform.GetComponent<MeshFilter>().mesh = weapons[endWeaponId].weaponMesh;
+		weaponTransform.GetComponent<MeshRenderer>().material = weapons[endWeaponId].weaponMaterial;
+		weaponMuzzle.localPosition = weapons[endWeaponId].weaponMuzzlePosition;
 
 		StartCoroutine(TransformLerpPosition(
 			weaponTransform, 
@@ -275,8 +279,8 @@ public class WeaponController : Photon.MonoBehaviour {
 		));
 
 		StartCoroutine(TransformSlerpRotation(
-			weaponTransform, 
-			weaponTransform.localRotation,
+			weaponPivot,
+			weaponPivot.localRotation,
 			Quaternion.Euler(0.0f, 0.0f, 0.0f),
 			weapons[endWeaponId].changeWeaponTime
 		));
