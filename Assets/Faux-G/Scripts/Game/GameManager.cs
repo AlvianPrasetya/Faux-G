@@ -1,6 +1,9 @@
 using UnityEngine;
+using UnityEngine.UI;
 
-public class GameManager : Photon.MonoBehaviour {
+public class GameManager : MonoBehaviour {
+
+	public Image crosshairImage;
 
 	private bool isCursorLocked;
 
@@ -30,6 +33,10 @@ public class GameManager : Photon.MonoBehaviour {
 			Cursor.lockState = CursorLockMode.None;
 			Cursor.visible = true;
 		}
+	}
+
+	public void setCrosshair(Sprite crosshairSprite) {
+		crosshairImage.sprite = crosshairSprite;
 	}
 
 	private void InputToggleCursor() {
