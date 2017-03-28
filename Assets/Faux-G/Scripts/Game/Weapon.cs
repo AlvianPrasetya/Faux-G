@@ -2,6 +2,7 @@ using UnityEngine;
 
 public class Weapon : MonoBehaviour {
 
+	public Sprite crosshairSprite;
 	public Mesh weaponMesh;
 	public Material weaponMaterial;
 	public ProjectileController prefabBullet;

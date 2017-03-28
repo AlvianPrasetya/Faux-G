@@ -37,12 +37,16 @@ public class GameManager : MonoBehaviour {
 		}
 	}
 
-	public static GameManager Instance() {
-		return instance;
+	public static GameManager Instance {
+		get {
+			return instance;
+		}
 	}
 
-	public void SetCrosshair(Sprite crosshairSprite) {
-		crosshairImage.sprite = crosshairSprite;
+	public Sprite CrosshairSprite {
+		set {
+			crosshairImage.sprite = value;
+		}
 	}
 
 	private void InputToggleCursor() {
