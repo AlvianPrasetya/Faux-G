@@ -13,7 +13,7 @@ public class Weapon : MonoBehaviour {
 	public float cooldown;
 	public int ammo;
 
-	public float aimTime;
+	public float toggleAimTime;
 
 	public Vector3 weaponPosition;
 	public Vector3 cameraPosition;
@@ -21,6 +21,8 @@ public class Weapon : MonoBehaviour {
 	public Vector3 aimWeaponPosition;
 	public Vector3 aimCameraPosition;
 	public float aimCameraFieldOfView;
+
+	public float changeWeaponTime;
 
 	public float reloadTime;
 

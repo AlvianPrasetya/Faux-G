@@ -18,6 +18,7 @@ public class WeaponController : Photon.MonoBehaviour {
 	private int[] ammo;
 	private bool isAiming;
 	private Coroutine toggleAimCoroutine;
+	private Coroutine changeWeaponCoroutine;
 	private bool isReloading;
 	private Coroutine reloadCoroutine;
 	private Vector2 currentRecoil;
@@ -42,6 +43,7 @@ public class WeaponController : Photon.MonoBehaviour {
 		ammo = new int[weapons.Count];
 		isAiming = false;
 		toggleAimCoroutine = null;
+		changeWeaponCoroutine = null;
 		isReloading = false;
 		reloadCoroutine = null;
 
@@ -106,10 +108,6 @@ public class WeaponController : Photon.MonoBehaviour {
 	}
 
 	public void ChangeWeapon(int weaponId) {
-		if (weaponId == currentWeaponId) {
-			return;
-		}
-
 		if (isReloading) {
 			CancelReload();
 		}
@@ -119,7 +117,7 @@ public class WeaponController : Photon.MonoBehaviour {
 		}
 
 		int changeWeaponTime = PhotonNetwork.ServerTimestamp + Utils.SYNC_DELAY;
-		photonView.RPC("RpcChangeWeapon", PhotonTargets.AllViaServer, changeWeaponTime, weaponId);
+		photonView.RPC("RpcChangeWeapon", PhotonTargets.AllViaServer, changeWeaponTime, currentWeaponId, weaponId);
 
 		currentWeaponId = weaponId;
 	}
@@ -205,67 +203,98 @@ public class WeaponController : Photon.MonoBehaviour {
 			StopCoroutine(toggleAimCoroutine);
 		}
 
-		if (isAiming) {
-			// Aiming to not aiming
-			toggleAimCoroutine = StartCoroutine(AimCoroutine(
-				weapons[weaponId].aimTime, 
-				weapons[weaponId].weaponPosition, 
-				weapons[weaponId].cameraPosition, 
-				weapons[weaponId].cameraFieldOfView
-			));
-		} else {
-			// Not aiming to aiming
-			toggleAimCoroutine = StartCoroutine(AimCoroutine(
-				weapons[weaponId].aimTime, 
-				weapons[weaponId].aimWeaponPosition,
-				weapons[weaponId].aimCameraPosition,
-				weapons[weaponId].aimCameraFieldOfView
-			));
-		}
+		toggleAimCoroutine = StartCoroutine(ToggleAimCoroutine(weaponId, isAiming));
 	}
 
-	private IEnumerator AimCoroutine(float aimTime, Vector3 weaponEndPosition, Vector3 cameraEndPosition, float cameraEndFieldOfView) {
-		Vector3 weaponStartPosition = weaponTransform.localPosition;
-		Vector3 cameraStartPosition = playerCamera.transform.localPosition;
-		float cameraStartFieldOfView = playerCamera.fieldOfView;
+	private IEnumerator ToggleAimCoroutine(int weaponId, bool isAiming) {
+		StartCoroutine(TransformLerpPosition(
+			weaponTransform, 
+			weaponTransform.localPosition, 
+			(isAiming) ? weapons[weaponId].weaponPosition : weapons[weaponId].aimWeaponPosition, 
+			weapons[weaponId].toggleAimTime
+		));
 
-		float time = 0.0f;
-		while (time < aimTime) {
-			weaponTransform.localPosition = Vector3.Lerp(weaponStartPosition, weaponEndPosition, time / aimTime);
-			playerCamera.transform.localPosition = Vector3.Lerp(cameraStartPosition, cameraEndPosition, time / aimTime);
-			playerCamera.fieldOfView = Mathf.Lerp(cameraStartFieldOfView, cameraEndFieldOfView, time / aimTime);
-			time += Time.deltaTime;
-			yield return null;
-		}
-		weaponTransform.localPosition = weaponEndPosition;
-		playerCamera.transform.localPosition = cameraEndPosition;
-		playerCamera.fieldOfView = cameraEndFieldOfView;
+		StartCoroutine(TransformLerpPosition(
+			playerCamera.transform, 
+			playerCamera.transform.localPosition, 
+			(isAiming) ? weapons[weaponId].cameraPosition : weapons[weaponId].aimCameraPosition, 
+			weapons[weaponId].toggleAimTime
+		));
+
+		yield return StartCoroutine(CameraLerpFieldOfView(
+			playerCamera,
+			playerCamera.fieldOfView,
+			(isAiming) ? weapons[weaponId].cameraFieldOfView : weapons[weaponId].aimCameraFieldOfView,
+			weapons[weaponId].toggleAimTime
+		));
 
 		toggleAimCoroutine = null;
 	}
 
 	[PunRPC]
-	private void RpcChangeWeapon(int changeWeaponTime, int weaponId) {
+	private void RpcChangeWeapon(int changeWeaponTime, int startWeaponId, int endWeaponId) {
 		float secondsToChangeWeapon = (changeWeaponTime - PhotonNetwork.ServerTimestamp) / 1000.0f;
-		StartCoroutine(WaitForChangeWeapon(secondsToChangeWeapon, weaponId));
+		StartCoroutine(WaitForChangeWeapon(secondsToChangeWeapon, startWeaponId, endWeaponId));
 	}
 
-	private IEnumerator WaitForChangeWeapon(float secondsToChangeWeapon, int weaponId) {
+	private IEnumerator WaitForChangeWeapon(float secondsToChangeWeapon, int startWeaponId, int endWeaponId) {
 		if (secondsToChangeWeapon > 0.0f) {
 			yield return new WaitForSecondsRealtime(secondsToChangeWeapon);
 		}
 
-		LocalChangeWeapon(weaponId);
+		LocalChangeWeapon(startWeaponId, endWeaponId);
 	}
 
-	private void LocalChangeWeapon(int weaponId) {
-		GameManager.Instance.Crosshair.sprite = weapons[weaponId].crosshairSprite;
-		GameManager.Instance.Crosshair.rectTransform.sizeDelta = weapons[weaponId].crosshairSize;
-		weaponTransform.GetComponent<MeshFilter>().mesh = weapons[weaponId].weaponMesh;
-		weaponTransform.GetComponent<MeshRenderer>().material = weapons[weaponId].weaponMaterial;
-		weaponTransform.localPosition = weapons[weaponId].weaponPosition;
-		playerCamera.transform.localPosition = weapons[weaponId].cameraPosition;
-		playerCamera.fieldOfView = weapons[weaponId].cameraFieldOfView;
+	private void LocalChangeWeapon(int startWeaponId, int endWeaponId) {
+		if (changeWeaponCoroutine != null) {
+			StopCoroutine(changeWeaponCoroutine);
+		}
+
+		changeWeaponCoroutine = StartCoroutine(ChangeWeaponCoroutine(startWeaponId, endWeaponId));
+	}
+
+	private IEnumerator ChangeWeaponCoroutine(int startWeaponId, int endWeaponId) {
+		yield return StartCoroutine(TransformSlerpRotation(
+			weaponTransform, 
+			weaponTransform.localRotation,
+			Quaternion.Euler(45.0f, 0.0f, 0.0f),
+			weapons[startWeaponId].changeWeaponTime
+		));
+
+		GameManager.Instance.Crosshair.sprite = weapons[endWeaponId].crosshairSprite;
+		GameManager.Instance.Crosshair.rectTransform.sizeDelta = weapons[endWeaponId].crosshairSize;
+		weaponTransform.GetComponentInChildren<MeshFilter>().mesh = weapons[endWeaponId].weaponMesh;
+		weaponTransform.GetComponentInChildren<MeshRenderer>().material = weapons[endWeaponId].weaponMaterial;
+
+		StartCoroutine(TransformLerpPosition(
+			weaponTransform, 
+			weaponTransform.localPosition,
+			weapons[endWeaponId].weaponPosition,
+			weapons[endWeaponId].changeWeaponTime
+		));
+
+		StartCoroutine(TransformSlerpRotation(
+			weaponTransform, 
+			weaponTransform.localRotation,
+			Quaternion.Euler(0.0f, 0.0f, 0.0f),
+			weapons[endWeaponId].changeWeaponTime
+		));
+
+		StartCoroutine(TransformLerpPosition(
+			playerCamera.transform,
+			playerCamera.transform.localPosition,
+			weapons[endWeaponId].cameraPosition,
+			weapons[endWeaponId].changeWeaponTime
+		));
+
+		yield return StartCoroutine(CameraLerpFieldOfView(
+			playerCamera, 
+			playerCamera.fieldOfView,
+			weapons[endWeaponId].cameraFieldOfView,
+			weapons[endWeaponId].changeWeaponTime
+		));
+
+		changeWeaponCoroutine = null;
 	}
 
 	[PunRPC]
@@ -342,6 +371,61 @@ public class WeaponController : Photon.MonoBehaviour {
 		currentRecoil = currentRecoil + deltaAngle;
 		transform.Rotate(transform.up, deltaAngle.x, Space.World);
 		playerHead.Rotate(-playerHead.right, deltaAngle.y, Space.World);
+	}
+
+	/*
+	 * UTILITY METHODS
+	 */
+
+	private IEnumerator TransformLerpPosition(Transform targetTransform, Vector3 startPosition,
+		Vector3 endPosition, float lerpTime) {
+		float time = 0.0f;
+		while (time < 1.0f) {
+			targetTransform.localPosition = Vector3.Lerp(
+				startPosition, 
+				endPosition, 
+				time
+			);
+			
+			time += Time.deltaTime / lerpTime;
+			yield return null;
+		}
+
+		targetTransform.localPosition = endPosition;
+	}
+
+	private IEnumerator TransformSlerpRotation(Transform targetTransform, Quaternion startRotation,
+		Quaternion endRotation, float slerpTime) {
+		float time = 0.0f;
+		while (time < 1.0f) {
+			targetTransform.localRotation = Quaternion.Slerp(
+				startRotation, 
+				endRotation, 
+				time
+			);
+
+			time += Time.deltaTime / slerpTime;
+			yield return null;
+		}
+
+		targetTransform.localRotation = endRotation;
+	}
+
+	private IEnumerator CameraLerpFieldOfView(Camera targetCamera, float startFieldOfView,
+		float endFieldOfView, float lerpTime) {
+		float time = 0.0f;
+		while (time < 1.0f) {
+			targetCamera.fieldOfView = Mathf.Lerp(
+				startFieldOfView,
+				endFieldOfView,
+				time
+			);
+
+			time += Time.deltaTime / lerpTime;
+			yield return null;
+		}
+
+		targetCamera.fieldOfView = endFieldOfView;
 	}
 
 }
