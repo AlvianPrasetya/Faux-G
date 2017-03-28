@@ -259,7 +259,8 @@ public class WeaponController : Photon.MonoBehaviour {
 	}
 
 	private void LocalChangeWeapon(int weaponId) {
-		GameManager.Instance.CrosshairSprite = weapons[weaponId].crosshairSprite;
+		GameManager.Instance.Crosshair.sprite = weapons[weaponId].crosshairSprite;
+		GameManager.Instance.Crosshair.rectTransform.sizeDelta = weapons[weaponId].crosshairSize;
 		weaponTransform.GetComponent<MeshFilter>().mesh = weapons[weaponId].weaponMesh;
 		weaponTransform.GetComponent<MeshRenderer>().material = weapons[weaponId].weaponMaterial;
 		weaponTransform.localPosition = weapons[weaponId].weaponPosition;

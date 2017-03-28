@@ -43,9 +43,9 @@ public class GameManager : MonoBehaviour {
 		}
 	}
 
-	public Sprite CrosshairSprite {
-		set {
-			crosshairImage.sprite = value;
+	public Image Crosshair {
+		get {
+			return crosshairImage;
 		}
 	}
 
