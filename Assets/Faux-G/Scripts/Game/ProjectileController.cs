@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 public class ProjectileController : MonoBehaviour {
 
@@ -8,28 +9,29 @@ public class ProjectileController : MonoBehaviour {
 	public float damage;
 
 	// Cached components
+	private new Collider collider;
 	private new Rigidbody rigidbody;
 	private DestroyAfterTime destroyAfterTime;
 
 	private PhotonPlayer owner;
+	private List<Collider> ownerColliders;
 
 	void Awake() {
+		collider = GetComponent<Collider>();
 		rigidbody = GetComponent<Rigidbody>();
 		destroyAfterTime = GetComponent<DestroyAfterTime>();
 		destroyAfterTime.SetPreDestroyCallback(Explode);
 	}
 
 	void Start() {
+		foreach (Collider ownerCollider in ownerColliders) {
+			Physics.IgnoreCollision(collider, ownerCollider);
+		}
 		rigidbody.AddForce(transform.forward * speed, ForceMode.VelocityChange);
 	}
 
 	void OnCollisionEnter(Collision collision) {
-		PhotonView otherPhotonView = collision.gameObject.GetComponentInParent<PhotonView>();
-		if (otherPhotonView != null && otherPhotonView.owner == owner) {
-			// Ignore collision with owner
-			return;
-		}
-
+		Logger.Log("Collision {0}", collision.gameObject.name);
 		Explode();
 
 		HitArea targetHitArea = collision.gameObject.GetComponent<HitArea>();
@@ -40,14 +42,9 @@ public class ProjectileController : MonoBehaviour {
 		Destroy(gameObject);
 	}
 
-	public PhotonPlayer Owner {
-		get {
-			return owner;
-		}
-
-		set {
-			owner = value;
-		}
+	public void SetOwner(PhotonPlayer owner, List<Collider> ownerColliders) {
+		this.owner = owner;
+		this.ownerColliders = ownerColliders;
 	}
 
 	public void Explode() {

@@ -10,6 +10,7 @@ public class WeaponController : Photon.MonoBehaviour {
 	public Transform playerHead;
 	public Camera playerCamera;
 	public List<Weapon> weapons;
+	public List<Collider> hitColliders;
 
 	// Cached components
 	private AudioSource audioSource;
@@ -179,7 +180,7 @@ public class WeaponController : Photon.MonoBehaviour {
 			shootPosition,
 			shootDirection
 		);
-		projectile.Owner = photonView.owner;
+		projectile.SetOwner(photonView.owner, hitColliders);
 
 		if (weapons[weaponId].fireSound != null) {
 			audioSource.volume = weapons[weaponId].fireVolume;
