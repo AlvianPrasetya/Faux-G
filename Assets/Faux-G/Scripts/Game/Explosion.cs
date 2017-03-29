@@ -11,8 +11,20 @@ public class Explosion : MonoBehaviour {
 	public float radius;
 	public float upwardsBias;
 
+	private PhotonPlayer owner;
+
 	void Start() {
 		StartCoroutine(WaitForExplosion());
+	}
+
+	public PhotonPlayer Owner {
+		get {
+			return owner;
+		}
+
+		set {
+			owner = value;
+		}
 	}
 
 	private IEnumerator WaitForExplosion() {
@@ -61,7 +73,7 @@ public class Explosion : MonoBehaviour {
 			
 			Health healthComponent = collider.GetComponentInParent<Health>();
 			if (healthComponent != null) {
-				healthComponent.Damage(explosionDamage / distance);
+				healthComponent.Damage(explosionDamage / distance, owner);
 			}
 		}
 	}

@@ -171,11 +171,12 @@ public class WeaponController : Photon.MonoBehaviour {
 	}
 
 	private void LocalShoot(int weaponId, Vector3 shootPosition, Quaternion shootDirection) {
-		Instantiate(
-			weapons[weaponId].prefabBullet,
+		ProjectileController projectile = Instantiate(
+			weapons[weaponId].prefabProjectile,
 			shootPosition,
 			shootDirection
 		);
+		projectile.Owner = photonView.owner;
 
 		if (weapons[weaponId].fireSound != null) {
 			audioSource.volume = weapons[weaponId].fireVolume;

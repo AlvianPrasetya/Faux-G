@@ -28,7 +28,7 @@ public class Weapon : MonoBehaviour {
 	public float changeWeaponTime;
 	public float reloadTime;
 
-	public ProjectileController prefabBullet;
+	public ProjectileController prefabProjectile;
 
 	public AudioClip fireSound;
 	public float fireVolume;
