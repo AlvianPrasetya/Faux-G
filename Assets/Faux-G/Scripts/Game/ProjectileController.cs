@@ -24,7 +24,7 @@ public class ProjectileController : MonoBehaviour {
 	}
 
 	void OnTriggerEnter(Collider other) {
-		PhotonView otherPhotonView = other.gameObject.GetPhotonView();
+		PhotonView otherPhotonView = other.gameObject.GetComponentInParent<PhotonView>();
 		if (otherPhotonView != null && otherPhotonView.owner == owner) {
 			// Ignore collision with owner
 			return;
