@@ -42,4 +42,8 @@ public class Weapon : MonoBehaviour {
 	// The recoil recovery angle (degrees/second) in horizontal and vertical directions
 	public Vector2 recoilRecovery;
 
+	// The min/max knockback impulse force (independent of mass)
+	public float minKnockback;
+	public float maxKnockback;
+
 }

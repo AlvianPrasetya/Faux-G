@@ -13,6 +13,7 @@ public class WeaponController : Photon.MonoBehaviour {
 
 	// Cached components
 	private AudioSource audioSource;
+	private new Rigidbody rigidbody;
 
 	private int currentWeaponId;
 	private bool[] isOnCooldown;
@@ -34,6 +35,7 @@ public class WeaponController : Photon.MonoBehaviour {
 			audioSource.spatialBlend = 1.0f;
 			audioSource.spatialize = true;
 		}
+		rigidbody = GetComponent<Rigidbody>();
 
 		if (!photonView.isMine) {
 			return;
@@ -183,6 +185,8 @@ public class WeaponController : Photon.MonoBehaviour {
 		if (photonView.isMine) {
 			// Only apply recoil to local player since position and rotation data are synced anyway
 			ApplyRecoil(Vector2.Lerp(weapons[weaponId].minRecoil, weapons[weaponId].maxRecoil, Random.value));
+			// Only apply knockback to local player since position data are synced anyway
+			ApplyKnockback(Mathf.Lerp(weapons[weaponId].minKnockback, weapons[weaponId].maxKnockback, Random.value));
 		}
 	}
 
@@ -403,6 +407,14 @@ public class WeaponController : Photon.MonoBehaviour {
 		currentRecoil = currentRecoil + deltaAngle;
 		transform.Rotate(transform.up, deltaAngle.x, Space.World);
 		playerHead.Rotate(-playerHead.right, deltaAngle.y, Space.World);
+	}
+
+	private void ApplyKnockback(float knockback) {
+		// Direction of knockback is to the back of the weapon
+		rigidbody.AddForce(
+			-weaponPivot.forward * rigidbody.mass * knockback, 
+			ForceMode.Impulse
+		);
 	}
 
 	/*
