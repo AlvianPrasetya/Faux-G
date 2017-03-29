@@ -1,12 +1,16 @@
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections;
+using System.Collections.Generic;
 
 public class GameManager : MonoBehaviour {
 
 	public Image crosshairImage;
+	public List<Transform> spawnPoints;
 
 	private static GameManager instance;
 	private bool isCursorLocked;
+	private GameObject localPlayer;
 
 	/*
 	 * MONOBEHAVIOUR LIFECYCLE
@@ -21,8 +25,7 @@ public class GameManager : MonoBehaviour {
 	}
 
 	void Start() {
-		// Spawn player
-		PhotonNetwork.Instantiate(Utils.Resource.PLAYER, Vector3.zero, Quaternion.identity, 0);
+		Spawn();
 	}
 
 	void Update() {
@@ -49,12 +52,35 @@ public class GameManager : MonoBehaviour {
 		}
 	}
 
+	public void Respawn() {
+		if (localPlayer != null) {
+			Destroy(localPlayer);
+		}
+
+		StartCoroutine(WaitForSpawn(Utils.RESPAWN_TIME));
+	}
+
+	private void Spawn() {
+		int spawnPointId = Random.Range(0, spawnPoints.Count);
+		localPlayer = PhotonNetwork.Instantiate(
+			Utils.Resource.PLAYER,
+			spawnPoints[spawnPointId].position,
+			spawnPoints[spawnPointId].rotation,
+			0
+		);
+	}
+
 	private void InputToggleCursor() {
 		if (Input.GetKeyDown(KeyCode.Escape)) {
 			isCursorLocked = false;
 		} else if (Input.anyKeyDown) {
 			isCursorLocked = true;
 		}
+	}
+
+	private IEnumerator WaitForSpawn(float waitTime) {
+		yield return new WaitForSeconds(waitTime);
+		Spawn();
 	}
 
 }

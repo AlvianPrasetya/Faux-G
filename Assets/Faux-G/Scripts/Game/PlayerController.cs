@@ -24,9 +24,11 @@ public class PlayerController : Photon.MonoBehaviour {
 	public float maxDistanceToGround;
 
 	// Cached components
+	private Camera sceneCamera;
 	private new Rigidbody rigidbody;
 	private GravityBody gravityBody;
 	private WeaponController weaponController;
+	private Health health;
 
 	private Vector2 lookAroundVector;
 	private bool isCrouching;
@@ -41,17 +43,20 @@ public class PlayerController : Photon.MonoBehaviour {
 	 */
 
 	void Awake() {
+		sceneCamera = Camera.main;
 		rigidbody = GetComponent<Rigidbody>();
 		gravityBody = GetComponent<GravityBody>();
 		weaponController = GetComponent<WeaponController>();
+		health = GetComponent<Health>();
+		health.SetDeathCallback(Die);
 
 		if (!photonView.isMine) {
 			rigidbody.isKinematic = true;
 			gravityBody.enabled = false;
 			return;
 		}
-		
-		Camera.main.gameObject.SetActive(false);
+
+		sceneCamera.gameObject.SetActive(false);
 		playerCamera.gameObject.SetActive(true);
 
 		lookAroundVector = Vector2.zero;
@@ -89,6 +94,16 @@ public class PlayerController : Photon.MonoBehaviour {
 		Jump();
 
 		CheckGrounded();
+	}
+
+	public void Die() {
+		if (!photonView.isMine) {
+			return;
+		}
+
+		playerCamera.gameObject.SetActive(false);
+		sceneCamera.gameObject.SetActive(true);
+		GameManager.Instance.Respawn();
 	}
 
 	private void InputLookAround() {
