@@ -23,16 +23,16 @@ public class ProjectileController : MonoBehaviour {
 		rigidbody.AddForce(transform.forward * speed, ForceMode.VelocityChange);
 	}
 
-	void OnCollisionEnter(Collision collision) {
-		PhotonView targetPhotonView = collision.gameObject.GetPhotonView();
-		if (targetPhotonView != null && targetPhotonView.owner == owner) {
+	void OnTriggerEnter(Collider other) {
+		PhotonView otherPhotonView = other.gameObject.GetPhotonView();
+		if (otherPhotonView != null && otherPhotonView.owner == owner) {
 			// Ignore collision with owner
 			return;
 		}
 
 		Explode();
 
-		Health healthComponent = collision.gameObject.GetComponentInParent<Health>();
+		Health healthComponent = other.GetComponentInParent<Health>();
 		if (healthComponent != null) {
 			healthComponent.Damage(damage, owner);
 		}
