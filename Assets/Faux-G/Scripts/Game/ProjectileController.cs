@@ -31,7 +31,6 @@ public class ProjectileController : MonoBehaviour {
 	}
 
 	void OnCollisionEnter(Collision collision) {
-		Logger.Log("Collision {0}", collision.gameObject.name);
 		Explode();
 
 		HitArea targetHitArea = collision.gameObject.GetComponent<HitArea>();
