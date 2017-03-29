@@ -59,7 +59,7 @@ public class GameManager : MonoBehaviour {
 
 	public void Respawn() {
 		if (localPlayer != null) {
-			Destroy(localPlayer);
+			PhotonNetwork.Destroy(localPlayer);
 		}
 
 		StartCoroutine(WaitForSpawn(Utils.RESPAWN_TIME));
