@@ -21,6 +21,7 @@ public class WeaponController : Photon.MonoBehaviour {
 	private bool isAiming;
 	private List<Coroutine> toggleAimCoroutines;
 	private List<Coroutine> changeWeaponCoroutines;
+	private List<Coroutine> reloadCoroutines;
 	private bool isReloading;
 	private Coroutine reloadCoroutine;
 	private Vector2 currentRecoil;
@@ -36,8 +37,10 @@ public class WeaponController : Photon.MonoBehaviour {
 			audioSource.spatialize = true;
 		}
 		rigidbody = GetComponent<Rigidbody>();
+
 		toggleAimCoroutines = new List<Coroutine>();
 		changeWeaponCoroutines = new List<Coroutine>();
+		reloadCoroutines = new List<Coroutine>();
 
 		if (!photonView.isMine) {
 			return;
@@ -352,6 +355,32 @@ public class WeaponController : Photon.MonoBehaviour {
 			audioSource.volume = weapons[weaponId].reloadVolume;
 			audioSource.PlayOneShot(weapons[weaponId].reloadSound);
 		}
+
+		reloadCoroutines.Add(StartCoroutine(ReloadCoroutine(weaponId)));
+	}
+
+	private IEnumerator ReloadCoroutine(int weaponId) {
+		Coroutine blockingCoroutine = StartCoroutine(TransformSlerpRotation(
+			weaponPivot,
+			weaponPivot.localRotation,
+			Quaternion.Euler(45.0f, 0.0f, 0.0f),
+			weapons[weaponId].changeWeaponTime
+		));
+		reloadCoroutines.Add(blockingCoroutine);
+		yield return blockingCoroutine;
+
+		yield return new WaitForSeconds(weapons[weaponId].reloadTime - 2 * weapons[weaponId].changeWeaponTime);
+
+		Coroutine secondBlockingCoroutine = StartCoroutine(TransformSlerpRotation(
+			weaponPivot,
+			weaponPivot.localRotation,
+			Quaternion.Euler(0.0f, 0.0f, 0.0f),
+			weapons[weaponId].changeWeaponTime
+		));
+		reloadCoroutines.Add(secondBlockingCoroutine);
+		yield return secondBlockingCoroutine;
+
+		reloadCoroutines.Clear();
 	}
 
 	[PunRPC]
@@ -372,6 +401,24 @@ public class WeaponController : Photon.MonoBehaviour {
 		if (weapons[weaponId].reloadSound != null) {
 			audioSource.Stop();
 		}
+
+		if (reloadCoroutines.Count > 0) {
+			foreach (Coroutine coroutine in reloadCoroutines) {
+				StopCoroutine(coroutine);
+			}
+			reloadCoroutines.Clear();
+		}
+
+		StartCoroutine(CancelReloadCoroutine(weaponId));
+	}
+
+	private IEnumerator CancelReloadCoroutine(int weaponId) {
+		yield return StartCoroutine(TransformSlerpRotation(
+			weaponPivot,
+			weaponPivot.localRotation,
+			Quaternion.Euler(0.0f, 0.0f, 0.0f),
+			weapons[weaponId].changeWeaponTime
+		));
 	}
 
 	private IEnumerator WaitForCooldown(int weaponId) {
