@@ -344,6 +344,7 @@ public class WeaponController : Photon.MonoBehaviour {
 
 	private void LocalReload(int weaponId) {
 		if (weapons[weaponId].reloadSound != null) {
+			audioSource.volume = weapons[weaponId].reloadVolume;
 			audioSource.PlayOneShot(weapons[weaponId].reloadSound);
 		}
 	}
