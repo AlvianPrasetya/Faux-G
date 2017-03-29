@@ -48,6 +48,7 @@ public class PlayerController : Photon.MonoBehaviour {
 		gravityBody = GetComponent<GravityBody>();
 		weaponController = GetComponent<WeaponController>();
 		health = GetComponent<Health>();
+		health.SetHealthUpdateCallback(GameManager.Instance.UpdateHealth);
 		health.SetDeathCallback(Die);
 
 		if (!photonView.isMine) {
@@ -103,6 +104,8 @@ public class PlayerController : Photon.MonoBehaviour {
 
 		playerCamera.gameObject.SetActive(false);
 		sceneCamera.gameObject.SetActive(true);
+		sceneCamera.transform.position = transform.position + transform.up * 20.0f;
+		sceneCamera.transform.LookAt(transform);
 		GameManager.Instance.Respawn();
 	}
 

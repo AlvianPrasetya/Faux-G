@@ -6,6 +6,7 @@ using System.Collections.Generic;
 public class GameManager : MonoBehaviour {
 
 	public Image crosshairImage;
+	public Text healthText;
 	public List<Transform> spawnPoints;
 
 	private static GameManager instance;
@@ -50,6 +51,10 @@ public class GameManager : MonoBehaviour {
 		get {
 			return crosshairImage;
 		}
+	}
+
+	public void UpdateHealth(float health) {
+		healthText.text = string.Format("{0:0} / 100", health);
 	}
 
 	public void Respawn() {

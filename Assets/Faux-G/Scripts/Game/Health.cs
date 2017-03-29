@@ -3,22 +3,32 @@ using System.Collections;
 
 public class Health : Photon.MonoBehaviour {
 
+	public delegate void HealthUpdateCallback(float health);
 	public delegate void DeathCallback();
 
 	public float maxHealth;
 
 	private float currentHealth;
 	private PhotonPlayer lastDamager;
+	private HealthUpdateCallback healthUpdateCallback;
 	private DeathCallback deathCallback;
 
 	void Awake() {
 		currentHealth = maxHealth;
+
+		if (photonView.isMine) {
+			healthUpdateCallback(currentHealth);
+		}
 	}
 
 	public float CurrentHealth {
 		get {
 			return currentHealth;
 		}
+	}
+
+	public void SetHealthUpdateCallback(HealthUpdateCallback callback) {
+		healthUpdateCallback = callback;
 	}
 
 	public void SetDeathCallback(DeathCallback callback) {
@@ -49,8 +59,12 @@ public class Health : Photon.MonoBehaviour {
 		currentHealth = Mathf.Clamp(currentHealth - damage, 0.0f, maxHealth);
 		lastDamager = damager;
 
-		if (currentHealth == 0.0f) {
-			if (deathCallback != null) {
+		if (photonView.isMine) {
+			if (healthUpdateCallback != null) {
+				healthUpdateCallback(currentHealth);
+			}
+			
+			if (currentHealth == 0.0f && deathCallback != null) {
 				deathCallback();
 			}
 		}
