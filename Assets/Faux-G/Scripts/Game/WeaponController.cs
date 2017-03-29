@@ -18,8 +18,8 @@ public class WeaponController : Photon.MonoBehaviour {
 	private bool[] isOnCooldown;
 	private int[] ammo;
 	private bool isAiming;
-	private Coroutine toggleAimCoroutine;
-	private Coroutine changeWeaponCoroutine;
+	private List<Coroutine> toggleAimCoroutines;
+	private List<Coroutine> changeWeaponCoroutines;
 	private bool isReloading;
 	private Coroutine reloadCoroutine;
 	private Vector2 currentRecoil;
@@ -43,8 +43,8 @@ public class WeaponController : Photon.MonoBehaviour {
 		isOnCooldown = new bool[weapons.Count];
 		ammo = new int[weapons.Count];
 		isAiming = false;
-		toggleAimCoroutine = null;
-		changeWeaponCoroutine = null;
+		toggleAimCoroutines = new List<Coroutine>();
+		changeWeaponCoroutines = new List<Coroutine>();
 		isReloading = false;
 		reloadCoroutine = null;
 
@@ -201,36 +201,47 @@ public class WeaponController : Photon.MonoBehaviour {
 	}
 
 	private void LocalToggleAim(int weaponId, bool isAiming) {
-		if (toggleAimCoroutine != null) {
-			StopCoroutine(toggleAimCoroutine);
+		if (toggleAimCoroutines.Count > 0) {
+			foreach (Coroutine coroutine in toggleAimCoroutines) {
+				StopCoroutine(coroutine);
+			}
+			toggleAimCoroutines.Clear();
 		}
 
-		toggleAimCoroutine = StartCoroutine(ToggleAimCoroutine(weaponId, isAiming));
+		toggleAimCoroutines.Add(
+			StartCoroutine(ToggleAimCoroutine(weaponId, isAiming))
+		);
 	}
 
 	private IEnumerator ToggleAimCoroutine(int weaponId, bool isAiming) {
-		StartCoroutine(TransformLerpPosition(
-			weaponTransform, 
-			weaponTransform.localPosition, 
-			(isAiming) ? weapons[weaponId].weaponPosition : weapons[weaponId].aimWeaponPosition, 
-			weapons[weaponId].toggleAimTime
-		));
+		toggleAimCoroutines.Add(
+			StartCoroutine(TransformLerpPosition(
+				weaponTransform, 
+				weaponTransform.localPosition, 
+				(isAiming) ? weapons[weaponId].weaponPosition : weapons[weaponId].aimWeaponPosition, 
+				weapons[weaponId].toggleAimTime
+			))
+		);
 
-		StartCoroutine(TransformLerpPosition(
-			playerCamera.transform, 
-			playerCamera.transform.localPosition, 
-			(isAiming) ? weapons[weaponId].cameraPosition : weapons[weaponId].aimCameraPosition, 
-			weapons[weaponId].toggleAimTime
-		));
+		toggleAimCoroutines.Add(
+			StartCoroutine(TransformLerpPosition(
+				playerCamera.transform, 
+				playerCamera.transform.localPosition, 
+				(isAiming) ? weapons[weaponId].cameraPosition : weapons[weaponId].aimCameraPosition, 
+				weapons[weaponId].toggleAimTime
+			))
+		);
 
-		yield return StartCoroutine(CameraLerpFieldOfView(
+		Coroutine blockingCoroutine = StartCoroutine(CameraLerpFieldOfView(
 			playerCamera,
 			playerCamera.fieldOfView,
 			(isAiming) ? weapons[weaponId].cameraFieldOfView : weapons[weaponId].aimCameraFieldOfView,
 			weapons[weaponId].toggleAimTime
 		));
+		toggleAimCoroutines.Add(blockingCoroutine);
+		yield return blockingCoroutine;
 
-		toggleAimCoroutine = null;
+		toggleAimCoroutines.Clear();
 	}
 
 	[PunRPC]
@@ -248,20 +259,27 @@ public class WeaponController : Photon.MonoBehaviour {
 	}
 
 	private void LocalChangeWeapon(int startWeaponId, int endWeaponId) {
-		if (changeWeaponCoroutine != null) {
-			StopCoroutine(changeWeaponCoroutine);
+		if (changeWeaponCoroutines.Count > 0) {
+			foreach (Coroutine coroutine in changeWeaponCoroutines) {
+				StopCoroutine(coroutine);
+			}
+			changeWeaponCoroutines.Clear();
 		}
 
-		changeWeaponCoroutine = StartCoroutine(ChangeWeaponCoroutine(startWeaponId, endWeaponId));
+		changeWeaponCoroutines.Add(
+			StartCoroutine(ChangeWeaponCoroutine(startWeaponId, endWeaponId))
+		);
 	}
 
 	private IEnumerator ChangeWeaponCoroutine(int startWeaponId, int endWeaponId) {
-		yield return StartCoroutine(TransformSlerpRotation(
+		Coroutine firstBlockingCoroutine = StartCoroutine(TransformSlerpRotation(
 			weaponPivot,
 			weaponPivot.localRotation,
 			Quaternion.Euler(45.0f, 0.0f, 0.0f),
 			weapons[startWeaponId].changeWeaponTime
 		));
+		changeWeaponCoroutines.Add(firstBlockingCoroutine);
+		yield return firstBlockingCoroutine;
 		
 		GameManager.Instance.Crosshair.sprite = weapons[endWeaponId].crosshairSprite;
 		GameManager.Instance.Crosshair.rectTransform.sizeDelta = weapons[endWeaponId].crosshairSize;
@@ -271,35 +289,43 @@ public class WeaponController : Photon.MonoBehaviour {
 		weaponTransform.GetComponent<MeshRenderer>().material = weapons[endWeaponId].weaponMaterial;
 		weaponMuzzle.localPosition = weapons[endWeaponId].weaponMuzzlePosition;
 
-		StartCoroutine(TransformLerpPosition(
-			weaponTransform, 
-			weaponTransform.localPosition,
-			weapons[endWeaponId].weaponPosition,
-			weapons[endWeaponId].changeWeaponTime
-		));
+		changeWeaponCoroutines.Add(
+			StartCoroutine(TransformLerpPosition(
+				weaponTransform, 
+				weaponTransform.localPosition,
+				weapons[endWeaponId].weaponPosition,
+				weapons[endWeaponId].changeWeaponTime
+			))
+		);
 
-		StartCoroutine(TransformSlerpRotation(
-			weaponPivot,
-			weaponPivot.localRotation,
-			Quaternion.Euler(0.0f, 0.0f, 0.0f),
-			weapons[endWeaponId].changeWeaponTime
-		));
+		changeWeaponCoroutines.Add(
+			StartCoroutine(TransformSlerpRotation(
+				weaponPivot,
+				weaponPivot.localRotation,
+				Quaternion.Euler(0.0f, 0.0f, 0.0f),
+				weapons[endWeaponId].changeWeaponTime
+			))
+		);
 
-		StartCoroutine(TransformLerpPosition(
-			playerCamera.transform,
-			playerCamera.transform.localPosition,
-			weapons[endWeaponId].cameraPosition,
-			weapons[endWeaponId].changeWeaponTime
-		));
+		changeWeaponCoroutines.Add(
+			StartCoroutine(TransformLerpPosition(
+				playerCamera.transform,
+				playerCamera.transform.localPosition,
+				weapons[endWeaponId].cameraPosition,
+				weapons[endWeaponId].changeWeaponTime
+			))
+		);
 
-		yield return StartCoroutine(CameraLerpFieldOfView(
+		Coroutine secondBlockingCoroutine = StartCoroutine(CameraLerpFieldOfView(
 			playerCamera, 
 			playerCamera.fieldOfView,
 			weapons[endWeaponId].cameraFieldOfView,
 			weapons[endWeaponId].changeWeaponTime
 		));
+		changeWeaponCoroutines.Add(secondBlockingCoroutine);
+		yield return secondBlockingCoroutine;
 
-		changeWeaponCoroutine = null;
+		changeWeaponCoroutines.Clear();
 	}
 
 	[PunRPC]
