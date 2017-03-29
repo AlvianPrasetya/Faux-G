@@ -30,52 +30,67 @@ public class Explosion : MonoBehaviour {
 	private IEnumerator WaitForExplosion() {
 		yield return new WaitForSeconds(delay);
 
-		ApplyExplosionForce();
+		Explode();
 	}
 
-	private void ApplyExplosionForce() {
-		Collider[] colliders = Physics.OverlapSphere(transform.position, radius);
-		foreach (Collider collider in colliders) {
-			if (collider.isTrigger) {
-				continue;
-			}
-
+	private void Explode() {
+		foreach (Collider collider in GetCollidersInRange()) {
 			float distance = Vector3.Magnitude(collider.transform.position - transform.position);
+			bool isDirectHit = IsDirectHit(collider.transform, distance);
 
-			RaycastHit hitInfo;
-			Physics.Raycast(
-				transform.position, 
-				collider.transform.position - transform.position, 
-				out hitInfo, 
-				distance
-			);
+			float explosionForce = (isDirectHit) ? directForce : indirectForce;
+			float explosionDamage = (isDirectHit) ? directDamage : indirectDamage;
 
-			float explosionForce;
-			float explosionDamage;
-			if (hitInfo.collider == collider) { // Direct hit
-				explosionForce = directForce;
-				explosionDamage = directDamage;
-			} else { // Indirect hit
-				explosionForce = indirectForce;
-				explosionDamage = indirectDamage;
+			Rigidbody targetRigidbody = collider.GetComponent<Rigidbody>();
+			if (targetRigidbody != null && !targetRigidbody.isKinematic) {
+				ApplyExplosionForce(targetRigidbody, explosionForce);
 			}
 
-			Rigidbody rigidbody = collider.GetComponent<Rigidbody>();
-			if (rigidbody != null) {
-				rigidbody.AddExplosionForce(
-					explosionForce,
-					transform.position,
-					radius,
-					upwardsBias,
-					ForceMode.Impulse
-				);
-			}
-			
-			Health healthComponent = collider.GetComponentInParent<Health>();
-			if (healthComponent != null) {
-				healthComponent.Damage(explosionDamage / distance, owner);
+			HitArea targetHitArea = collider.GetComponent<HitArea>();
+			if (targetHitArea != null) {
+				ApplyExplosionDamage(targetHitArea, explosionDamage, distance);
 			}
 		}
+	}
+
+	private Collider[] GetCollidersInRange() {
+		return Physics.OverlapSphere(
+			transform.position,
+			radius,
+			~(Utils.Layer.TERRAIN | Utils.Layer.PROJECTILE)
+		);
+	}
+
+	private bool IsDirectHit(Transform targetTransform, float distance) {
+		RaycastHit hitInfo;
+		Physics.Raycast(
+			transform.position,
+			targetTransform.position - transform.position,
+			out hitInfo,
+			distance,
+			~(Utils.Layer.IGNORE_PROJECTILE | Utils.Layer.PROJECTILE)
+		);
+
+		if (hitInfo.transform == targetTransform) {
+			return true;
+		}
+
+		return false;
+	}
+
+	private void ApplyExplosionForce(Rigidbody targetRigidbody, float explosionForce) {
+		targetRigidbody.AddExplosionForce(
+			explosionForce,
+			transform.position,
+			radius,
+			upwardsBias,
+			ForceMode.Impulse
+		);
+	}
+
+	private void ApplyExplosionDamage(HitArea targetHitArea, float explosionDamage, float distance) {
+		// Damage falls off linearly with distance
+		targetHitArea.Hit((1.0f - distance / radius) * explosionDamage, owner);
 	}
 
 }

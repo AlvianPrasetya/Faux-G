@@ -23,8 +23,8 @@ public class ProjectileController : MonoBehaviour {
 		rigidbody.AddForce(transform.forward * speed, ForceMode.VelocityChange);
 	}
 
-	void OnTriggerEnter(Collider other) {
-		PhotonView otherPhotonView = other.gameObject.GetComponentInParent<PhotonView>();
+	void OnCollisionEnter(Collision collision) {
+		PhotonView otherPhotonView = collision.gameObject.GetComponentInParent<PhotonView>();
 		if (otherPhotonView != null && otherPhotonView.owner == owner) {
 			// Ignore collision with owner
 			return;
@@ -32,9 +32,9 @@ public class ProjectileController : MonoBehaviour {
 
 		Explode();
 
-		Health healthComponent = other.GetComponentInParent<Health>();
-		if (healthComponent != null) {
-			healthComponent.Damage(damage, owner);
+		HitArea targetHitArea = collision.gameObject.GetComponent<HitArea>();
+		if (targetHitArea != null) {
+			targetHitArea.Hit(damage, owner);
 		}
 
 		Destroy(gameObject);

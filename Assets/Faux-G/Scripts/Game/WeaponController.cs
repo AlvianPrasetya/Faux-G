@@ -36,6 +36,8 @@ public class WeaponController : Photon.MonoBehaviour {
 			audioSource.spatialize = true;
 		}
 		rigidbody = GetComponent<Rigidbody>();
+		toggleAimCoroutines = new List<Coroutine>();
+		changeWeaponCoroutines = new List<Coroutine>();
 
 		if (!photonView.isMine) {
 			return;
@@ -45,8 +47,6 @@ public class WeaponController : Photon.MonoBehaviour {
 		isOnCooldown = new bool[weapons.Count];
 		ammo = new int[weapons.Count];
 		isAiming = false;
-		toggleAimCoroutines = new List<Coroutine>();
-		changeWeaponCoroutines = new List<Coroutine>();
 		isReloading = false;
 		reloadCoroutine = null;
 

@@ -92,7 +92,6 @@ public class SyncTransform : Photon.MonoBehaviour, IPunObservable {
 				if (currentNode.Value.timestamp < renderTimestamp) {
 					LinkedListNode<PositionData> nextNode = currentNode.Next;
 					if (nextNode == null) {
-						Logger.Log("Extrapolate");
 						// Extrapolate from pair of data
 						LinkedListNode<PositionData> previousNode = currentNode.Previous;
 						if (previousNode == null) {
@@ -110,7 +109,6 @@ public class SyncTransform : Photon.MonoBehaviour, IPunObservable {
 						positionTransforms[i].position = previousPosition
 							+ dPosition * (renderTimestamp - previousTimestamp);
 					} else {
-						Logger.Log("Interpolate");
 						// Interpolate between pair of data
 						int currentTimestamp = currentNode.Value.timestamp;
 						int nextTimestamp = nextNode.Value.timestamp;

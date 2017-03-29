@@ -46,9 +46,7 @@ public class PlayerController : Photon.MonoBehaviour {
 		weaponController = GetComponent<WeaponController>();
 
 		if (!photonView.isMine) {
-			foreach (Rigidbody rigidbody in GetComponentsInChildren<Rigidbody>()) {
-				rigidbody.isKinematic = true;
-			}
+			rigidbody.isKinematic = true;
 			gravityBody.enabled = false;
 			return;
 		}
@@ -213,11 +211,8 @@ public class PlayerController : Photon.MonoBehaviour {
 		}
 
 		Vector3 moveVelocity = Vector3.ClampMagnitude(moveVector * moveSpeed, moveSpeed);
-
-		transform.Translate(
-			moveVelocity * Time.fixedDeltaTime, 
-			Space.World
-		);
+		
+		rigidbody.MovePosition(transform.position + moveVelocity * Time.fixedDeltaTime);
 	}
 
 	private void Jump() {
