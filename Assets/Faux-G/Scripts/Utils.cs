@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 
 public class Utils : MonoBehaviour {
 	
@@ -53,6 +54,58 @@ public class Utils : MonoBehaviour {
 	public static readonly float RESPAWN_TIME = 5.0f;
 
 	public static readonly float PI = Mathf.Acos(-1);
+
+	public static IEnumerator TransformLerpPosition(Transform targetTransform, Vector3 startPosition,
+		Vector3 endPosition, float lerpTime) {
+		float time = 0.0f;
+		while (time < 1.0f) {
+			targetTransform.localPosition = Vector3.Lerp(
+				startPosition, 
+				endPosition, 
+				time
+			);
+
+			time += Time.deltaTime / lerpTime;
+			yield return null;
+		}
+
+		targetTransform.localPosition = endPosition;
+	}
+
+	public static IEnumerator TransformSlerpRotation(Transform targetTransform, Quaternion startRotation,
+		Quaternion endRotation, float slerpTime) {
+		float time = 0.0f;
+		while (time < 1.0f) {
+			targetTransform.localRotation = Quaternion.Slerp(
+				startRotation, 
+				endRotation, 
+				time
+			);
+
+			time += Time.deltaTime / slerpTime;
+			yield return null;
+		}
+
+		targetTransform.localRotation = endRotation;
+	}
+
+	public static IEnumerator CameraLerpFieldOfView(Camera targetCamera, float startFieldOfView,
+		float endFieldOfView, float lerpTime) {
+		float time = 0.0f;
+		while (time < 1.0f) {
+			targetCamera.fieldOfView = Mathf.Lerp(
+				startFieldOfView,
+				endFieldOfView,
+				time
+			);
+
+			time += Time.deltaTime / lerpTime;
+			yield return null;
+		}
+
+		targetCamera.fieldOfView = endFieldOfView;
+	}
+
 }
 
 public enum GameMode {

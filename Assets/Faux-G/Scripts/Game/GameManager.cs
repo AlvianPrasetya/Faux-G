@@ -11,7 +11,9 @@ public class GameManager : MonoBehaviour {
 
 	private static GameManager instance;
 	private bool isCursorLocked;
+	private Camera sceneCamera;
 	private GameObject localPlayer;
+	private Camera playerCamera;
 
 	/*
 	 * MONOBEHAVIOUR LIFECYCLE
@@ -23,6 +25,7 @@ public class GameManager : MonoBehaviour {
 
 		instance = this;
 		isCursorLocked = true;
+		sceneCamera = Camera.main;
 	}
 
 	void Start() {
@@ -59,6 +62,18 @@ public class GameManager : MonoBehaviour {
 
 	public void Respawn() {
 		if (localPlayer != null) {
+			playerCamera.gameObject.SetActive(false);
+			sceneCamera.gameObject.SetActive(true);
+
+			sceneCamera.transform.position = localPlayer.transform.position + localPlayer.transform.up * 10.0f;
+			sceneCamera.transform.LookAt(localPlayer.transform);
+			StartCoroutine(Utils.TransformLerpPosition(
+				sceneCamera.transform, 
+				sceneCamera.transform.position, 
+				sceneCamera.transform.position - sceneCamera.transform.forward * 15.0f, 
+				Utils.RESPAWN_TIME
+			));
+			
 			PhotonNetwork.Destroy(localPlayer);
 		}
 
@@ -73,6 +88,10 @@ public class GameManager : MonoBehaviour {
 			spawnPoints[spawnPointId].rotation,
 			0
 		);
+		playerCamera = localPlayer.GetComponentInChildren<Camera>();
+
+		sceneCamera.gameObject.SetActive(false);
+		playerCamera.gameObject.SetActive(true);
 	}
 
 	private void InputToggleCursor() {

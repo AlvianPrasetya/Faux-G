@@ -3,7 +3,6 @@ using UnityEngine;
 public class PlayerController : Photon.MonoBehaviour {
 
 	public Transform playerHead;
-	public Camera playerCamera;
 
 	// Lookaround parameters
 	public float lookAroundSpeed;
@@ -24,7 +23,6 @@ public class PlayerController : Photon.MonoBehaviour {
 	public float maxDistanceToGround;
 
 	// Cached components
-	private Camera sceneCamera;
 	private new Rigidbody rigidbody;
 	private GravityBody gravityBody;
 	private WeaponController weaponController;
@@ -43,22 +41,18 @@ public class PlayerController : Photon.MonoBehaviour {
 	 */
 
 	void Awake() {
-		sceneCamera = Camera.main;
 		rigidbody = GetComponent<Rigidbody>();
 		gravityBody = GetComponent<GravityBody>();
 		weaponController = GetComponent<WeaponController>();
 		health = GetComponent<Health>();
 		health.SetHealthUpdateCallback(GameManager.Instance.UpdateHealth);
-		health.SetDeathCallback(Die);
+		health.SetDeathCallback(GameManager.Instance.Respawn);
 
 		if (!photonView.isMine) {
 			rigidbody.isKinematic = true;
 			gravityBody.enabled = false;
 			return;
 		}
-
-		sceneCamera.gameObject.SetActive(false);
-		playerCamera.gameObject.SetActive(true);
 
 		lookAroundVector = Vector2.zero;
 		isCrouching = false;
@@ -95,18 +89,6 @@ public class PlayerController : Photon.MonoBehaviour {
 		Jump();
 
 		CheckGrounded();
-	}
-
-	public void Die() {
-		if (!photonView.isMine) {
-			return;
-		}
-
-		playerCamera.gameObject.SetActive(false);
-		sceneCamera.gameObject.SetActive(true);
-		sceneCamera.transform.position = transform.position + transform.up * 20.0f;
-		sceneCamera.transform.LookAt(transform);
-		GameManager.Instance.Respawn();
 	}
 
 	private void InputLookAround() {

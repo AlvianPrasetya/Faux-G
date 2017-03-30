@@ -224,7 +224,7 @@ public class WeaponController : Photon.MonoBehaviour {
 
 	private IEnumerator ToggleAimCoroutine(int weaponId, bool isAiming) {
 		toggleAimCoroutines.Add(
-			StartCoroutine(TransformLerpPosition(
+			StartCoroutine(Utils.TransformLerpPosition(
 				weaponTransform, 
 				weaponTransform.localPosition, 
 				(isAiming) ? weapons[weaponId].weaponPosition : weapons[weaponId].aimWeaponPosition, 
@@ -233,7 +233,7 @@ public class WeaponController : Photon.MonoBehaviour {
 		);
 
 		toggleAimCoroutines.Add(
-			StartCoroutine(TransformLerpPosition(
+			StartCoroutine(Utils.TransformLerpPosition(
 				playerCamera.transform, 
 				playerCamera.transform.localPosition, 
 				(isAiming) ? weapons[weaponId].cameraPosition : weapons[weaponId].aimCameraPosition, 
@@ -241,7 +241,7 @@ public class WeaponController : Photon.MonoBehaviour {
 			))
 		);
 
-		Coroutine blockingCoroutine = StartCoroutine(CameraLerpFieldOfView(
+		Coroutine blockingCoroutine = StartCoroutine(Utils.CameraLerpFieldOfView(
 			playerCamera,
 			playerCamera.fieldOfView,
 			(isAiming) ? weapons[weaponId].cameraFieldOfView : weapons[weaponId].aimCameraFieldOfView,
@@ -281,7 +281,7 @@ public class WeaponController : Photon.MonoBehaviour {
 	}
 
 	private IEnumerator ChangeWeaponCoroutine(int startWeaponId, int endWeaponId) {
-		Coroutine firstBlockingCoroutine = StartCoroutine(TransformSlerpRotation(
+		Coroutine firstBlockingCoroutine = StartCoroutine(Utils.TransformSlerpRotation(
 			weaponPivot,
 			weaponPivot.localRotation,
 			Quaternion.Euler(45.0f, 0.0f, 0.0f),
@@ -299,7 +299,7 @@ public class WeaponController : Photon.MonoBehaviour {
 		weaponMuzzle.localPosition = weapons[endWeaponId].weaponMuzzlePosition;
 
 		changeWeaponCoroutines.Add(
-			StartCoroutine(TransformLerpPosition(
+			StartCoroutine(Utils.TransformLerpPosition(
 				weaponTransform, 
 				weaponTransform.localPosition,
 				weapons[endWeaponId].weaponPosition,
@@ -308,7 +308,7 @@ public class WeaponController : Photon.MonoBehaviour {
 		);
 
 		changeWeaponCoroutines.Add(
-			StartCoroutine(TransformSlerpRotation(
+			StartCoroutine(Utils.TransformSlerpRotation(
 				weaponPivot,
 				weaponPivot.localRotation,
 				Quaternion.Euler(0.0f, 0.0f, 0.0f),
@@ -317,7 +317,7 @@ public class WeaponController : Photon.MonoBehaviour {
 		);
 
 		changeWeaponCoroutines.Add(
-			StartCoroutine(TransformLerpPosition(
+			StartCoroutine(Utils.TransformLerpPosition(
 				playerCamera.transform,
 				playerCamera.transform.localPosition,
 				weapons[endWeaponId].cameraPosition,
@@ -325,7 +325,7 @@ public class WeaponController : Photon.MonoBehaviour {
 			))
 		);
 
-		Coroutine secondBlockingCoroutine = StartCoroutine(CameraLerpFieldOfView(
+		Coroutine secondBlockingCoroutine = StartCoroutine(Utils.CameraLerpFieldOfView(
 			playerCamera, 
 			playerCamera.fieldOfView,
 			weapons[endWeaponId].cameraFieldOfView,
@@ -361,7 +361,7 @@ public class WeaponController : Photon.MonoBehaviour {
 	}
 
 	private IEnumerator ReloadCoroutine(int weaponId) {
-		Coroutine blockingCoroutine = StartCoroutine(TransformSlerpRotation(
+		Coroutine blockingCoroutine = StartCoroutine(Utils.TransformSlerpRotation(
 			weaponPivot,
 			weaponPivot.localRotation,
 			Quaternion.Euler(45.0f, 0.0f, 0.0f),
@@ -372,7 +372,7 @@ public class WeaponController : Photon.MonoBehaviour {
 
 		yield return new WaitForSeconds(weapons[weaponId].reloadTime - 2 * weapons[weaponId].changeWeaponTime);
 
-		Coroutine secondBlockingCoroutine = StartCoroutine(TransformSlerpRotation(
+		Coroutine secondBlockingCoroutine = StartCoroutine(Utils.TransformSlerpRotation(
 			weaponPivot,
 			weaponPivot.localRotation,
 			Quaternion.Euler(0.0f, 0.0f, 0.0f),
@@ -414,7 +414,7 @@ public class WeaponController : Photon.MonoBehaviour {
 	}
 
 	private IEnumerator CancelReloadCoroutine(int weaponId) {
-		yield return StartCoroutine(TransformSlerpRotation(
+		yield return StartCoroutine(Utils.TransformSlerpRotation(
 			weaponPivot,
 			weaponPivot.localRotation,
 			Quaternion.Euler(0.0f, 0.0f, 0.0f),
@@ -464,61 +464,6 @@ public class WeaponController : Photon.MonoBehaviour {
 			-weaponPivot.forward * rigidbody.mass * knockback, 
 			ForceMode.Impulse
 		);
-	}
-
-	/*
-	 * UTILITY METHODS
-	 */
-
-	private IEnumerator TransformLerpPosition(Transform targetTransform, Vector3 startPosition,
-		Vector3 endPosition, float lerpTime) {
-		float time = 0.0f;
-		while (time < 1.0f) {
-			targetTransform.localPosition = Vector3.Lerp(
-				startPosition, 
-				endPosition, 
-				time
-			);
-			
-			time += Time.deltaTime / lerpTime;
-			yield return null;
-		}
-
-		targetTransform.localPosition = endPosition;
-	}
-
-	private IEnumerator TransformSlerpRotation(Transform targetTransform, Quaternion startRotation,
-		Quaternion endRotation, float slerpTime) {
-		float time = 0.0f;
-		while (time < 1.0f) {
-			targetTransform.localRotation = Quaternion.Slerp(
-				startRotation, 
-				endRotation, 
-				time
-			);
-
-			time += Time.deltaTime / slerpTime;
-			yield return null;
-		}
-
-		targetTransform.localRotation = endRotation;
-	}
-
-	private IEnumerator CameraLerpFieldOfView(Camera targetCamera, float startFieldOfView,
-		float endFieldOfView, float lerpTime) {
-		float time = 0.0f;
-		while (time < 1.0f) {
-			targetCamera.fieldOfView = Mathf.Lerp(
-				startFieldOfView,
-				endFieldOfView,
-				time
-			);
-
-			time += Time.deltaTime / lerpTime;
-			yield return null;
-		}
-
-		targetCamera.fieldOfView = endFieldOfView;
 	}
 
 }
