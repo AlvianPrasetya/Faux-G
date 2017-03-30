@@ -56,8 +56,8 @@ public class GameManager : MonoBehaviour {
 		}
 	}
 
-	public void UpdateHealth(float health) {
-		healthText.text = string.Format("{0:0} / 100", health);
+	public void UpdateHealth(float currentHealth, float maxHealth) {
+		healthText.text = string.Format("{0:0} / {1:0}", currentHealth, maxHealth);
 	}
 
 	public void Respawn() {
@@ -65,7 +65,7 @@ public class GameManager : MonoBehaviour {
 			playerCamera.gameObject.SetActive(false);
 			sceneCamera.gameObject.SetActive(true);
 
-			sceneCamera.transform.position = localPlayer.transform.position + localPlayer.transform.up * 10.0f;
+			sceneCamera.transform.position = localPlayer.transform.position + localPlayer.transform.up * 5.0f;
 			sceneCamera.transform.LookAt(localPlayer.transform);
 			StartCoroutine(Utils.TransformLerpPosition(
 				sceneCamera.transform, 
@@ -76,7 +76,7 @@ public class GameManager : MonoBehaviour {
 			
 			PhotonNetwork.Destroy(localPlayer);
 		}
-
+		
 		StartCoroutine(WaitForSpawn(Utils.RESPAWN_TIME));
 	}
 
