@@ -65,12 +65,22 @@ public class GameManager : MonoBehaviour {
 			playerCamera.gameObject.SetActive(false);
 			sceneCamera.gameObject.SetActive(true);
 
-			sceneCamera.transform.position = localPlayer.transform.position + localPlayer.transform.up * 5.0f;
-			sceneCamera.transform.LookAt(localPlayer.transform);
+			sceneCamera.transform.position = playerCamera.transform.position;
+			sceneCamera.transform.rotation = playerCamera.transform.rotation;
+
+			Vector3 targetPosition = localPlayer.transform.position + localPlayer.transform.up * 20.0f;
+			Quaternion targetRotation = Quaternion.LookRotation(localPlayer.transform.position - sceneCamera.transform.position);
 			StartCoroutine(Utils.TransformLerpPosition(
 				sceneCamera.transform, 
 				sceneCamera.transform.position, 
-				sceneCamera.transform.position - sceneCamera.transform.forward * 15.0f, 
+				targetPosition, 
+				Utils.RESPAWN_TIME
+			));
+
+			StartCoroutine(Utils.TransformSlerpRotation(
+				sceneCamera.transform, 
+				sceneCamera.transform.rotation, 
+				targetRotation, 
 				Utils.RESPAWN_TIME
 			));
 			
