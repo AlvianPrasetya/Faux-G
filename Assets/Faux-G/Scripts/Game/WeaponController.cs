@@ -289,9 +289,11 @@ public class WeaponController : Photon.MonoBehaviour {
 		));
 		changeWeaponCoroutines.Add(firstBlockingCoroutine);
 		yield return firstBlockingCoroutine;
-		
-		GameManager.Instance.Crosshair.sprite = weapons[endWeaponId].crosshairSprite;
-		GameManager.Instance.Crosshair.rectTransform.sizeDelta = weapons[endWeaponId].crosshairSize;
+
+		if (photonView.isMine) {
+			GameManager.Instance.Crosshair.sprite = weapons[endWeaponId].crosshairSprite;
+			GameManager.Instance.Crosshair.rectTransform.sizeDelta = weapons[endWeaponId].crosshairSize;
+		}
 		weaponTransform.localScale = weapons[endWeaponId].weaponMeshScale;
 		weaponTransform.localRotation = Quaternion.Euler(weapons[endWeaponId].weaponMeshRotation);
 		weaponTransform.GetComponent<MeshFilter>().mesh = weapons[endWeaponId].weaponMesh;
