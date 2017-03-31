@@ -27,6 +27,7 @@ public class PlayerController : Photon.MonoBehaviour {
 	private GravityBody gravityBody;
 	private WeaponController weaponController;
 	private Health health;
+	private Camera playerCamera;
 
 	private Vector2 lookAroundVector;
 	private bool isCrouching;
@@ -47,10 +48,12 @@ public class PlayerController : Photon.MonoBehaviour {
 		health = GetComponent<Health>();
 		health.SetHealthUpdateCallback(GameManager.Instance.UpdateHealth);
 		health.SetDeathCallback(GameManager.Instance.Respawn);
+		playerCamera = GetComponentInChildren<Camera>();
 
 		if (!photonView.isMine) {
 			rigidbody.isKinematic = true;
 			gravityBody.enabled = false;
+			playerCamera.gameObject.SetActive(false);
 			return;
 		}
 
