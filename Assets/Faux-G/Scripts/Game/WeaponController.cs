@@ -4,6 +4,8 @@ using System.Collections.Generic;
 
 public class WeaponController : Photon.MonoBehaviour {
 
+	public delegate void AmmoUpdateCallback(int currentHealth, int maxHealth);
+
 	public Transform weaponPivot;
 	public Transform weaponTransform;
 	public Transform weaponMuzzle;
@@ -26,6 +28,7 @@ public class WeaponController : Photon.MonoBehaviour {
 	private bool isReloading;
 	private Coroutine reloadCoroutine;
 	private Vector2 currentRecoil;
+	private AmmoUpdateCallback ammoUpdateCallback;
 
 	void Awake() {
 		audioSource = GetComponent<AudioSource>();
@@ -76,6 +79,10 @@ public class WeaponController : Photon.MonoBehaviour {
 		RecoverRecoil(weapons[currentWeaponId].recoilRecovery * Time.deltaTime);
 	}
 
+	public void SetAmmoUpdateCallback(AmmoUpdateCallback callback) {
+		ammoUpdateCallback = callback;
+	}
+
 	public void Shoot() {
 		if (isOnCooldown[currentWeaponId]) {
 			return;
@@ -100,6 +107,7 @@ public class WeaponController : Photon.MonoBehaviour {
 		StartCoroutine(WaitForCooldown(currentWeaponId));
 
 		ammo[currentWeaponId] = ammo[currentWeaponId] - 1;
+		ammoUpdateCallback(ammo[currentWeaponId], weapons[currentWeaponId].ammo);
 	}
 
 	public void ToggleAim() {
@@ -127,6 +135,7 @@ public class WeaponController : Photon.MonoBehaviour {
 		photonView.RPC("RpcChangeWeapon", PhotonTargets.AllViaServer, changeWeaponTime, currentWeaponId, weaponId);
 
 		currentWeaponId = weaponId;
+		ammoUpdateCallback(ammo[currentWeaponId], weapons[currentWeaponId].ammo);
 	}
 
 	public void Reload() {
@@ -434,6 +443,7 @@ public class WeaponController : Photon.MonoBehaviour {
 		yield return new WaitForSeconds(weapons[weaponId].reloadTime);
 
 		ammo[weaponId] = weapons[weaponId].ammo;
+		ammoUpdateCallback(ammo[currentWeaponId], weapons[currentWeaponId].ammo);
 		isReloading = false;
 		reloadCoroutine = null;
 	}

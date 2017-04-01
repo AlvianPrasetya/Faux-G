@@ -7,6 +7,7 @@ public class GameManager : MonoBehaviour {
 
 	public Image crosshairImage;
 	public Text healthText;
+	public Text ammoText;
 	public List<Transform> spawnPoints;
 
 	private static GameManager instance;
@@ -58,6 +59,10 @@ public class GameManager : MonoBehaviour {
 
 	public void UpdateHealth(float currentHealth, float maxHealth) {
 		healthText.text = string.Format("{0:0} / {1:0}", currentHealth, maxHealth);
+	}
+
+	public void UpdateAmmo(int currentAmmo, int maxAmmo) {
+		ammoText.text = string.Format("{0} / {1}", currentAmmo, maxAmmo);
 	}
 
 	public void Respawn() {
