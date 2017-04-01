@@ -79,7 +79,7 @@ public class RoomManager : Photon.PunBehaviour {
 
 	private void StartMatch() {
 		Logger.Log("Starting match");
-		SceneManager.LoadScene(Utils.Scene.GAME);
+		PhotonNetwork.LoadLevel(Utils.Scene.GAME);
 	}
 
 }
