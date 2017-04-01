@@ -138,6 +138,10 @@ public class WeaponController : Photon.MonoBehaviour {
 		ammoUpdateCallback(ammo[currentWeaponId], weapons[currentWeaponId].ammo);
 	}
 
+	public void CycleWeapon() {
+		ChangeWeapon((currentWeaponId + 1) % weapons.Count);
+	}
+
 	public void Reload() {
 		if (isReloading) {
 			return;

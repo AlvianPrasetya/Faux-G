@@ -165,6 +165,10 @@ public class PlayerController : Photon.MonoBehaviour {
 				break;
 			}
 		}
+
+		if (Input.GetKeyDown(KeyCode.Q)) {
+			weaponController.CycleWeapon();
+		}
 	}
 
 	private void InputReload() {
