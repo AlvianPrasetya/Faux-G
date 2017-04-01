@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
 
 public class ProjectileController : MonoBehaviour {
@@ -6,47 +7,68 @@ public class ProjectileController : MonoBehaviour {
 	public Explosion prefabExplosion;
 	
 	public float speed;
-	public float damage;
+	public float minDamage;
+	public float maxDamage;
+	public float maxRange;
 
 	// Cached components
 	private new Collider collider;
 	private new Rigidbody rigidbody;
-	private DestroyAfterTime destroyAfterTime;
 
 	private PhotonPlayer owner;
-	private List<Collider> ownerColliders;
+	private Vector3 startPosition;
+	private Vector3 lastPosition;
+	private float totalDistance;
+
+	/*
+	 * MONOBEHAVIOUR LIFECYCLE
+	 */
 
 	void Awake() {
 		collider = GetComponent<Collider>();
 		rigidbody = GetComponent<Rigidbody>();
-		destroyAfterTime = GetComponent<DestroyAfterTime>();
-		destroyAfterTime.SetPreDestroyCallback(Explode);
 	}
 
 	void Start() {
-		foreach (Collider ownerCollider in ownerColliders) {
-			Physics.IgnoreCollision(collider, ownerCollider);
-		}
+		startPosition = lastPosition = transform.position;
 		rigidbody.AddForce(transform.forward * speed, ForceMode.VelocityChange);
+		StartCoroutine(DestroyOnMaxRange());
 	}
 
 	void OnCollisionEnter(Collision collision) {
-		Explode();
-
 		HitArea targetHitArea = collision.gameObject.GetComponent<HitArea>();
 		if (targetHitArea != null) {
-			targetHitArea.Hit(damage, owner);
+			targetHitArea.Hit(Mathf.Lerp(maxDamage, minDamage, totalDistance / maxRange), owner);
 		}
 
-		Destroy(gameObject);
+		ExplodeAndDestroy();
 	}
 
 	public void SetOwner(PhotonPlayer owner, List<Collider> ownerColliders) {
 		this.owner = owner;
-		this.ownerColliders = ownerColliders;
+		foreach (Collider ownerCollider in ownerColliders) {
+			Physics.IgnoreCollision(collider, ownerCollider);
+		}
 	}
 
-	public void Explode() {
+	private IEnumerator DestroyOnMaxRange() {
+		while (true) {
+			totalDistance += Vector3.Magnitude(transform.position - lastPosition);
+			lastPosition = transform.position;
+
+			if (totalDistance > maxRange) {
+				ExplodeAndDestroy();
+			}
+			yield return null;
+		}
+	}
+
+	private void ExplodeAndDestroy() {
+		Explode();
+		Destroy(gameObject);
+	}
+
+	private void Explode() {
 		if (prefabExplosion == null) {
 			return;
 		}
