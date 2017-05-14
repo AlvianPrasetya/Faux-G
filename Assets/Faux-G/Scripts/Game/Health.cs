@@ -41,25 +41,19 @@ public class Health : Photon.MonoBehaviour {
 		if (!photonView.isMine) {
 			return;
 		}
-		
-		int damageTime = PhotonNetwork.ServerTimestamp + Utils.SYNC_DELAY;
-		photonView.RPC("RpcDamage", PhotonTargets.AllViaServer, damageTime, damage, damager.ID);
+
+		photonView.RPC("RpcDamage", PhotonTargets.All, damage, damager.ID);
 	}
 
 	[PunRPC]
-	private void RpcDamage(int damageTime, float damage, int damagerId) {
-		float secondsToDamage = (damageTime - PhotonNetwork.ServerTimestamp) / 1000.0f;
+	private void RpcDamage(float damage, int damagerId) {
 		PhotonPlayer damager = PhotonPlayer.Find(damagerId);
-		StartCoroutine(WaitForDamage(secondsToDamage, damage, damager));
+		LocalDamage(damage, damager);
 	}
 
-	private IEnumerator WaitForDamage(float secondsToDamage, float damage, PhotonPlayer damager) {
-		if (secondsToDamage > 0.0f) {
-			yield return new WaitForSecondsRealtime(secondsToDamage);
-		}
-
+	private void LocalDamage(float damage, PhotonPlayer damager) {
 		if (isDead) {
-			yield break;
+			return;
 		}
 
 		currentHealth = Mathf.Clamp(currentHealth - damage, 0.0f, maxHealth);
@@ -69,7 +63,7 @@ public class Health : Photon.MonoBehaviour {
 			if (healthUpdateCallback != null) {
 				healthUpdateCallback(currentHealth, maxHealth);
 			}
-			
+
 			if (currentHealth == 0.0f) {
 				isDead = true;
 				if (deathCallback != null) {

@@ -97,10 +97,10 @@ public class WeaponController : Photon.MonoBehaviour {
 			return;
 		}
 
-		int shootTime = PhotonNetwork.ServerTimestamp + Utils.SYNC_DELAY;
+		int shootTime = PhotonNetwork.ServerTimestamp;
 		Vector3 shootPosition = weaponMuzzle.transform.position;
 		Quaternion shootDirection = Quaternion.LookRotation(playerCamera.transform.forward);
-		photonView.RPC("RpcShoot", PhotonTargets.AllViaServer,
+		photonView.RPC("RpcShoot", PhotonTargets.All,
 			shootTime, currentWeaponId, shootPosition, shootDirection);
 
 		isOnCooldown[currentWeaponId] = true;
@@ -114,10 +114,8 @@ public class WeaponController : Photon.MonoBehaviour {
 		if (isReloading) {
 			return;
 		}
-
-		int toggleAimTime = PhotonNetwork.ServerTimestamp + Utils.SYNC_DELAY;
-		photonView.RPC("RpcToggleAim", PhotonTargets.AllViaServer, 
-			toggleAimTime, currentWeaponId, isAiming);
+		
+		photonView.RPC("RpcToggleAim", PhotonTargets.All, currentWeaponId, isAiming);
 
 		isAiming = !isAiming;
 	}
@@ -131,8 +129,7 @@ public class WeaponController : Photon.MonoBehaviour {
 			ToggleAim();
 		}
 
-		int changeWeaponTime = PhotonNetwork.ServerTimestamp + Utils.SYNC_DELAY;
-		photonView.RPC("RpcChangeWeapon", PhotonTargets.AllViaServer, changeWeaponTime, currentWeaponId, weaponId);
+		photonView.RPC("RpcChangeWeapon", PhotonTargets.All, currentWeaponId, weaponId);
 
 		currentWeaponId = weaponId;
 		ammoUpdateCallback(ammo[currentWeaponId], weapons[currentWeaponId].ammo);
@@ -150,9 +147,8 @@ public class WeaponController : Photon.MonoBehaviour {
 		if (isAiming) {
 			ToggleAim();
 		}
-
-		int reloadTime = PhotonNetwork.ServerTimestamp + Utils.SYNC_DELAY;
-		photonView.RPC("RpcReload", PhotonTargets.AllViaServer, reloadTime, currentWeaponId);
+		
+		photonView.RPC("RpcReload", PhotonTargets.All, currentWeaponId);
 
 		isReloading = true;
 		reloadCoroutine = StartCoroutine(WaitForReloadComplete(currentWeaponId));
@@ -162,9 +158,8 @@ public class WeaponController : Photon.MonoBehaviour {
 		if (!isReloading) {
 			return;
 		}
-		
-		int cancelReloadTime = PhotonNetwork.ServerTimestamp + Utils.SYNC_DELAY;
-		photonView.RPC("RpcCancelReload", PhotonTargets.AllViaServer, cancelReloadTime, currentWeaponId);
+
+		photonView.RPC("RpcCancelReload", PhotonTargets.All, currentWeaponId);
 
 		isReloading = false;
 		if (reloadCoroutine != null) {
@@ -175,16 +170,13 @@ public class WeaponController : Photon.MonoBehaviour {
 
 	[PunRPC]
 	private void RpcShoot(int shootTime, int weaponId, Vector3 shootPosition, Quaternion shootDirection) {
-		float secondsToShoot = (shootTime - PhotonNetwork.ServerTimestamp) / 1000.0f;
-		StartCoroutine(WaitForShoot(secondsToShoot, weaponId, shootPosition, shootDirection));
-	}
+		float timeSinceShoot = (PhotonNetwork.ServerTimestamp - shootTime) / 1000.0f;
+		Vector3 extrapolatedPosition = shootPosition + shootDirection * Vector3.forward * weapons[weaponId].prefabProjectile.speed * timeSinceShoot;
 
-	private IEnumerator WaitForShoot(float secondsToShoot, int weaponId, Vector3 shootPosition, Quaternion shootDirection) {
-		if (secondsToShoot > 0.0f) {
-			yield return new WaitForSecondsRealtime(secondsToShoot);
-		}
+		// Check if bullet has hit something before reaching extrapolated position
 
-		LocalShoot(weaponId, shootPosition, shootDirection);
+		// Instantiate bullet on extrapolated position
+		LocalShoot(weaponId, extrapolatedPosition, shootDirection);
 	}
 
 	private void LocalShoot(int weaponId, Vector3 shootPosition, Quaternion shootDirection) {
@@ -209,16 +201,7 @@ public class WeaponController : Photon.MonoBehaviour {
 	}
 
 	[PunRPC]
-	private void RpcToggleAim(int toggleAimTime, int weaponId, bool isAiming) {
-		float secondsToToggleAim = (toggleAimTime - PhotonNetwork.ServerTimestamp) / 1000.0f;
-		StartCoroutine(WaitForToggleAim(secondsToToggleAim, weaponId, isAiming));
-	}
-
-	private IEnumerator WaitForToggleAim(float secondsToToggleAim, int weaponId, bool isAiming) {
-		if (secondsToToggleAim > 0.0f) {
-			yield return new WaitForSecondsRealtime(secondsToToggleAim);
-		}
-
+	private void RpcToggleAim(int weaponId, bool isAiming) {
 		LocalToggleAim(weaponId, isAiming);
 	}
 
@@ -267,16 +250,7 @@ public class WeaponController : Photon.MonoBehaviour {
 	}
 
 	[PunRPC]
-	private void RpcChangeWeapon(int changeWeaponTime, int startWeaponId, int endWeaponId) {
-		float secondsToChangeWeapon = (changeWeaponTime - PhotonNetwork.ServerTimestamp) / 1000.0f;
-		StartCoroutine(WaitForChangeWeapon(secondsToChangeWeapon, startWeaponId, endWeaponId));
-	}
-
-	private IEnumerator WaitForChangeWeapon(float secondsToChangeWeapon, int startWeaponId, int endWeaponId) {
-		if (secondsToChangeWeapon > 0.0f) {
-			yield return new WaitForSecondsRealtime(secondsToChangeWeapon);
-		}
-
+	private void RpcChangeWeapon(int startWeaponId, int endWeaponId) {
 		LocalChangeWeapon(startWeaponId, endWeaponId);
 	}
 
@@ -353,16 +327,7 @@ public class WeaponController : Photon.MonoBehaviour {
 	}
 
 	[PunRPC]
-	private void RpcReload(int reloadTime, int weaponId) {
-		float secondsToReload = (reloadTime - PhotonNetwork.ServerTimestamp) / 1000.0f;
-		StartCoroutine(WaitForReload(secondsToReload, weaponId));
-	}
-
-	private IEnumerator WaitForReload(float secondsToReload, int weaponId) {
-		if (secondsToReload > 0.0f) {
-			yield return new WaitForSecondsRealtime(secondsToReload);
-		}
-
+	private void RpcReload(int weaponId) {
 		LocalReload(weaponId);
 	}
 
@@ -400,16 +365,7 @@ public class WeaponController : Photon.MonoBehaviour {
 	}
 
 	[PunRPC]
-	private void RpcCancelReload(int cancelReloadTime, int weaponId) {
-		float secondsToCancelReload = (cancelReloadTime - PhotonNetwork.ServerTimestamp) / 1000.0f;
-		StartCoroutine(WaitForCancelReload(secondsToCancelReload, weaponId));
-	}
-
-	private IEnumerator WaitForCancelReload(float secondsToCancelReload, int weaponId) {
-		if (secondsToCancelReload > 0.0f) {
-			yield return new WaitForSecondsRealtime(secondsToCancelReload);
-		}
-
+	private void RpcCancelReload(int weaponId) {
 		LocalCancelReload(weaponId);
 	}
 
