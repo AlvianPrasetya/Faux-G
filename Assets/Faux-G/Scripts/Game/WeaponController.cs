@@ -177,7 +177,7 @@ public class WeaponController : Photon.MonoBehaviour {
 		float timeSinceShoot = (PhotonNetwork.ServerTimestamp - shootTime) / 1000.0f;
 		Vector3 extrapolatedPosition = shootPosition + shootDirection * Vector3.forward * weapons[weaponId].prefabProjectile.speed * timeSinceShoot;
 
-		RaycastHit[] hitInfos = Physics.RaycastAll(shootPosition, (extrapolatedPosition - shootPosition).normalized, (extrapolatedPosition - shootPosition).magnitude, 1 << Utils.Layer.DETECT_PROJECTILE | 1 << Utils.Layer.TERRAIN);
+		RaycastHit[] hitInfos = Physics.RaycastAll(shootPosition, (extrapolatedPosition - shootPosition).normalized, (extrapolatedPosition - shootPosition).magnitude, Utils.Layer.DETECT_PROJECTILE | Utils.Layer.TERRAIN);
 		float closestHitDistance = Mathf.Infinity;
 		GameObject closestHitObject = null;
 		foreach (RaycastHit hitInfo in hitInfos) {
