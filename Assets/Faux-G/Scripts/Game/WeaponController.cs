@@ -170,19 +170,34 @@ public class WeaponController : Photon.MonoBehaviour {
 
 	[PunRPC]
 	private void RpcShoot(int shootTime, int weaponId, Vector3 shootPosition, Quaternion shootDirection) {
+		LocalShoot(shootTime, weaponId, shootPosition, shootDirection);
+	}
+
+	private void LocalShoot(int shootTime, int weaponId, Vector3 shootPosition, Quaternion shootDirection) {
 		float timeSinceShoot = (PhotonNetwork.ServerTimestamp - shootTime) / 1000.0f;
 		Vector3 extrapolatedPosition = shootPosition + shootDirection * Vector3.forward * weapons[weaponId].prefabProjectile.speed * timeSinceShoot;
 
-		// Check if bullet has hit something before reaching extrapolated position
+		RaycastHit[] hitInfos = Physics.RaycastAll(shootPosition, (extrapolatedPosition - shootPosition).normalized, (extrapolatedPosition - shootPosition).magnitude, 1 << Utils.Layer.DETECT_PROJECTILE | 1 << Utils.Layer.TERRAIN);
+		float closestHitDistance = Mathf.Infinity;
+		GameObject closestHitObject = null;
+		foreach (RaycastHit hitInfo in hitInfos) {
+			float distanceToObject = (hitInfo.transform.position - extrapolatedPosition).magnitude;
+			if (distanceToObject < closestHitDistance) {
+				closestHitDistance = distanceToObject;
+				closestHitObject = hitInfo.transform.gameObject;
+			}
+		}
 
-		// Instantiate bullet on extrapolated position
-		LocalShoot(weaponId, extrapolatedPosition, shootDirection);
-	}
+		if (closestHitObject != null) {
+			HitArea hitArea = closestHitObject.GetComponent<HitArea>();
+			if (hitArea != null) {
+				hitArea.Hit(weapons[weaponId].prefabProjectile.maxDamage, photonView.owner);
+			}
+		}
 
-	private void LocalShoot(int weaponId, Vector3 shootPosition, Quaternion shootDirection) {
 		ProjectileController projectile = Instantiate(
 			weapons[weaponId].prefabProjectile,
-			shootPosition,
+			extrapolatedPosition,
 			shootDirection
 		);
 		projectile.SetOwner(photonView.owner, hitColliders);
