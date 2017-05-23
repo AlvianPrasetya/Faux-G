@@ -7,6 +7,7 @@ public class SyncTransform : Photon.MonoBehaviour, IPunObservable {
 	public List<Transform> rotationTransforms;
 	
 	private struct PositionData {
+		public int packetNum;
 		public int timestamp;
 		public Vector3 position;
 
@@ -17,6 +18,7 @@ public class SyncTransform : Photon.MonoBehaviour, IPunObservable {
 	}
 	
 	private struct RotationData {
+		public int packetNum;
 		public int timestamp;
 		public Quaternion rotation;
 
@@ -28,6 +30,7 @@ public class SyncTransform : Photon.MonoBehaviour, IPunObservable {
 	
 	private List<LinkedList<PositionData>> positionBuffers;
 	private List<LinkedList<RotationData>> rotationBuffers;
+	private int sendPacketNum;
 
 	void Awake() {
 		positionBuffers = new List<LinkedList<PositionData>>();
@@ -40,6 +43,8 @@ public class SyncTransform : Photon.MonoBehaviour, IPunObservable {
 		foreach (Transform rotationTransform in rotationTransforms) {
 			rotationBuffers.Add(new LinkedList<RotationData>());
 		}
+
+		sendPacketNum = 0;
 	}
 
 	void Update() {
@@ -55,18 +60,23 @@ public class SyncTransform : Photon.MonoBehaviour, IPunObservable {
 	public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info) {
 		if (stream.isWriting) {
 			foreach (Transform positionTransform in positionTransforms) {
+				stream.SendNext(sendPacketNum);
 				stream.SendNext(positionTransform.position);
 			}
 
 			foreach (Transform rotationTransform in rotationTransforms) {
+				stream.SendNext(sendPacketNum);
 				stream.SendNext(rotationTransform.rotation);
 			}
+
+			sendPacketNum++;
 		} else {
 			int timestamp = PhotonNetwork.ServerTimestamp;
 
 			for (int i = 0; i < positionTransforms.Count; i++) {
+				int packetNum = (int) stream.ReceiveNext();
 				Vector3 position = (Vector3) stream.ReceiveNext();
-				positionBuffers[i].AddLast(new PositionData(timestamp, position));
+				positionBuffers[i].AddLast(new PositionData(packetNum, timestamp, position));
 
 				if (positionBuffers[i].Count > Utils.SYNC_BUFFER_SIZE) {
 					positionBuffers[i].RemoveFirst();
@@ -74,8 +84,9 @@ public class SyncTransform : Photon.MonoBehaviour, IPunObservable {
 			}
 
 			for (int i = 0; i < rotationTransforms.Count; i++) {
+				int packetNum = (int) stream.ReceiveNext();
 				Quaternion rotation = (Quaternion) stream.ReceiveNext();
-				rotationBuffers[i].AddLast(new RotationData(timestamp, rotation));
+				rotationBuffers[i].AddLast(new RotationData(packetNum, timestamp, rotation));
 
 				if (rotationBuffers[i].Count > Utils.SYNC_BUFFER_SIZE) {
 					rotationBuffers[i].RemoveFirst();
@@ -99,13 +110,16 @@ public class SyncTransform : Photon.MonoBehaviour, IPunObservable {
 							break;
 						}
 
+						int currentPacketNum = currentNode.Value.packetNum;
 						int currentTimestamp = currentNode.Value.timestamp;
 						Vector3 currentPosition = currentNode.Value.position;
+
+						int previousPacketNum = previousNode.Value.packetNum;
 						int previousTimestamp = previousNode.Value.timestamp;
 						Vector3 previousPosition = previousNode.Value.position;
 
-						Vector3 dPosition = (currentPosition - previousPosition)
-							/ (currentTimestamp - previousTimestamp + 1);
+						Vector3 dPosition = (currentPosition - previousPosition) * Utils.SEND_RATE_ON_SERIALIZE 
+							/ (currentPacketNum - previousPacketNum) / 1000.0f;
 						positionTransforms[i].position = previousPosition
 							+ dPosition * (renderTimestamp - previousTimestamp);
 					} else {
@@ -115,7 +129,7 @@ public class SyncTransform : Photon.MonoBehaviour, IPunObservable {
 						positionTransforms[i].position = Vector3.Lerp(
 							currentNode.Value.position,
 							nextNode.Value.position,
-							(float) (renderTimestamp - currentTimestamp) / (nextTimestamp - currentTimestamp + 1)
+							(float) (renderTimestamp - currentTimestamp) / (nextTimestamp - currentTimestamp)
 						);
 					}
 
@@ -140,14 +154,17 @@ public class SyncTransform : Photon.MonoBehaviour, IPunObservable {
 							break;
 						}
 
+						int currentPacketNum = currentNode.Value.packetNum;
 						int currentTimestamp = currentNode.Value.timestamp;
 						Quaternion currentRotation = currentNode.Value.rotation;
+
+						int previousPacketNum = currentNode.Value.packetNum;
 						int previousTimestamp = previousNode.Value.timestamp;
 						Quaternion previousRotation = previousNode.Value.rotation;
 
 						Quaternion deltaRotation = currentRotation * Quaternion.Inverse(previousRotation);
-						float deltaTime = (float) (renderTimestamp - previousTimestamp)
-							/ (currentTimestamp - previousTimestamp + 1);
+						float deltaTime = (float) (renderTimestamp - previousTimestamp) * Utils.SEND_RATE_ON_SERIALIZE
+							/ (currentPacketNum - previousPacketNum) / 1000.0f;
 
 						float deltaAngle;
 						Vector3 deltaAxis;
@@ -165,7 +182,7 @@ public class SyncTransform : Photon.MonoBehaviour, IPunObservable {
 						rotationTransforms[i].rotation = Quaternion.Slerp(
 							currentNode.Value.rotation,
 							nextNode.Value.rotation,
-							(float) (renderTimestamp - currentTimestamp) / (nextTimestamp - currentTimestamp + 1)
+							(float) (renderTimestamp - currentTimestamp) / (nextTimestamp - currentTimestamp)
 						);
 					}
 
