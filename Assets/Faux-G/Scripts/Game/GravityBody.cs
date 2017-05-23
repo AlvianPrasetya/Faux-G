@@ -7,16 +7,9 @@ public class GravityBody : Photon.MonoBehaviour {
 	public float minRotateSpeed;
 	public float maxRotateSpeed;
 
-	private static readonly float BINARY_SEARCH_LOWER_BOUND = 0.0f;
-	private static readonly float BINARY_SEARCH_UPPER_BOUND = 1000.0f;
-	private static readonly float BINARY_SEARCH_EPSILON = 1e-4f;
-	private static readonly float SPHERECAST_DISTANCE = 1e-3f;
-	private static readonly int NUM_SEGMENTS_LATITUDE = 6;
-	private static readonly int NUM_SEGMENTS_LONGITUDE = 12;
-
 	private new Rigidbody rigidbody;
-
-	private List<Vector3> sphereCastDirections;
+	private List<Collider> terrainColliders;
+	
 	private Vector3 lastGravityDirection;
 	private Vector3 gravityDirection;
 	private float referenceAngle;
@@ -27,8 +20,11 @@ public class GravityBody : Photon.MonoBehaviour {
 
 	void Awake() {
 		rigidbody = GetComponent<Rigidbody>();
+		terrainColliders = new List<Collider>();
+		foreach (GameObject terrain in GameObject.FindGameObjectsWithTag(Utils.Tag.TERRAIN)) {
+			terrainColliders.Add(terrain.GetComponent<Collider>());
+		}
 
-		CalculateSphereCastDirections();
 		lastGravityDirection = Vector3.zero;
 		gravityDirection = Vector3.zero;
 	}
@@ -42,66 +38,20 @@ public class GravityBody : Photon.MonoBehaviour {
 		AdjustRotation();
 	}
 
-	private void CalculateSphereCastDirections() {
-		sphereCastDirections = new List<Vector3>();
-
-		float dLatitude = Utils.PI / NUM_SEGMENTS_LATITUDE;
-		float dLongitude = 2 * Utils.PI / NUM_SEGMENTS_LONGITUDE;
-		for (float latitude = dLatitude / 2; latitude < Utils.PI; latitude += dLatitude) {
-			for (float longitude = dLongitude / 2; longitude < 2 * Utils.PI; longitude += dLongitude) {
-				sphereCastDirections.Add(new Vector3(
-					Mathf.Sin(latitude) * Mathf.Cos(longitude),
-					Mathf.Sin(latitude) * Mathf.Sin(longitude),
-					Mathf.Cos(latitude)
-				));
-			}
-		}
-	}
-
 	private void UpdateGravityDirection() {
 		lastGravityDirection = gravityDirection;
 
-		/*
-		 * Binary search to obtain largest radius of sphere centered at the player that 
-		 * does not come in contact with any terrain.
-		 */
-		float lowerBoundRadius = BINARY_SEARCH_LOWER_BOUND;
-		float upperBoundRadius = BINARY_SEARCH_UPPER_BOUND;
-		bool isTerrainFound = false;
-		while (upperBoundRadius - lowerBoundRadius > BINARY_SEARCH_EPSILON) {
-			float castRadius = (lowerBoundRadius + upperBoundRadius) / 2.0f;
-			if (Physics.CheckSphere(transform.position, castRadius, Utils.Layer.TERRAIN)) {
-				upperBoundRadius = castRadius;
-				isTerrainFound = true;
-			} else {
-				lowerBoundRadius = castRadius;
+		Vector3 closestTerrainPoint = transform.position;
+		float closestTerrainPointSqrDist = Mathf.Infinity;
+		foreach (Collider terrainCollider in terrainColliders) {
+			Vector3 terrainPoint = terrainCollider.ClosestPoint(transform.position);
+			if (Vector3.SqrMagnitude(terrainPoint - transform.position) < closestTerrainPointSqrDist) {
+				closestTerrainPoint = terrainPoint;
+				closestTerrainPointSqrDist = Vector3.SqrMagnitude(terrainPoint - transform.position);
 			}
 		}
 
-		if (isTerrainFound) {
-			/*
-			 * Project the largest radius sphere radially to get the closest terrain 
-			 * point to the player.
-			 */
-			RaycastHit hitInfo;
-			Vector3 closestPoint = transform.position;
-			float minSqrDist = Mathf.Infinity;
-
-			foreach (Vector3 direction in sphereCastDirections) {
-				if (Physics.SphereCast(transform.position, lowerBoundRadius, direction,
-							out hitInfo, SPHERECAST_DISTANCE, Utils.Layer.TERRAIN)) {
-					float sqrDist = Vector3.SqrMagnitude(hitInfo.point - transform.position);
-					if (sqrDist < minSqrDist) {
-						closestPoint = hitInfo.point;
-						minSqrDist = sqrDist;
-					}
-				}
-			}
-
-			gravityDirection = (closestPoint - transform.position).normalized;
-		} else {
-			gravityDirection = Vector3.zero;
-		}
+		gravityDirection = Vector3.Normalize(closestTerrainPoint - transform.position);
 	}
 
 	private void AdjustRotation() {

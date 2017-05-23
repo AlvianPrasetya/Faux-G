@@ -23,6 +23,10 @@ public class Utils : MonoBehaviour {
 		public static readonly string PLAYER = "Player";
 	}
 
+	public class Tag {
+		public static readonly string TERRAIN = "Terrain";
+	}
+
 	public class Layer {
 		public static readonly int TERRAIN = 1 << LayerMask.NameToLayer("Terrain");
 		public static readonly int PROJECTILE = 1 << LayerMask.NameToLayer("Projectile");
