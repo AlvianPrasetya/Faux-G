@@ -105,7 +105,7 @@ public class SyncTransform : Photon.MonoBehaviour, IPunObservable {
 						Vector3 previousPosition = previousNode.Value.position;
 
 						Vector3 dPosition = (currentPosition - previousPosition)
-							/ (currentTimestamp - previousTimestamp);
+							/ (currentTimestamp - previousTimestamp + 1);
 						positionTransforms[i].position = previousPosition
 							+ dPosition * (renderTimestamp - previousTimestamp);
 					} else {
@@ -115,7 +115,7 @@ public class SyncTransform : Photon.MonoBehaviour, IPunObservable {
 						positionTransforms[i].position = Vector3.Lerp(
 							currentNode.Value.position,
 							nextNode.Value.position,
-							(float) (renderTimestamp - currentTimestamp) / (nextTimestamp - currentTimestamp)
+							(float) (renderTimestamp - currentTimestamp) / (nextTimestamp - currentTimestamp + 1)
 						);
 					}
 
@@ -147,7 +147,7 @@ public class SyncTransform : Photon.MonoBehaviour, IPunObservable {
 
 						Quaternion deltaRotation = currentRotation * Quaternion.Inverse(previousRotation);
 						float deltaTime = (float) (renderTimestamp - previousTimestamp)
-							/ (currentTimestamp - previousTimestamp);
+							/ (currentTimestamp - previousTimestamp + 1);
 
 						float deltaAngle;
 						Vector3 deltaAxis;
@@ -165,7 +165,7 @@ public class SyncTransform : Photon.MonoBehaviour, IPunObservable {
 						rotationTransforms[i].rotation = Quaternion.Slerp(
 							currentNode.Value.rotation,
 							nextNode.Value.rotation,
-							(float) (renderTimestamp - currentTimestamp) / (nextTimestamp - currentTimestamp)
+							(float) (renderTimestamp - currentTimestamp) / (nextTimestamp - currentTimestamp + 1)
 						);
 					}
 
