@@ -11,7 +11,8 @@ public class SyncTransform : Photon.MonoBehaviour, IPunObservable {
 		public int timestamp;
 		public Vector3 position;
 
-		public PositionData(int timestamp, Vector3 position) {
+		public PositionData(int packetNum, int timestamp, Vector3 position) {
+			this.packetNum = packetNum;
 			this.timestamp = timestamp;
 			this.position = position;
 		}
@@ -22,7 +23,8 @@ public class SyncTransform : Photon.MonoBehaviour, IPunObservable {
 		public int timestamp;
 		public Quaternion rotation;
 
-		public RotationData(int timestamp, Quaternion rotation) {
+		public RotationData(int packetNum, int timestamp, Quaternion rotation) {
+			this.packetNum = packetNum;
 			this.timestamp = timestamp;
 			this.rotation = rotation;
 		}
