@@ -38,7 +38,7 @@ public class ProjectileController : MonoBehaviour {
 	void OnCollisionEnter(Collision collision) {
 		HitArea targetHitArea = collision.gameObject.GetComponent<HitArea>();
 		if (targetHitArea != null) {
-			targetHitArea.Hit(Mathf.Lerp(maxDamage, minDamage, totalDistance / maxRange), owner);
+			targetHitArea.Hit(CalculateDamageBasedOnDistance(totalDistance), owner);
 		}
 
 		ExplodeAndDestroy();
@@ -49,6 +49,10 @@ public class ProjectileController : MonoBehaviour {
 		foreach (Collider ownerCollider in ownerColliders) {
 			Physics.IgnoreCollision(collider, ownerCollider);
 		}
+	}
+
+	public float CalculateDamageBasedOnDistance(float distanceTraveled) {
+		return Mathf.Lerp(maxDamage, minDamage, distanceTraveled / maxRange);
 	}
 
 	private IEnumerator DestroyOnMaxRange() {

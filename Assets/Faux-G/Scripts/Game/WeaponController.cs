@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 public class WeaponController : Photon.MonoBehaviour {
 
@@ -177,36 +178,46 @@ public class WeaponController : Photon.MonoBehaviour {
 		float timeSinceShoot = (PhotonNetwork.ServerTimestamp - shootTime) / 1000.0f;
 		Vector3 extrapolatedPosition = shootPosition + shootDirection * Vector3.forward * weapons[weaponId].prefabProjectile.speed * timeSinceShoot;
 
-		RaycastHit[] hitInfos = Physics.RaycastAll(shootPosition, (extrapolatedPosition - shootPosition).normalized, (extrapolatedPosition - shootPosition).magnitude, Utils.Layer.DETECT_PROJECTILE | Utils.Layer.TERRAIN);
-		float closestHitDistance = Mathf.Infinity;
-		GameObject closestHitObject = null;
-		foreach (RaycastHit hitInfo in hitInfos) {
-			float distanceToObject = (hitInfo.transform.position - extrapolatedPosition).magnitude;
-			if (distanceToObject < closestHitDistance) {
-				closestHitDistance = distanceToObject;
-				closestHitObject = hitInfo.transform.gameObject;
-			}
-		}
-
-		if (closestHitObject != null) {
-			HitArea hitArea = closestHitObject.GetComponent<HitArea>();
-			if (hitArea != null) {
-				hitArea.Hit(weapons[weaponId].prefabProjectile.maxDamage, photonView.owner);
-			}
-		}
-
 		ProjectileController projectile = Instantiate(
 			weapons[weaponId].prefabProjectile,
-			extrapolatedPosition,
+			shootPosition,
 			shootDirection
 		);
 		projectile.SetOwner(photonView.owner, hitColliders);
 
+		// Raycast from shoot position to extrapolated position and sort hitInfo by traveled distance
+		List<RaycastHit> hitInfos = Physics.RaycastAll(
+			shootPosition, 
+			(extrapolatedPosition - shootPosition).normalized, 
+			(extrapolatedPosition - shootPosition).magnitude, 
+			Utils.Layer.DETECT_PROJECTILE | Utils.Layer.TERRAIN
+		).ToList();
+		hitInfos = hitInfos.OrderBy(x => (x.transform.position - shootPosition).sqrMagnitude).ToList();
+
+		bool hitSomething = false;
+		foreach (RaycastHit hitInfo in hitInfos) {
+			if (hitInfo.transform.root == transform.root) {
+				// Ignore self collision, do nothing
+			} else {
+				// Collision with other entity, move projectile here to simulate collision
+				projectile.transform.position = hitInfo.point;
+				hitSomething = true;
+				break;
+			}
+		}
+
+		// Simulate starting from extrapolated position if projectile has not hit anything
+		if (!hitSomething) {
+			projectile.transform.position = extrapolatedPosition;
+		}
+
+		// Play firing sound
 		if (weapons[weaponId].fireSound != null) {
 			audioSource.volume = weapons[weaponId].fireVolume;
 			audioSource.PlayOneShot(weapons[weaponId].fireSound);
 		}
 
+		// Apply recoil on local player
 		if (photonView.isMine) {
 			// Only apply recoil to local player since position and rotation data are synced anyway
 			ApplyRecoil(Vector2.Lerp(weapons[weaponId].minRecoil, weapons[weaponId].maxRecoil, Random.value));
