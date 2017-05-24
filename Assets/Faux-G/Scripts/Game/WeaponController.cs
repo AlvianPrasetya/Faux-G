@@ -190,7 +190,7 @@ public class WeaponController : Photon.MonoBehaviour {
 			shootPosition, 
 			(extrapolatedPosition - shootPosition).normalized, 
 			(extrapolatedPosition - shootPosition).magnitude, 
-			~Utils.Layer.IGNORE_PROJECTILE
+			~(Utils.Layer.IGNORE_PROJECTILE | Utils.Layer.PROJECTILE)
 		).ToList();
 		hitInfos = hitInfos.OrderBy(x => (x.transform.position - shootPosition).sqrMagnitude).ToList();
 
