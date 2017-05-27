@@ -4,7 +4,6 @@ public class PlayerController : Photon.MonoBehaviour {
 
 	public Transform playerHead;
 	public Camera playerCamera;
-	public Camera scopeCamera;
 
 	// Lookaround parameters
 	public float lookAroundSpeed;
@@ -55,7 +54,7 @@ public class PlayerController : Photon.MonoBehaviour {
 			rigidbody.isKinematic = true;
 			gravityBody.enabled = false;
 			playerCamera.gameObject.SetActive(false);
-			scopeCamera.gameObject.SetActive(false);
+			weaponController.scopeCamera.gameObject.SetActive(false);
 			return;
 		}
 

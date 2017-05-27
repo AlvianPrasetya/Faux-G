@@ -20,6 +20,10 @@ public class Weapon : MonoBehaviour {
 	public Vector3 aimCameraPosition;
 	public float aimCameraFieldOfView;
 
+	public Vector3 scopeCameraPosition;
+	public Vector3 scopeCameraRotation;
+	public float scopeCameraFieldOfView;
+
 	public Vector3 weaponMuzzlePosition;
 
 	public Vector3 weaponLensPosition;

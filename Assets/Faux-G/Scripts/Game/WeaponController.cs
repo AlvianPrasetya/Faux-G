@@ -13,6 +13,7 @@ public class WeaponController : Photon.MonoBehaviour {
 	public Transform weaponLens;
 	public Transform playerHead;
 	public Camera playerCamera;
+	public Camera scopeCamera;
 	public List<Weapon> weapons;
 	public List<Collider> hitColliders;
 
@@ -313,6 +314,11 @@ public class WeaponController : Photon.MonoBehaviour {
 		weaponTransform.GetComponent<MeshFilter>().mesh = weapons[endWeaponId].weaponMesh;
 		weaponTransform.GetComponent<MeshRenderer>().material = weapons[endWeaponId].weaponMaterial;
 		weaponMuzzle.localPosition = weapons[endWeaponId].weaponMuzzlePosition;
+
+		scopeCamera.transform.localPosition = weapons[endWeaponId].scopeCameraPosition;
+		scopeCamera.transform.localRotation = Quaternion.Euler(weapons[endWeaponId].scopeCameraRotation);
+		scopeCamera.fieldOfView = weapons[endWeaponId].scopeCameraFieldOfView;
+
 		weaponLens.localPosition = weapons[endWeaponId].weaponLensPosition;
 		weaponLens.localRotation = Quaternion.Euler(weapons[endWeaponId].weaponLensRotation);
 		weaponLens.localScale = weapons[endWeaponId].weaponLensScale;
