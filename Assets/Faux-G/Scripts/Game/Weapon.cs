@@ -22,6 +22,10 @@ public class Weapon : MonoBehaviour {
 
 	public Vector3 weaponMuzzlePosition;
 
+	public Vector3 weaponLensPosition;
+	public Vector3 weaponLensRotation;
+	public Vector3 weaponLensScale;
+
 	public float cooldown;
 	public int ammo;
 	public float toggleAimTime;

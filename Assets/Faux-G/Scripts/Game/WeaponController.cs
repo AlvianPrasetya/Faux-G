@@ -10,6 +10,7 @@ public class WeaponController : Photon.MonoBehaviour {
 	public Transform weaponPivot;
 	public Transform weaponTransform;
 	public Transform weaponMuzzle;
+	public Transform weaponLens;
 	public Transform playerHead;
 	public Camera playerCamera;
 	public List<Weapon> weapons;
@@ -312,6 +313,9 @@ public class WeaponController : Photon.MonoBehaviour {
 		weaponTransform.GetComponent<MeshFilter>().mesh = weapons[endWeaponId].weaponMesh;
 		weaponTransform.GetComponent<MeshRenderer>().material = weapons[endWeaponId].weaponMaterial;
 		weaponMuzzle.localPosition = weapons[endWeaponId].weaponMuzzlePosition;
+		weaponLens.localPosition = weapons[endWeaponId].weaponLensPosition;
+		weaponLens.localRotation = Quaternion.Euler(weapons[endWeaponId].weaponLensRotation);
+		weaponLens.localScale = weapons[endWeaponId].weaponLensScale;
 
 		changeWeaponCoroutines.Add(
 			StartCoroutine(Utils.TransformLerpPosition(
