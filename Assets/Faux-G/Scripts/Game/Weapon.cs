@@ -6,6 +6,7 @@ public class Weapon : MonoBehaviour {
 	public Vector2 crosshairSize;
 
 	public Mesh weaponMesh;
+	public Mesh weaponLensMesh;
 	public Material weaponMaterial;
 
 	public Vector3 weaponMeshScale;

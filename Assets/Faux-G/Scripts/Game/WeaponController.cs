@@ -322,6 +322,7 @@ public class WeaponController : Photon.MonoBehaviour {
 		weaponLens.localPosition = weapons[endWeaponId].weaponLensPosition;
 		weaponLens.localRotation = Quaternion.Euler(weapons[endWeaponId].weaponLensRotation);
 		weaponLens.localScale = weapons[endWeaponId].weaponLensScale;
+		weaponLens.GetComponent<MeshFilter>().mesh = weapons[endWeaponId].weaponLensMesh;
 
 		changeWeaponCoroutines.Add(
 			StartCoroutine(Utils.TransformLerpPosition(
