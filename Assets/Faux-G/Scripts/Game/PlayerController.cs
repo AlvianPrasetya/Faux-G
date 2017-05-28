@@ -95,6 +95,14 @@ public class PlayerController : Photon.MonoBehaviour {
 		CheckGrounded();
 	}
 
+	public string GetNickName() {
+		return photonView.owner.NickName;
+	}
+
+	public float GetCurrentHealth() {
+		return health.CurrentHealth;
+	}
+
 	private void InputLookAround() {
 		lookAroundVector = new Vector2(
 			Input.GetAxis(Utils.Input.MOUSE_X), 

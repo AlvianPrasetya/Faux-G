@@ -8,6 +8,7 @@ public class GameManager : MonoBehaviour {
 	public Image crosshairImage;
 	public Text healthText;
 	public Text ammoText;
+	public Text targetInfoText;
 	public List<Transform> spawnPoints;
 
 	private static GameManager instance;
@@ -43,6 +44,8 @@ public class GameManager : MonoBehaviour {
 			Cursor.lockState = CursorLockMode.None;
 			Cursor.visible = true;
 		}
+
+		UpdateTargetInfo();
 	}
 
 	public static GameManager Instance {
@@ -58,11 +61,30 @@ public class GameManager : MonoBehaviour {
 	}
 
 	public void UpdateHealth(float currentHealth, float maxHealth) {
-		healthText.text = string.Format("{0:0} / {1:0}", currentHealth, maxHealth);
+		healthText.text = string.Format("{0} / {1}", Mathf.CeilToInt(currentHealth), Mathf.CeilToInt(maxHealth));
 	}
 
 	public void UpdateAmmo(int currentAmmo, int maxAmmo) {
 		ammoText.text = string.Format("{0} / {1}", currentAmmo, maxAmmo);
+	}
+
+	public void UpdateTargetInfo() {
+		RaycastHit hitInfo;
+		if (Physics.Raycast(
+			    playerCamera.transform.position, playerCamera.transform.forward, out hitInfo, 
+			    Mathf.Infinity, Utils.Layer.DETECT_PROJECTILE)) {
+			PlayerController targetPlayerController = hitInfo.transform.GetComponentInParent<PlayerController>();
+			if (targetPlayerController != null) {
+				targetInfoText.text = string.Format(
+					"{0}\n{1}", 
+					targetPlayerController.GetNickName(), 
+					Mathf.CeilToInt(targetPlayerController.GetCurrentHealth())
+				);
+				return;
+			}
+		}
+
+		targetInfoText.text = "";
 	}
 
 	public void Respawn() {
