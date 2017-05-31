@@ -71,7 +71,7 @@ public class GameManager : MonoBehaviour {
 	public void UpdateTargetInfo() {
 		RaycastHit hitInfo;
 		if (Physics.Raycast(
-			    playerCamera.transform.position, playerCamera.transform.forward, out hitInfo, 
+			playerCamera.transform.position + playerCamera.transform.forward, playerCamera.transform.forward, out hitInfo, 
 			    Mathf.Infinity, Utils.Layer.DETECT_PROJECTILE)) {
 			PlayerController targetPlayerController = hitInfo.transform.GetComponentInParent<PlayerController>();
 			if (targetPlayerController != null) {
