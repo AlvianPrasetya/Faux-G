@@ -3,49 +3,28 @@ using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
 
+/**
+ * This class controls character and camera lifecycles.
+ */
 public class GameManager : MonoBehaviour {
-
-	public Image crosshairImage;
-	public Text healthText;
-	public Text ammoText;
-	public Text targetInfoText;
+    
 	public List<Transform> spawnPoints;
 
 	private static GameManager instance;
-	private bool isCursorLocked;
 	private Camera sceneCamera;
 	private GameObject localPlayer;
 	private Camera playerCamera;
-
-	/*
-	 * MONOBEHAVIOUR LIFECYCLE
-	 */
-
+    
 	void Awake() {
 		PhotonNetwork.sendRate = Utils.SEND_RATE;
 		PhotonNetwork.sendRateOnSerialize = Utils.SEND_RATE_ON_SERIALIZE;
 
 		instance = this;
-		isCursorLocked = true;
 		sceneCamera = Camera.main;
 	}
 
 	void Start() {
 		Spawn();
-	}
-
-	void Update() {
-		InputToggleCursor();
-
-		if (isCursorLocked) {
-			Cursor.lockState = CursorLockMode.Locked;
-			Cursor.visible = false;
-		} else {
-			Cursor.lockState = CursorLockMode.None;
-			Cursor.visible = true;
-		}
-
-		UpdateTargetInfo();
 	}
 
 	public static GameManager Instance {
@@ -54,40 +33,7 @@ public class GameManager : MonoBehaviour {
 		}
 	}
 
-	public Image Crosshair {
-		get {
-			return crosshairImage;
-		}
-	}
-
-	public void UpdateHealth(float currentHealth, float maxHealth) {
-		healthText.text = string.Format("{0} / {1}", Mathf.CeilToInt(currentHealth), Mathf.CeilToInt(maxHealth));
-	}
-
-	public void UpdateAmmo(int currentAmmo, int maxAmmo) {
-		ammoText.text = string.Format("{0} / {1}", currentAmmo, maxAmmo);
-	}
-
-	public void UpdateTargetInfo() {
-		RaycastHit hitInfo;
-		if (Physics.Raycast(
-			playerCamera.transform.position + playerCamera.transform.forward, playerCamera.transform.forward, out hitInfo, 
-			    Mathf.Infinity, Utils.Layer.DETECT_PROJECTILE)) {
-			PlayerController targetPlayerController = hitInfo.transform.GetComponentInParent<PlayerController>();
-			if (targetPlayerController != null) {
-				targetInfoText.text = string.Format(
-					"{0}\n{1}", 
-					targetPlayerController.GetNickName(), 
-					Mathf.CeilToInt(targetPlayerController.GetCurrentHealth())
-				);
-				return;
-			}
-		}
-
-		targetInfoText.text = "";
-	}
-
-	public void Respawn() {
+    public void Respawn() {
 		if (localPlayer != null) {
 			playerCamera.gameObject.SetActive(false);
 			sceneCamera.gameObject.SetActive(true);
@@ -95,6 +41,7 @@ public class GameManager : MonoBehaviour {
 			sceneCamera.transform.position = playerCamera.transform.position;
 			sceneCamera.transform.rotation = playerCamera.transform.rotation;
 
+            // Death camera movement routine
 			Vector3 targetPosition = localPlayer.transform.position + localPlayer.transform.up * 20.0f;
 			Quaternion targetRotation = Quaternion.LookRotation(localPlayer.transform.position - sceneCamera.transform.position);
 			StartCoroutine(Utils.TransformLerpPosition(
@@ -117,7 +64,7 @@ public class GameManager : MonoBehaviour {
 		StartCoroutine(WaitForSpawn(Utils.RESPAWN_TIME));
 	}
 
-	private void Spawn() {
+    private void Spawn() {
 		int spawnPointId = Random.Range(0, spawnPoints.Count);
 		localPlayer = PhotonNetwork.Instantiate(
 			Utils.Resource.PLAYER,
@@ -126,17 +73,10 @@ public class GameManager : MonoBehaviour {
 			0
 		);
 		playerCamera = localPlayer.GetComponentInChildren<Camera>();
+        UIManager.Instance.PlayerCamera = playerCamera;
 
-		sceneCamera.gameObject.SetActive(false);
+        sceneCamera.gameObject.SetActive(false);
 		playerCamera.gameObject.SetActive(true);
-	}
-
-	private void InputToggleCursor() {
-		if (Input.GetKeyDown(KeyCode.Escape)) {
-			isCursorLocked = false;
-		} else if (Input.anyKeyDown) {
-			isCursorLocked = true;
-		}
 	}
 
 	private IEnumerator WaitForSpawn(float waitTime) {

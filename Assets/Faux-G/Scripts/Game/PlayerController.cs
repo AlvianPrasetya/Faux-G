@@ -45,9 +45,9 @@ public class PlayerController : Photon.MonoBehaviour {
 		rigidbody = GetComponent<Rigidbody>();
 		gravityBody = GetComponent<GravityBody>();
 		weaponController = GetComponent<WeaponController>();
-		weaponController.SetAmmoUpdateCallback(GameManager.Instance.UpdateAmmo);
+		weaponController.SetAmmoUpdateCallback(UIManager.Instance.UpdateAmmoText);
 		health = GetComponent<Health>();
-		health.SetHealthUpdateCallback(GameManager.Instance.UpdateHealth);
+		health.SetHealthUpdateCallback(UIManager.Instance.UpdateHealthText);
 		health.SetDeathCallback(GameManager.Instance.Respawn);
 
 		if (!photonView.isMine) {

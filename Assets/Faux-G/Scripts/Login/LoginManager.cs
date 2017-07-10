@@ -3,7 +3,7 @@ using UnityEngine.UI;
 
 public class LoginManager : Photon.PunBehaviour {
 
-	public Text textStatus;
+	public Text loginStatusText;
 
 	/*
 	 * MONOBEHAVIOUR LIFECYCLE
@@ -16,7 +16,7 @@ public class LoginManager : Photon.PunBehaviour {
 
 	void Start() {
 		Logger.Log("Connecting to Server");
-		textStatus.text = "Connecting to Server";
+		loginStatusText.text = "Connecting to Server";
 		PhotonNetwork.ConnectUsingSettings(Utils.GAME_VERSION);
 	}
 
@@ -26,12 +26,12 @@ public class LoginManager : Photon.PunBehaviour {
 
 	public override void OnConnectedToPhoton() {
 		Logger.Log("Connected to Server");
-		textStatus.text = "Connected to Server";
+		loginStatusText.text = "Connected to Server";
 	}
 
 	public override void OnConnectedToMaster() {
 		Logger.Log("Joining Lobby");
-		textStatus.text = "Joining Lobby";
+		loginStatusText.text = "Joining Lobby";
 		PhotonNetwork.JoinLobby();
 	}
 
