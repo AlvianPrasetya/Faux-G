@@ -5,7 +5,7 @@ using System.Linq;
 
 public class WeaponController : Photon.MonoBehaviour {
 
-	public delegate void AmmoUpdateCallback(int currentHealth, int maxHealth);
+	public delegate void AmmoUpdateCallback(int currentAmmo, int maxAmmo);
 
 	public Transform weaponPivot;
 	public Transform weaponTransform;

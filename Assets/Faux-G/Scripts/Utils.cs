@@ -20,7 +20,7 @@ public class Utils : MonoBehaviour {
 	}
 
 	public class Resource {
-		public static readonly string PLAYER = "Player";
+		public static readonly string PLAYER = "Thrower";
 	}
 
 	public class Tag {

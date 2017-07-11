@@ -49,50 +49,44 @@ public class PlayerController : Photon.MonoBehaviour {
 		health = GetComponent<Health>();
 		health.SetHealthUpdateCallback(UIManager.Instance.UpdateHealthText);
 		health.SetDeathCallback(GameManager.Instance.Respawn);
-
-		if (!photonView.isMine) {
-			rigidbody.isKinematic = true;
-			gravityBody.enabled = false;
-			playerCamera.gameObject.SetActive(false);
-			weaponController.scopeCamera.gameObject.SetActive(false);
-			return;
-		}
-
-		lookAroundVector = Vector2.zero;
-		isCrouching = false;
-		isSprinting = false;
-		moveVector = Vector3.zero;
-		jumpAcceleration = 0.0f;
-		isJumpCharged = false;
-		isGrounded = false;
+        
+        if (photonView.isMine) {
+            lookAroundVector = Vector2.zero;
+            isCrouching = false;
+            isSprinting = false;
+            moveVector = Vector3.zero;
+            jumpAcceleration = 0.0f;
+            isJumpCharged = false;
+            isGrounded = false;
+        } else {
+            rigidbody.isKinematic = true;
+            gravityBody.enabled = false;
+            playerCamera.gameObject.SetActive(false);
+            weaponController.scopeCamera.gameObject.SetActive(false);
+        }
 	}
 
 	void Update() {
-		if (!photonView.isMine) {
-			return;
-		}
-
-		InputLookAround();
-		InputCrouch();
-		InputSprint();
-		InputMove();
-		InputJump();
-		InputShoot();
-		InputToggleAim();
-		InputChangeWeapon();
-		InputReload();
+        if (photonView.isMine) {
+            InputLookAround();
+            InputCrouch();
+            InputSprint();
+            InputMove();
+            InputJump();
+            InputShoot();
+            InputToggleAim();
+            InputChangeWeapon();
+            InputReload();
+        }
 	}
 
 	void FixedUpdate() {
-		if (!photonView.isMine) {
-			return;
-		}
-
-		LookAround();
-		Move();
-		Jump();
-
-		CheckGrounded();
+		if (photonView.isMine) {
+            LookAround();
+            Move();
+            Jump();
+            CheckGrounded();
+        }
 	}
 
 	public string GetNickName() {
