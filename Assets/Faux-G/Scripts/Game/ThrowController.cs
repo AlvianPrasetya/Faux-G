@@ -5,8 +5,7 @@
  * Throwable instantiation and control pre-release are also handled by this class.
  */
 public class ThrowController : Photon.MonoBehaviour {
-
-    public delegate void AmmoUpdateCallback(int currentAmmo, int maxAmmo);
+    
     public enum THROWABLE_STATE {
         IDLE, // IDLE state, no throwables is currently at hand
         PREPARED, // PREPARED state, currently holding a throwable, not yet charging
@@ -60,6 +59,9 @@ public class ThrowController : Photon.MonoBehaviour {
         UpdateArmRotation();
     }
 
+    /**
+     * This method attempts to do a networked preparation of throwable.
+     */
     public void PrepareThrowable(int throwableId) {
         if (throwableState == THROWABLE_STATE.IDLE) {
             photonView.RPC(
@@ -68,6 +70,9 @@ public class ThrowController : Photon.MonoBehaviour {
         }
     }
 
+    /**
+     * This method attempts to do a networked charging of the current prepared throwable.
+     */
     public void ChargeThrowable() {
         if (throwableState == THROWABLE_STATE.PREPARED) {
             photonView.RPC(
@@ -76,6 +81,9 @@ public class ThrowController : Photon.MonoBehaviour {
         }
     }
 
+    /**
+     * This method attempts to do a networked release of the current charged throwable.
+     */
     public void ReleaseThrowable() {
         if (throwableState == THROWABLE_STATE.CHARGING && preparedThrowable != null) {
             // Calculate throwing force
@@ -101,12 +109,20 @@ public class ThrowController : Photon.MonoBehaviour {
         }
     }
 
+    /**
+     * This method updates the relative throwing force based on the value of relativeThrowForcePerSecond 
+     * if and only if the throwable state is at CHARGING (the character is charging a throw).
+     */
     private void UpdateRelativeThrowForce() {
         if (throwableState == THROWABLE_STATE.CHARGING) {
             relativeThrowForce += Mathf.Clamp(relativeThrowForcePerSecond * Time.fixedDeltaTime, 0.0f, 1.0f);
         }
     }
 
+    /**
+     * This method updates the relative reload progress based on the value of relativeReloadProgressPerSecond 
+     * if and only if the throwable state is at IDLE (the character has no active throwable).
+     */
     private void UpdateRelativeReloadProgress() {
         if (throwableState == THROWABLE_STATE.IDLE) {
             relativeReloadProgress += Mathf.Clamp(relativeReloadProgressPerSecond * Time.fixedDeltaTime, 0.0f, 1.0f);
@@ -116,6 +132,11 @@ public class ThrowController : Photon.MonoBehaviour {
         }
     }
 
+    /**
+     * This method updates the arm rotation based on the current relative throwing force or relative 
+     * reload progress, whichever is relevant to the current state. The arm rotation, in turn, determines 
+     * the trajectory of the throwable upon release.
+     */
     private void UpdateArmRotation() {
         float currentArmAngle;
         switch (throwableState) {
