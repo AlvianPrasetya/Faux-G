@@ -4,10 +4,7 @@
  * This abstract class describes the mandatory properties and behavioural skeletons of a throwable 
  * object. New throwables are to implement this abstract class accordingly.
  */
-public abstract class IThrowable : MonoBehaviour {
-
-    // The base impact damage (before modifiers) of this throwable object.
-    public float impactDamage;
+public abstract class ThrowableBase : MonoBehaviour {
 
     // The owner of this throwable object (the player spawning this object).
     private PhotonPlayer owner;

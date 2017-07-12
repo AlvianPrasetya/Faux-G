@@ -1,11 +1,15 @@
 ﻿using System;
 using UnityEngine;
 
-public class DummyThrowable : IThrowable {
+public class DummyThrowable : ThrowableBase, IPoolable {
 
     private new Collider collider;
     private new Rigidbody rigidbody;
     private GravityBody gravityBody;
+
+    public void Pool() {
+        // TODO: Implement pooling routine
+    }
 
     void Awake() {
         collider = GetComponent<Collider>();

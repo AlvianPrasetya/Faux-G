@@ -16,7 +16,7 @@ public class ThrowController : Photon.MonoBehaviour {
     public Transform armPivot;
     public Camera playerCamera;
 
-    public IThrowable[] throwables;
+    public ThrowableBase[] throwables;
 
     // The increment in relative throwing force per second of charging
     public float relativeThrowForcePerSecond;
@@ -33,7 +33,7 @@ public class ThrowController : Photon.MonoBehaviour {
     public float maxArmAngle; // Arm angle when relative throw force is 0
 
     private THROWABLE_STATE throwableState;
-    private IThrowable preparedThrowable;
+    private ThrowableBase preparedThrowable;
 
     // Relative throw force ranging from 0 ~ 1 (0 = minThrowForce, 1 = maxThrowForce)
     private float relativeThrowForce;
@@ -154,7 +154,7 @@ public class ThrowController : Photon.MonoBehaviour {
     [PunRPC]
     private void RpcPrepareThrowable(int eventTimeMs, int throwableId) {
         // TODO: Trigger preparing throwable animation
-        IThrowable throwable = Instantiate(throwables[throwableId],
+        ThrowableBase throwable = Instantiate(throwables[throwableId],
             throwableSpawner.position, throwableSpawner.rotation, throwableSpawner);
         throwable.Owner = photonView.owner;
 
