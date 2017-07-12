@@ -106,14 +106,11 @@ public class ThrowController : Photon.MonoBehaviour {
      */
     private void ReleaseThrowable() {
         if (throwableState == THROWABLE_STATE.CHARGING && preparedThrowable != null) {
-            // Calculate throwing force
-            float throwForce = Mathf.Lerp(minThrowForce, maxThrowForce, relativeThrowForce);
-
             photonView.RPC(
                 "RpcReleaseThrowable", PhotonTargets.All,
                 PhotonNetwork.ServerTimestamp,
                 throwableSpawner.position, throwableSpawner.rotation,
-                throwableSpawner.forward, throwForce);
+                throwableSpawner.forward, relativeThrowForce);
         }
     }
 
@@ -180,17 +177,20 @@ public class ThrowController : Photon.MonoBehaviour {
 
     [PunRPC]
     private void RpcReleaseThrowable(int eventTimeMs, Vector3 throwPosition, Quaternion throwRotation, 
-        Vector3 throwDirection, float throwForce) {
+        Vector3 throwDirection, float relativeThrowForce) {
         // TODO: Extrapolation logic
         /*float secondsSinceEvent = (PhotonNetwork.ServerTimestamp - eventTimeMs) / 1000.0f;
         Vector3 extrapolatedPosition = throwPosition
             + throwRotation * Vector3.forward * preparedThrowable.speed;*/
-        
+
+        // Calculate throwing force
+        float throwForce = Mathf.Lerp(minThrowForce, maxThrowForce, relativeThrowForce);
+
         preparedThrowable.Release(throwPosition, throwRotation, throwDirection, throwForce);
 
         throwableState = THROWABLE_STATE.IDLE;
         preparedThrowable = null;
-        relativeReloadProgress = 0.0f;
+        relativeReloadProgress = 1.0f - relativeThrowForce;
     }
 
 }
