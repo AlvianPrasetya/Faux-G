@@ -59,10 +59,22 @@ public class ThrowController : Photon.MonoBehaviour {
         UpdateArmRotation();
     }
 
+    private void InputChargeThrowable() {
+        if (Input.GetMouseButtonDown(Utils.Input.MOUSE_BUTTON_LEFT)) {
+            ChargeThrowable();
+        }
+    }
+
+    private void InputReleaseThrowable() {
+        if (Input.GetMouseButtonUp(Utils.Input.MOUSE_BUTTON_LEFT)) {
+            ReleaseThrowable();
+        }
+    }
+
     /**
      * This method attempts to do a networked preparation of throwable.
      */
-    public void PrepareThrowable(int throwableId) {
+    private void PrepareThrowable(int throwableId) {
         if (throwableState == THROWABLE_STATE.IDLE) {
             photonView.RPC(
                 "RpcPrepareThrowable", PhotonTargets.All,
@@ -73,7 +85,7 @@ public class ThrowController : Photon.MonoBehaviour {
     /**
      * This method attempts to do a networked charging of the current prepared throwable.
      */
-    public void ChargeThrowable() {
+    private void ChargeThrowable() {
         if (throwableState == THROWABLE_STATE.PREPARED) {
             photonView.RPC(
                 "RpcChargeThrowable", PhotonTargets.All,
@@ -84,28 +96,16 @@ public class ThrowController : Photon.MonoBehaviour {
     /**
      * This method attempts to do a networked release of the current charged throwable.
      */
-    public void ReleaseThrowable() {
+    private void ReleaseThrowable() {
         if (throwableState == THROWABLE_STATE.CHARGING && preparedThrowable != null) {
             // Calculate throwing force
             float throwForce = Mathf.Lerp(minThrowForce, maxThrowForce, relativeThrowForce);
 
             photonView.RPC(
-                "RpcReleaseThrowable", PhotonTargets.All, 
-                PhotonNetwork.ServerTimestamp, 
-                throwableSpawner.position, throwableSpawner.rotation, 
+                "RpcReleaseThrowable", PhotonTargets.All,
+                PhotonNetwork.ServerTimestamp,
+                throwableSpawner.position, throwableSpawner.rotation,
                 throwableSpawner.forward, throwForce);
-        }
-    }
-
-    private void InputChargeThrowable() {
-        if (throwableState == THROWABLE_STATE.PREPARED && Input.GetMouseButtonDown(Utils.Input.MOUSE_BUTTON_LEFT)) {
-            ChargeThrowable();
-        }
-    }
-
-    private void InputReleaseThrowable() {
-        if (throwableState == THROWABLE_STATE.CHARGING && Input.GetMouseButtonUp(Utils.Input.MOUSE_BUTTON_LEFT)) {
-            ReleaseThrowable();
         }
     }
 
@@ -125,8 +125,11 @@ public class ThrowController : Photon.MonoBehaviour {
      */
     private void UpdateRelativeReloadProgress() {
         if (throwableState == THROWABLE_STATE.IDLE) {
-            relativeReloadProgress += Mathf.Clamp(relativeReloadProgressPerSecond * Time.fixedDeltaTime, 0.0f, 1.0f);
-            if (relativeReloadProgress >= 1.0f) {
+            relativeReloadProgress = Mathf.Clamp(
+                relativeReloadProgress + relativeReloadProgressPerSecond * Time.fixedDeltaTime, 
+                0.0f, 
+                1.0f);
+            if (relativeReloadProgress == 1.0f) {
                 PrepareThrowable(0);
             }
         }

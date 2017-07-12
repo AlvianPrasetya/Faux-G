@@ -91,9 +91,9 @@ public class UIManager : MonoBehaviour {
         if (hitSomething) {
             PlayerController targetPlayerController = hitInfo.transform.GetComponentInParent<PlayerController>();
             if (targetPlayerController != null) {
-                targetInfoText.text = targetPlayerController.GetNickName()
+                targetInfoText.text = targetPlayerController.NickName
                     + "\n"
-                    + Mathf.CeilToInt(targetPlayerController.GetCurrentHealth());
+                    + Mathf.CeilToInt(targetPlayerController.CurrentHealth);
                 return;
             }
         }
