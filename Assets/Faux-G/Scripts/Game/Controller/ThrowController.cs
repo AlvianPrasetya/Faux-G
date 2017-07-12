@@ -50,6 +50,7 @@ public class ThrowController : Photon.MonoBehaviour {
         if (photonView.isMine) {
             InputChargeThrowable();
             InputReleaseThrowable();
+            PrepareThrowableOnReloadFinish();
         }
     }
 
@@ -68,6 +69,13 @@ public class ThrowController : Photon.MonoBehaviour {
     private void InputReleaseThrowable() {
         if (Input.GetMouseButtonUp(Utils.Input.MOUSE_BUTTON_LEFT)) {
             ReleaseThrowable();
+        }
+    }
+
+    private void PrepareThrowableOnReloadFinish() {
+        if (throwableState == THROWABLE_STATE.IDLE && preparedThrowable == null && relativeReloadProgress == 1.0f) {
+            // TODO: Randomize the next throwable to prepare
+            PrepareThrowable(0);
         }
     }
 
@@ -129,9 +137,6 @@ public class ThrowController : Photon.MonoBehaviour {
                 relativeReloadProgress + relativeReloadProgressPerSecond * Time.fixedDeltaTime, 
                 0.0f, 
                 1.0f);
-            if (relativeReloadProgress == 1.0f) {
-                PrepareThrowable(0);
-            }
         }
     }
 
