@@ -1,21 +1,33 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 public class DummyThrowable : IThrowable {
 
+    private new Collider collider;
     private new Rigidbody rigidbody;
     private GravityBody gravityBody;
 
-    private void Awake() {
+    void Awake() {
+        collider = GetComponent<Collider>();
         rigidbody = GetComponent<Rigidbody>();
         gravityBody = GetComponent<GravityBody>();
+        
+        // Disable physics before release
+        collider.enabled = false;
+        rigidbody.isKinematic = true;
+        gravityBody.enabled = false;
     }
 
     public override void Release(Vector3 throwPosition, Vector3 throwDirection, float throwForce) {
         transform.parent = null;
         transform.position = throwPosition;
-        
-        rigidbody.AddForce(throwDirection * throwForce, ForceMode.Impulse);
+
+        // Enable physics upon release
+        collider.enabled = true;
+        rigidbody.isKinematic = false;
         gravityBody.enabled = true;
+
+        rigidbody.AddForce(throwDirection * throwForce, ForceMode.Impulse);
     }
 
     protected override void OnTriggerEnter(Collider other) {
