@@ -10,10 +10,8 @@ public class PlayerController : Photon.MonoBehaviour {
 	public float maxLookUpAngle;
 	public float maxLookDownAngle;
 
-	// Walk/sprint parameters
-	public float crouchSpeed;
+	// Walk parameters
 	public float walkSpeed;
-	public float sprintSpeed;
 
 	// Jump parameters
 	public float minJumpAcceleration;
@@ -26,12 +24,10 @@ public class PlayerController : Photon.MonoBehaviour {
 	// Cached components
 	private new Rigidbody rigidbody;
 	private GravityBody gravityBody;
-	private WeaponController weaponController;
+	//private WeaponController weaponController;
 	private Health health;
 
 	private Vector2 lookAroundVector;
-	private bool isCrouching;
-	private bool isSprinting;
 	private Vector3 moveVector;
 	private float jumpAcceleration;
 	private bool isJumpCharged;
@@ -44,16 +40,14 @@ public class PlayerController : Photon.MonoBehaviour {
 	void Awake() {
 		rigidbody = GetComponent<Rigidbody>();
 		gravityBody = GetComponent<GravityBody>();
-		weaponController = GetComponent<WeaponController>();
-		weaponController.SetAmmoUpdateCallback(UIManager.Instance.UpdateAmmoText);
+		//weaponController = GetComponent<WeaponController>();
+		//weaponController.SetAmmoUpdateCallback(UIManager.Instance.UpdateAmmoText);
 		health = GetComponent<Health>();
 		health.SetHealthUpdateCallback(UIManager.Instance.UpdateHealthText);
 		health.SetDeathCallback(GameManager.Instance.Respawn);
         
         if (photonView.isMine) {
             lookAroundVector = Vector2.zero;
-            isCrouching = false;
-            isSprinting = false;
             moveVector = Vector3.zero;
             jumpAcceleration = 0.0f;
             isJumpCharged = false;
@@ -62,15 +56,13 @@ public class PlayerController : Photon.MonoBehaviour {
             rigidbody.isKinematic = true;
             gravityBody.enabled = false;
             playerCamera.gameObject.SetActive(false);
-            weaponController.scopeCamera.gameObject.SetActive(false);
+            //weaponController.scopeCamera.gameObject.SetActive(false);
         }
 	}
 
 	void Update() {
         if (photonView.isMine) {
             InputLookAround();
-            InputCrouch();
-            InputSprint();
             InputMove();
             InputJump();
             InputShoot();
@@ -104,26 +96,6 @@ public class PlayerController : Photon.MonoBehaviour {
 		);
 	}
 
-	private void InputCrouch() {
-		if (Input.GetKeyDown(KeyCode.LeftControl)) {
-			isCrouching = true;
-		}
-
-		if (Input.GetKeyUp(KeyCode.LeftControl)) {
-			isCrouching = false;
-		}
-	}
-
-	private void InputSprint() {
-		if (Input.GetKeyDown(KeyCode.LeftShift)) {
-			isSprinting = true;
-		}
-
-		if (Input.GetKeyUp(KeyCode.LeftShift)) {
-			isSprinting = false;
-		}
-	}
-
 	private void InputMove() {
 		moveVector = transform.forward * Input.GetAxis(Utils.Input.VERTICAL)
 			+ transform.right * Input.GetAxis(Utils.Input.HORIZONTAL);
@@ -150,32 +122,32 @@ public class PlayerController : Photon.MonoBehaviour {
 
 	private void InputShoot() {
 		if (Input.GetMouseButton(Utils.Input.MOUSE_BUTTON_LEFT)) {
-			weaponController.Shoot();
+			//weaponController.Shoot();
 		}
 	}
 
 	private void InputToggleAim() {
 		if (Input.GetMouseButtonDown(Utils.Input.MOUSE_BUTTON_RIGHT)) {
-			weaponController.ToggleAim();
+			//weaponController.ToggleAim();
 		}
 	}
 
 	private void InputChangeWeapon() {
 		for (int i = 0; i < Utils.Input.KEY_CODES_CHANGE_WEAPON.Length; i++) {
 			if (Input.GetKeyDown(Utils.Input.KEY_CODES_CHANGE_WEAPON[i])) {
-				weaponController.ChangeWeapon(i);
+				//weaponController.ChangeWeapon(i);
 				break;
 			}
 		}
 
 		if (Input.GetKeyDown(KeyCode.Q)) {
-			weaponController.CycleWeapon();
+			//weaponController.CycleWeapon();
 		}
 	}
 
 	private void InputReload() {
 		if (Input.GetKeyDown(KeyCode.R)) {
-			weaponController.Reload();
+			//weaponController.Reload();
 		}
 	}
 
@@ -211,16 +183,7 @@ public class PlayerController : Photon.MonoBehaviour {
 	}
 
 	private void Move() {
-		float moveSpeed;
-		if (isCrouching) {
-			moveSpeed = crouchSpeed;
-		} else if (isSprinting) {
-			moveSpeed = sprintSpeed;
-		} else {
-			moveSpeed = walkSpeed;
-		}
-
-		Vector3 moveVelocity = Vector3.ClampMagnitude(moveVector * moveSpeed, moveSpeed);
+		Vector3 moveVelocity = Vector3.ClampMagnitude(moveVector * walkSpeed, walkSpeed);
 		
 		rigidbody.MovePosition(transform.position + moveVelocity * Time.fixedDeltaTime);
 	}
