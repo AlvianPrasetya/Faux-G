@@ -22,9 +22,11 @@ public class DummyThrowable : ThrowableBase, IPoolable {
         gravityBody.enabled = false;
     }
 
-    public override void Release(Vector3 throwPosition, Vector3 throwDirection, float throwForce) {
+    public override void Release(Vector3 throwPosition, Quaternion throwRotation, 
+        Vector3 throwDirection, float throwForce) {
         transform.parent = null;
         transform.position = throwPosition;
+        transform.rotation = throwRotation;
 
         // Enable physics upon release
         collider.enabled = true;

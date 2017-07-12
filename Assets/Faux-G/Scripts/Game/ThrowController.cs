@@ -92,8 +92,8 @@ public class ThrowController : Photon.MonoBehaviour {
             photonView.RPC(
                 "RpcReleaseThrowable", PhotonTargets.All, 
                 PhotonNetwork.ServerTimestamp, 
-                throwableSpawner.position, throwableSpawner.forward, 
-                throwForce);
+                throwableSpawner.position, throwableSpawner.rotation, 
+                throwableSpawner.forward, throwForce);
         }
     }
 
@@ -171,13 +171,14 @@ public class ThrowController : Photon.MonoBehaviour {
     }
 
     [PunRPC]
-    private void RpcReleaseThrowable(int eventTimeMs, Vector3 throwPosition, Vector3 throwDirection, float throwForce) {
+    private void RpcReleaseThrowable(int eventTimeMs, Vector3 throwPosition, Quaternion throwRotation, 
+        Vector3 throwDirection, float throwForce) {
         // TODO: Extrapolation logic
         /*float secondsSinceEvent = (PhotonNetwork.ServerTimestamp - eventTimeMs) / 1000.0f;
         Vector3 extrapolatedPosition = throwPosition
             + throwRotation * Vector3.forward * preparedThrowable.speed;*/
         
-        preparedThrowable.Release(throwPosition, throwDirection, throwForce);
+        preparedThrowable.Release(throwPosition, throwRotation, throwDirection, throwForce);
 
         throwableState = THROWABLE_STATE.IDLE;
         preparedThrowable = null;
