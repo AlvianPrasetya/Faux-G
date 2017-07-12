@@ -2,24 +2,9 @@
 using UnityEngine;
 
 public class DummyThrowable : ThrowableBase, IPoolable {
-
-    private new Collider collider;
-    private new Rigidbody rigidbody;
-    private GravityBody gravityBody;
-
+    
     public void Pool() {
         // TODO: Implement pooling routine
-    }
-
-    void Awake() {
-        collider = GetComponent<Collider>();
-        rigidbody = GetComponent<Rigidbody>();
-        gravityBody = GetComponent<GravityBody>();
-        
-        // Disable physics before release
-        collider.enabled = false;
-        rigidbody.isKinematic = true;
-        gravityBody.enabled = false;
     }
 
     public override void Release(Vector3 throwPosition, Quaternion throwRotation, 
@@ -36,7 +21,7 @@ public class DummyThrowable : ThrowableBase, IPoolable {
         rigidbody.AddForce(throwDirection * throwForce, ForceMode.Impulse);
     }
 
-    protected override void OnTriggerEnter(Collider other) {
+    protected override void OnCollisionEnter(Collision collision) {
         // Does nothing on collision
     }
 

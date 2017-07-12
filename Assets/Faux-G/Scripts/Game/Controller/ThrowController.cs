@@ -9,12 +9,14 @@ public class ThrowController : Photon.MonoBehaviour {
     public enum THROWABLE_STATE {
         IDLE, // IDLE state, no throwables is currently at hand
         PREPARED, // PREPARED state, currently holding a throwable, not yet charging
-        CHARGING // CHARGING state, currently holding a throwable and charging it before throwing
+        CHARGING, // CHARGING state, currently holding a throwable and charging it before throwing
+        HALT // HALT state, charging is currently being halted
     }
 
     public Transform throwableSpawner;
     public Transform armPivot;
     public Camera playerCamera;
+    public Tracer tracerPrefab;
 
     public ThrowableBase[] throwables;
 
@@ -41,7 +43,9 @@ public class ThrowController : Photon.MonoBehaviour {
     // Relative reload progress ranging from 0 ~ 1 (0 = reload hasn't started, 1 = reload has finished)
     private float relativeReloadProgress;
 
-	void Awake() {
+    private Tracer activeTracer;
+
+    void Awake() {
         throwableState = THROWABLE_STATE.IDLE;
         preparedThrowable = null;
     }
@@ -50,6 +54,8 @@ public class ThrowController : Photon.MonoBehaviour {
         if (photonView.isMine) {
             InputChargeThrowable();
             InputReleaseThrowable();
+            InputHaltThrowable();
+            InputUnhaltThrowable();
             PrepareThrowableOnReloadFinish();
         }
     }
@@ -69,6 +75,18 @@ public class ThrowController : Photon.MonoBehaviour {
     private void InputReleaseThrowable() {
         if (Input.GetMouseButtonUp(Utils.Input.MOUSE_BUTTON_LEFT)) {
             ReleaseThrowable();
+        }
+    }
+
+    private void InputHaltThrowable() {
+        if (Input.GetMouseButtonDown(Utils.Input.MOUSE_BUTTON_RIGHT)) {
+            HaltThrowable();
+        }
+    }
+
+    private void InputUnhaltThrowable() {
+        if (Input.GetMouseButtonUp(Utils.Input.MOUSE_BUTTON_RIGHT)) {
+            UnhaltThrowable();
         }
     }
 
@@ -111,6 +129,42 @@ public class ThrowController : Photon.MonoBehaviour {
                 PhotonNetwork.ServerTimestamp,
                 throwableSpawner.position, throwableSpawner.rotation,
                 throwableSpawner.forward, relativeThrowForce);
+        }
+    }
+
+    private void HaltThrowable() {
+        if (throwableState == THROWABLE_STATE.CHARGING) {
+            // Instantiate tracer
+            activeTracer = Instantiate(tracerPrefab, throwableSpawner.position, throwableSpawner.rotation);
+
+            // Copy physical properties from preparedThrowable to activeTracer
+            activeTracer.transform.localScale = preparedThrowable.transform.localScale;
+            activeTracer.Collider.material = preparedThrowable.Collider.material;
+            activeTracer.Rigidbody.mass = preparedThrowable.Rigidbody.mass;
+            activeTracer.Rigidbody.drag = preparedThrowable.Rigidbody.drag;
+            activeTracer.Rigidbody.angularDrag = preparedThrowable.Rigidbody.angularDrag;
+            
+            // Calculate throwing force
+            float throwForce = Mathf.Lerp(minThrowForce, maxThrowForce, relativeThrowForce);
+
+            activeTracer.Release(throwableSpawner.position, throwableSpawner.rotation,
+                throwableSpawner.forward, throwForce);
+
+            photonView.RPC(
+                "RpcHaltThrowable", PhotonTargets.All,
+                PhotonNetwork.ServerTimestamp);
+        }
+    }
+
+    private void UnhaltThrowable() {
+        if (throwableState == THROWABLE_STATE.HALT) {
+            // Destroy tracer
+            activeTracer.Despawn();
+            activeTracer = null;
+
+            photonView.RPC(
+                "RpcUnhaltThrowable", PhotonTargets.All,
+                PhotonNetwork.ServerTimestamp);
         }
     }
 
@@ -191,6 +245,16 @@ public class ThrowController : Photon.MonoBehaviour {
         throwableState = THROWABLE_STATE.IDLE;
         preparedThrowable = null;
         relativeReloadProgress = 1.0f - relativeThrowForce;
+    }
+
+    [PunRPC]
+    private void RpcHaltThrowable(int eventTimeMs) {
+        throwableState = THROWABLE_STATE.HALT;
+    }
+
+    [PunRPC]
+    private void RpcUnhaltThrowable(int eventTimeMs) {
+        throwableState = THROWABLE_STATE.CHARGING;
     }
 
 }
