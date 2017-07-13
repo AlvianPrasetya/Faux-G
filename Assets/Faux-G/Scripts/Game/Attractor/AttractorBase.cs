@@ -8,6 +8,13 @@ public abstract class AttractorBase : MonoBehaviour {
         rigidbody = GetComponent<Rigidbody>();
     }
 
-    public abstract Vector3 CalculateForceVector(Vector3 attractedPosition, float attractedMass);
+    public abstract Vector3 CalculateGravitationalForce(Vector3 attractedPosition, float attractedMass);
+
+    /**
+     * This method does calculation of gravitational force using modified "Newtonian" physics.
+     */
+    protected Vector3 CalculateGravitationalForce(Vector3 direction, float attractedMass, float distance) {
+        return direction * Utils.G * rigidbody.mass* attractedMass / Mathf.Pow(distance, Utils.PHI);
+    }
 
 }

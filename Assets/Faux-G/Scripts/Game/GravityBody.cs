@@ -37,7 +37,7 @@ public class GravityBody : Photon.MonoBehaviour {
     private void ApplyGravitationalForce() {
         Vector3 netForceVector = Vector3.zero;
         foreach (AttractorBase attractor in AttractorManager.Instance.attractors) {
-            netForceVector += attractor.CalculateForceVector(transform.position, rigidbody.mass);
+            netForceVector += attractor.CalculateGravitationalForce(transform.position, rigidbody.mass);
         }
 
         rigidbody.AddForce(netForceVector, ForceMode.Acceleration);

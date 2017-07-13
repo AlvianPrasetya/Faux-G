@@ -56,8 +56,8 @@ public class Utils : MonoBehaviour {
 
 	public static readonly float GRAVITY = 9.81f;
 
-    // G is scaled 1e6 times to compensate the mass and radii difference between the real and in-game worlds
-    public static readonly float G = 6.674e-5f;
+    // G is scaled 5 * 1e5 times to compensate the mass and radii difference between the real and in-game worlds
+    public static readonly float G = 3.37e-5f;
 
     // Golden ratio (Greek Phi)
     public static readonly float PHI = 1.618f;

@@ -4,7 +4,7 @@ public class RingAttractor : AttractorBase {
 
     public float radius;
 
-    public override Vector3 CalculateForceVector(Vector3 attractedPosition, float attractedMass) {
+    public override Vector3 CalculateGravitationalForce(Vector3 attractedPosition, float attractedMass) {
         // TODO: Take transform rotation into account
 
         Vector3 normalVector = Vector3.up;
@@ -23,9 +23,7 @@ public class RingAttractor : AttractorBase {
         // Calculate gravity direction
         Vector3 gravityDirection = (closestPoint - attractedPosition).normalized;
 
-        // F = G * m1 * m2 / d^1.5
-        return gravityDirection * Utils.G * rigidbody.mass * attractedMass
-            / Mathf.Pow((attractedPosition - closestPoint).magnitude, Utils.PHI);
+        return CalculateGravitationalForce(gravityDirection, attractedMass, (attractedPosition - closestPoint).magnitude);
     }
 
 }
