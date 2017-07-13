@@ -16,7 +16,7 @@ public class Utils : MonoBehaviour {
 		public static readonly string LOGIN = "Login";
 		public static readonly string LOBBY = "Lobby";
 		public static readonly string ROOM = "Room";
-		public static readonly string GAME = "Game";
+		public static readonly string GAME = "Throwing Range";
 	}
 
 	public class Resource {
@@ -55,6 +55,13 @@ public class Utils : MonoBehaviour {
 	}
 
 	public static readonly float GRAVITY = 9.81f;
+
+    // G is scaled 1e6 times to compensate the mass and radii difference between the real and in-game worlds
+    public static readonly float G = 6.674e-5f;
+
+    // Golden ratio (Greek Phi)
+    public static readonly float PHI = 1.618f;
+
 	public static readonly float RESPAWN_TIME = 5.0f;
 
 	public static readonly float PI = Mathf.Acos(-1);

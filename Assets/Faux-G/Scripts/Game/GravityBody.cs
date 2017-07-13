@@ -8,7 +8,6 @@ public class GravityBody : Photon.MonoBehaviour {
 	public float maxRotateSpeed;
 
 	private new Rigidbody rigidbody;
-	private List<Collider> terrainColliders;
 	
 	private Vector3 lastGravityDirection;
 	private Vector3 gravityDirection;
@@ -20,41 +19,34 @@ public class GravityBody : Photon.MonoBehaviour {
 
 	void Awake() {
 		rigidbody = GetComponent<Rigidbody>();
-		terrainColliders = new List<Collider>();
-		foreach (GameObject terrain in GameObject.FindGameObjectsWithTag(Utils.Tag.TERRAIN)) {
-			terrainColliders.Add(terrain.GetComponent<Collider>());
-		}
 
 		lastGravityDirection = Vector3.zero;
 		gravityDirection = Vector3.zero;
 	}
 
 	void FixedUpdate() {
-		// Calculate gravity and apply to rigidbody
-		UpdateGravityDirection();
-		rigidbody.AddForce(gravityDirection * Utils.GRAVITY, ForceMode.Acceleration);
+        lastGravityDirection = gravityDirection;
 
-		// Adjust player rotation due to gravity
-		AdjustRotation();
+        // Apply gravitational force
+        ApplyGravitationalForce();
+
+		// Apply gravitational torque
+		ApplyGravitationalTorque();
 	}
 
-	private void UpdateGravityDirection() {
-		lastGravityDirection = gravityDirection;
+    private void ApplyGravitationalForce() {
+        Vector3 netForceVector = Vector3.zero;
+        foreach (AttractorBase attractor in AttractorManager.Instance.attractors) {
+            netForceVector += attractor.CalculateForceVector(transform.position, rigidbody.mass);
+        }
 
-		Vector3 closestTerrainPoint = transform.position;
-		float closestTerrainPointSqrDist = Mathf.Infinity;
-		foreach (Collider terrainCollider in terrainColliders) {
-			Vector3 terrainPoint = terrainCollider.ClosestPoint(transform.position);
-			if (Vector3.SqrMagnitude(terrainPoint - transform.position) < closestTerrainPointSqrDist) {
-				closestTerrainPoint = terrainPoint;
-				closestTerrainPointSqrDist = Vector3.SqrMagnitude(terrainPoint - transform.position);
-			}
-		}
+        rigidbody.AddForce(netForceVector, ForceMode.Acceleration);
 
-		gravityDirection = Vector3.Normalize(closestTerrainPoint - transform.position);
-	}
+        // Update gravity direction
+        gravityDirection = netForceVector.normalized;
+    }
 
-	private void AdjustRotation() {
+	private void ApplyGravitationalTorque() {
 		float gravityChangeAngle = Vector3.Angle(lastGravityDirection, gravityDirection);
 		if (gravityChangeAngle > gravityChangeAngleThreshold) {
 			referenceAngle = gravityChangeAngle;

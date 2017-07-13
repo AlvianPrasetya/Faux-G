@@ -1,6 +1,4 @@
-﻿using UnityEngine;
-
-public interface IPoolable {
+﻿public interface IPoolable {
 
     void Pool();
 

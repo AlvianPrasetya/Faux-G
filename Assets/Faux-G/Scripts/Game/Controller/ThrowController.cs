@@ -77,6 +77,7 @@ public class ThrowController : Photon.MonoBehaviour {
     private void InputReleaseThrowable() {
         if (Input.GetMouseButtonUp(Utils.Input.MOUSE_BUTTON_LEFT)) {
             ReleaseThrowable();
+            UnhaltThrowable();
         }
     }
 
