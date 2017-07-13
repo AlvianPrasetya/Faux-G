@@ -79,13 +79,13 @@ public class ThrowController : Photon.MonoBehaviour {
     }
 
     private void InputHaltThrowable() {
-        if (Input.GetMouseButtonDown(Utils.Input.MOUSE_BUTTON_RIGHT)) {
+        if (Input.GetKeyDown(KeyCode.LeftShift)) {
             HaltThrowable();
         }
     }
 
     private void InputUnhaltThrowable() {
-        if (Input.GetMouseButtonUp(Utils.Input.MOUSE_BUTTON_RIGHT)) {
+        if (Input.GetKeyUp(KeyCode.LeftShift)) {
             UnhaltThrowable();
         }
     }
