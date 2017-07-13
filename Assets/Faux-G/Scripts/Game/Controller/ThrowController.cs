@@ -9,8 +9,7 @@ public class ThrowController : Photon.MonoBehaviour {
     public enum THROWABLE_STATE {
         IDLE, // IDLE state, no throwables is currently at hand
         PREPARED, // PREPARED state, currently holding a throwable, not yet charging
-        CHARGING, // CHARGING state, currently holding a throwable and charging it before throwing
-        HALT // HALT state, charging is currently being halted
+        CHARGING // CHARGING state, currently holding a throwable and charging it before throwing
     }
 
     public Transform throwableSpawner;
@@ -36,6 +35,9 @@ public class ThrowController : Photon.MonoBehaviour {
 
     private THROWABLE_STATE throwableState;
     private ThrowableBase preparedThrowable;
+
+    // Is the charging currently halted?
+    private bool chargingHalted;
 
     // Relative throw force ranging from 0 ~ 1 (0 = minThrowForce, 1 = maxThrowForce)
     private float relativeThrowForce;
@@ -157,7 +159,7 @@ public class ThrowController : Photon.MonoBehaviour {
     }
 
     private void UnhaltThrowable() {
-        if (throwableState == THROWABLE_STATE.HALT) {
+        if (chargingHalted) {
             // Destroy tracer
             activeTracer.Despawn();
             activeTracer = null;
@@ -170,10 +172,11 @@ public class ThrowController : Photon.MonoBehaviour {
 
     /**
      * This method updates the relative throwing force based on the value of relativeThrowForcePerSecond 
-     * if and only if the throwable state is at CHARGING (the character is charging a throw).
+     * if and only if the throwable state is at CHARGING (the character is charging a throw) and is not 
+     * halted.
      */
     private void UpdateRelativeThrowForce() {
-        if (throwableState == THROWABLE_STATE.CHARGING) {
+        if (throwableState == THROWABLE_STATE.CHARGING && !chargingHalted) {
             relativeThrowForce += Mathf.Clamp(relativeThrowForcePerSecond * Time.fixedDeltaTime, 0.0f, 1.0f);
         }
     }
@@ -249,12 +252,12 @@ public class ThrowController : Photon.MonoBehaviour {
 
     [PunRPC]
     private void RpcHaltThrowable(int eventTimeMs) {
-        throwableState = THROWABLE_STATE.HALT;
+        chargingHalted = true;
     }
 
     [PunRPC]
     private void RpcUnhaltThrowable(int eventTimeMs) {
-        throwableState = THROWABLE_STATE.CHARGING;
+        chargingHalted = false;
     }
 
 }
