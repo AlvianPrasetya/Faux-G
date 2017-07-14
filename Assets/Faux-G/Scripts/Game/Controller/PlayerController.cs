@@ -6,7 +6,6 @@ public class PlayerController : Photon.MonoBehaviour {
     
 	private new Rigidbody rigidbody;
 	private GravityBody gravityBody;
-	private Health health;
 
 	public string NickName {
         get {
@@ -14,23 +13,21 @@ public class PlayerController : Photon.MonoBehaviour {
         }
     }
 
-    public float CurrentHealth {
-        get {
-            return health.CurrentHealth;
-        }
-    }
-
 	void Awake() {
 		rigidbody = GetComponent<Rigidbody>();
 		gravityBody = GetComponent<GravityBody>();
-		health = GetComponent<Health>();
-		health.SetHealthUpdateCallback(UIManager.Instance.UpdateHealthText);
-		health.SetDeathCallback(GameManager.Instance.Respawn);
 
-        if (!photonView.isMine) {
+        if (photonView.isMine) {
+            // Enable camera on local instance
+            playerCamera.gameObject.SetActive(true);
+
+            // Enable physics on local instance
+            rigidbody.isKinematic = false;
+            gravityBody.enabled = true;
+        } else {
             // Disable camera on remote instances
             playerCamera.gameObject.SetActive(false);
-            
+
             // Disable physics on remote instances
             rigidbody.isKinematic = true;
             gravityBody.enabled = false;
