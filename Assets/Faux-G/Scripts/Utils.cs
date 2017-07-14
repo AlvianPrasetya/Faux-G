@@ -33,9 +33,9 @@ public class Utils : MonoBehaviour {
 
 	public class Layer {
 		public static readonly int TERRAIN = 1 << LayerMask.NameToLayer("Terrain");
-		public static readonly int THROWABLE = 1 << LayerMask.NameToLayer("Projectile");
-		public static readonly int DETECT_TERRAIN = 1 << LayerMask.NameToLayer("Ignore Projectile");
-		public static readonly int DETECT_THROWABLE = 1 << LayerMask.NameToLayer("Detect Projectile");
+		public static readonly int THROWABLE = 1 << LayerMask.NameToLayer("Throwable");
+		public static readonly int DETECT_TERRAIN = 1 << LayerMask.NameToLayer("Detect Terrain");
+		public static readonly int DETECT_THROWABLE = 1 << LayerMask.NameToLayer("Detect Throwable");
 	}
 
 	public class Key {

@@ -7,6 +7,7 @@ using UnityEngine.UI;
 public class UIManager : MonoBehaviour {
     
     public Text targetInfoText;
+    public Text standingsText;
 
     private static UIManager instance;
 
@@ -65,7 +66,7 @@ public class UIManager : MonoBehaviour {
 
     /**
      * This method updates the text that indicates target's name based on the entity
-     * currently on top of the crosshair.
+     * currently pointed by the camera.
      */
     private void UpdateTargetInfoText() {
         if (playerCamera == null) {
@@ -76,12 +77,11 @@ public class UIManager : MonoBehaviour {
 
         RaycastHit hitInfo;
         bool hitSomething = Physics.Raycast(
-            playerCamera.transform.position + playerCamera.transform.forward,
+            playerCamera.transform.position,
             playerCamera.transform.forward,
             out hitInfo,
             Mathf.Infinity,
-            Utils.Layer.DETECT_THROWABLE
-            );
+            Utils.Layer.TERRAIN | Utils.Layer.DETECT_THROWABLE);
         if (hitSomething) {
             PlayerController targetPlayerController = hitInfo.transform.GetComponentInParent<PlayerController>();
             if (targetPlayerController != null) {

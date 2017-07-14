@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
+using System.Linq;
 
 public class ThrowingRangeGameManager : GameManagerBase {
     
@@ -10,14 +11,14 @@ public class ThrowingRangeGameManager : GameManagerBase {
     private GameObject localPlayer;
     private Camera playerCamera;
 
-    private Dictionary<PhotonPlayer, int> playerPoints;
+    private Dictionary<PhotonPlayer, int> standings;
 
     protected override void Awake() {
         base.Awake();
 
         throwingRangeTarget.HitCallback = AddPoints;
 
-        playerPoints = new Dictionary<PhotonPlayer, int>();
+        standings = new Dictionary<PhotonPlayer, int>();
     }
 
     protected override void CheckForWinCondition() {
@@ -28,6 +29,7 @@ public class ThrowingRangeGameManager : GameManagerBase {
         base.StartGame();
 
         Spawn();
+        AddPoints(PhotonNetwork.player, 0);
     }
 
     protected override void EndGame() {
@@ -45,8 +47,27 @@ public class ThrowingRangeGameManager : GameManagerBase {
         sceneCamera.gameObject.SetActive(false);
     }
 
+    private void OnStandingsUpdated() {
+        // Copy standings to a key value pair list
+        List<KeyValuePair<PhotonPlayer, int>> standingsList = standings.ToList<KeyValuePair<PhotonPlayer, int>>();
+
+        // Sort standings list by points (value)
+        standingsList.Sort((x, y) => x.Value.CompareTo(y.Value));
+
+        // Build standings text
+        string standingsText = "Standings:\n";
+        for (int i = 0; i < standingsList.Count; i++) {
+            PhotonPlayer player = standingsList[i].Key;
+            int points = standingsList[i].Value;
+
+            standingsText += (i + 1) + ". " + player.NickName + " -- " + points + " pts\n";
+        }
+
+        UIManager.Instance.standingsText.text = standingsText;
+    }
+
     private void AddPoints(PhotonPlayer player, int points) {
-        photonView.RPC("RpcAddPoints", PhotonTargets.All, player.ID, points);
+        photonView.RPC("RpcAddPoints", PhotonTargets.AllBuffered, player.ID, points);
     }
 
     [PunRPC]
@@ -55,7 +76,12 @@ public class ThrowingRangeGameManager : GameManagerBase {
         Logger.Log(string.Format("Adding {0} points for {1}", points, targetPlayer.NickName));
 
         int oldPoints;
-        playerPoints[targetPlayer] = playerPoints.TryGetValue(targetPlayer, out oldPoints) ? (oldPoints + points) : points;
+        standings.TryGetValue(targetPlayer, out oldPoints);
+
+        standings[targetPlayer] = oldPoints + points;
+        
+        // Callback
+        OnStandingsUpdated();
     }
 
 }
