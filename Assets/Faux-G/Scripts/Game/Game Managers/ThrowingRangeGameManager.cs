@@ -21,6 +21,12 @@ public class ThrowingRangeGameManager : GameManagerBase {
         standings = new Dictionary<PhotonPlayer, int>();
     }
 
+    public override void OnPhotonPlayerDisconnected(PhotonPlayer player) {
+        // Remove player from standings when disconnected
+        standings.Remove(player);
+        OnStandingsUpdated();
+    }
+
     protected override void CheckForWinCondition() {
         // TODO: Implement win condition
     }
@@ -52,7 +58,7 @@ public class ThrowingRangeGameManager : GameManagerBase {
         List<KeyValuePair<PhotonPlayer, int>> standingsList = standings.ToList<KeyValuePair<PhotonPlayer, int>>();
 
         // Sort standings list by points (value)
-        standingsList.Sort((x, y) => x.Value.CompareTo(y.Value));
+        standingsList.Sort((x, y) => y.Value.CompareTo(x.Value));
 
         // Build standings text
         string standingsText = "Standings:\n";
