@@ -10,12 +10,17 @@ public class UIManager : MonoBehaviour {
     public Text standingsText;
     public Text announcementText;
 
+    public Text chatText;
+    public InputField chatInputField;
+
     private static UIManager instance;
 
     private bool isCursorLocked;
     private Camera playerCamera;
 
     void Awake() {
+        chatInputField.interactable = false;
+
         instance = this;
 
         isCursorLocked = true;
@@ -23,6 +28,7 @@ public class UIManager : MonoBehaviour {
 
 	void Update() {
         InputToggleCursor();
+        InputCheckChatInputField();
 
         /* 
          * Update cursor state must be called on every Update() to overcome cursor flickering
@@ -54,6 +60,12 @@ public class UIManager : MonoBehaviour {
             isCursorLocked = false;
         } else if (Input.anyKeyDown) {
             isCursorLocked = true;
+        }
+    }
+
+    private void InputCheckChatInputField() {
+        if (Input.GetKeyDown(KeyCode.Return)) {
+            CheckChatInputField();
         }
     }
 
@@ -93,6 +105,27 @@ public class UIManager : MonoBehaviour {
             if (targetPlayerController != null) {
                 targetInfoText.text = targetPlayerController.NickName;
             }
+        }
+    }
+
+    private void CheckChatInputField() {
+        if (chatInputField.interactable) {
+            SendChatMessage();
+            chatInputField.DeactivateInputField();
+            chatInputField.interactable = false;
+        } else {
+            chatInputField.interactable = true;
+            chatInputField.Select();
+            chatInputField.ActivateInputField();
+        }
+    }
+
+    private void SendChatMessage() {
+        if (chatInputField.text != "") {
+            Logger.Log("Sending chat message " + chatInputField.text);
+            ChatManager.Instance.SendChatMessage(PhotonNetwork.player, chatInputField.text);
+
+            chatInputField.text = "";
         }
     }
 
