@@ -28,8 +28,8 @@ public abstract class GameManagerBase : MonoBehaviour {
     }
 
     protected virtual void Awake() {
-        PhotonNetwork.sendRate = Utils.SEND_RATE;
-        PhotonNetwork.sendRateOnSerialize = Utils.SEND_RATE_ON_SERIALIZE;
+        PhotonNetwork.sendRate = Utils.Network.SEND_RATE;
+        PhotonNetwork.sendRateOnSerialize = Utils.Network.SEND_RATE_ON_SERIALIZE;
 
         gameState = GAME_STATE.WAITING;
         instance = this;

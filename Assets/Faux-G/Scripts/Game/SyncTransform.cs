@@ -54,7 +54,7 @@ public class SyncTransform : Photon.MonoBehaviour, IPunObservable {
 			return;
 		}
 
-		int renderTimestamp = PhotonNetwork.ServerTimestamp - Utils.SYNC_DELAY;
+		int renderTimestamp = PhotonNetwork.ServerTimestamp - Utils.Network.SYNC_DELAY;
 		SyncTransformPositions(renderTimestamp);
 		SyncTransformRotations(renderTimestamp);
 	}
@@ -80,7 +80,7 @@ public class SyncTransform : Photon.MonoBehaviour, IPunObservable {
 				Vector3 position = (Vector3) stream.ReceiveNext();
 				positionBuffers[i].AddLast(new PositionData(packetNum, timestamp, position));
 
-				if (positionBuffers[i].Count > Utils.SYNC_BUFFER_SIZE) {
+				if (positionBuffers[i].Count > Utils.Network.SYNC_BUFFER_SIZE) {
 					positionBuffers[i].RemoveFirst();
 				}
 			}
@@ -90,7 +90,7 @@ public class SyncTransform : Photon.MonoBehaviour, IPunObservable {
 				Quaternion rotation = (Quaternion) stream.ReceiveNext();
 				rotationBuffers[i].AddLast(new RotationData(packetNum, timestamp, rotation));
 
-				if (rotationBuffers[i].Count > Utils.SYNC_BUFFER_SIZE) {
+				if (rotationBuffers[i].Count > Utils.Network.SYNC_BUFFER_SIZE) {
 					rotationBuffers[i].RemoveFirst();
 				}
 			}
@@ -120,8 +120,8 @@ public class SyncTransform : Photon.MonoBehaviour, IPunObservable {
 						int previousTimestamp = previousNode.Value.timestamp;
 						Vector3 previousPosition = previousNode.Value.position;
 
-						Vector3 dPosition = (currentPosition - previousPosition) * Utils.SEND_RATE_ON_SERIALIZE 
-							/ (currentPacketNum - previousPacketNum) / 1000.0f;
+						Vector3 dPosition = (currentPosition - previousPosition) * Utils.Network.SEND_RATE_ON_SERIALIZE
+                            / (currentPacketNum - previousPacketNum) / 1000.0f;
 						positionTransforms[i].position = previousPosition
 							+ dPosition * (renderTimestamp - previousTimestamp);
 					} else {
@@ -165,8 +165,8 @@ public class SyncTransform : Photon.MonoBehaviour, IPunObservable {
 						Quaternion previousRotation = previousNode.Value.rotation;
 
 						Quaternion deltaRotation = currentRotation * Quaternion.Inverse(previousRotation);
-						float deltaTime = (float) (renderTimestamp - previousTimestamp) * Utils.SEND_RATE_ON_SERIALIZE
-							/ (currentPacketNum - previousPacketNum) / 1000.0f;
+						float deltaTime = (float) (renderTimestamp - previousTimestamp) * Utils.Network.SEND_RATE_ON_SERIALIZE
+                            / (currentPacketNum - previousPacketNum) / 1000.0f;
 
 						float deltaAngle;
 						Vector3 deltaAxis;

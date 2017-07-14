@@ -5,14 +5,18 @@ public class Utils : MonoBehaviour {
 	
 	public static readonly string GAME_VERSION = "v0.1";
 
-	public static readonly int SEND_RATE = 15;
-	public static readonly int SEND_RATE_ON_SERIALIZE = 15;
+    public static readonly float RESPAWN_TIME = 5.0f;
 
-	// The delay (ms) used to sync RPCs and serializations between clients
-	public static int SYNC_DELAY = 150;
-	public static int SYNC_BUFFER_SIZE = 10;
+    public class Network {
+	    public static readonly int SEND_RATE = 15;
+	    public static readonly int SEND_RATE_ON_SERIALIZE = 15;
 
-	public class Scene {
+	    // The delay (ms) used to sync RPCs and serializations between clients
+	    public static int SYNC_DELAY = 150;
+	    public static int SYNC_BUFFER_SIZE = 10;
+    }
+
+    public class Scene {
 		public static readonly string LOGIN = "Login";
 		public static readonly string LOBBY = "Lobby";
 		public static readonly string ROOM = "Room";
@@ -29,9 +33,9 @@ public class Utils : MonoBehaviour {
 
 	public class Layer {
 		public static readonly int TERRAIN = 1 << LayerMask.NameToLayer("Terrain");
-		public static readonly int PROJECTILE = 1 << LayerMask.NameToLayer("Projectile");
-		public static readonly int IGNORE_PROJECTILE = 1 << LayerMask.NameToLayer("Ignore Projectile");
-		public static readonly int DETECT_PROJECTILE = 1 << LayerMask.NameToLayer("Detect Projectile");
+		public static readonly int THROWABLE = 1 << LayerMask.NameToLayer("Projectile");
+		public static readonly int DETECT_TERRAIN = 1 << LayerMask.NameToLayer("Ignore Projectile");
+		public static readonly int DETECT_THROWABLE = 1 << LayerMask.NameToLayer("Detect Projectile");
 	}
 
 	public class Key {
@@ -54,19 +58,19 @@ public class Utils : MonoBehaviour {
 		};
 	}
 
-	public static readonly float GRAVITY = 9.81f;
+    public class Physics {
+        // G is scaled 5 * 1e5 times to compensate the mass and radii difference between the real and in-game worlds
+        public static readonly float G = 3.37e-5f;
 
-    // G is scaled 5 * 1e5 times to compensate the mass and radii difference between the real and in-game worlds
-    public static readonly float G = 3.37e-5f;
+        // Golden ratio (Greek Phi)
+        public static readonly float PHI = 1.618f;
+    }
 
-    // Golden ratio (Greek Phi)
-    public static readonly float PHI = 1.618f;
+    public class Value {
+	    public static readonly float PI = Mathf.Acos(-1);
+    }
 
-	public static readonly float RESPAWN_TIME = 5.0f;
-
-	public static readonly float PI = Mathf.Acos(-1);
-
-	public static IEnumerator TransformLerpPosition(Transform targetTransform, Vector3 startPosition,
+    public static IEnumerator TransformLerpPosition(Transform targetTransform, Vector3 startPosition,
 		Vector3 endPosition, float lerpTime) {
 		float time = 0.0f;
 		while (time < 1.0f) {

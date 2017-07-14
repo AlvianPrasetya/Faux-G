@@ -80,7 +80,7 @@ public class UIManager : MonoBehaviour {
             playerCamera.transform.forward,
             out hitInfo,
             Mathf.Infinity,
-            Utils.Layer.DETECT_PROJECTILE
+            Utils.Layer.DETECT_THROWABLE
             );
         if (hitSomething) {
             PlayerController targetPlayerController = hitInfo.transform.GetComponentInParent<PlayerController>();
