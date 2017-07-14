@@ -1,13 +1,14 @@
 ﻿using UnityEngine;
 
+/**
+ * This class describes the gravitational behaviour of a ring attractor.
+ */
 public class RingAttractor : AttractorBase {
 
     public float radius;
 
     public override Vector3 CalculateGravitationalForce(Vector3 attractedPosition, float attractedMass) {
-        // TODO: Take transform rotation into account
-
-        Vector3 normalVector = Vector3.up;
+        Vector3 normalVector = transform.up;
 
         Vector3 centerToAttractedVector = attractedPosition - transform.position;
 
