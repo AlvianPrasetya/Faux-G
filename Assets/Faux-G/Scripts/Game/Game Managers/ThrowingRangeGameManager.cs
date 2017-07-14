@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -7,6 +8,8 @@ public class ThrowingRangeGameManager : GameManagerBase {
     public Spawner[] spawners;
     public Camera sceneCamera;
     public ThrowingRangeTarget throwingRangeTarget;
+    
+    public int pointsToWin;
 
     private GameObject localPlayer;
     private Camera playerCamera;
@@ -27,8 +30,18 @@ public class ThrowingRangeGameManager : GameManagerBase {
         OnStandingsUpdated();
     }
 
-    protected override void CheckForWinCondition() {
-        // TODO: Implement win condition
+    protected override bool CheckForWinCondition() {
+        foreach (KeyValuePair<PhotonPlayer, int> standingsEntry in standings) {
+            PhotonPlayer player = standingsEntry.Key;
+            int points = standingsEntry.Value;
+
+            if (standingsEntry.Value >= pointsToWin) {
+                AnnounceWinner(player);
+                return true;
+            }
+        }
+
+        return false;
     }
 
     protected override void StartGame() {
@@ -74,6 +87,10 @@ public class ThrowingRangeGameManager : GameManagerBase {
 
     private void AddPoints(PhotonPlayer player, int points) {
         photonView.RPC("RpcAddPoints", PhotonTargets.AllBuffered, player.ID, points);
+    }
+
+    private void AnnounceWinner(PhotonPlayer winningPlayer) {
+        UIManager.Instance.announcementText.text = winningPlayer.NickName + " wins!";
     }
 
     [PunRPC]

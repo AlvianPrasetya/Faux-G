@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using System.Collections;
-using System.Collections.Generic;
 
 /**
  * This is the base abstract class for game managers. The implementing class
@@ -16,7 +15,9 @@ public abstract class GameManagerBase : Photon.PunBehaviour {
         ENDED // ENDED state, the game has ended due to reaching a winning condition
     }
 
-    public float winCheckInterval;
+    public int countdownToStartGame;
+    public int winCheckInterval;
+    public int countdownToLeave;
     
     protected GAME_STATE gameState;
 
@@ -35,21 +36,23 @@ public abstract class GameManagerBase : Photon.PunBehaviour {
         gameState = GAME_STATE.WAITING;
 
         instance = this;
-
-        StartCoroutine(CheckForWinConditionCoroutine());
     }
 
     protected virtual void Start() {
-        StartGame();
+        StartCoroutine(CountdownToStartGameCoroutine());
+    }
+
+    public override void OnLeftRoom() {
+        PhotonNetwork.LoadLevel(Utils.Scene.LOBBY);
     }
 
     /**
      * This method checks for a winning condition within the current game.
      * Classes implementing this abstract class should override this method 
-     * to implement the checking logic and call EndGame() if such winning 
-     * condition is found.
+     * to implement the checking logic and return a boolean indicating whether 
+     * the game has been won.
      */
-    protected abstract void CheckForWinCondition();
+    protected abstract bool CheckForWinCondition();
 
     /**
      * This method starts the currently waiting game.
@@ -58,6 +61,8 @@ public abstract class GameManagerBase : Photon.PunBehaviour {
      */
     protected virtual void StartGame() {
         gameState = GAME_STATE.RUNNING;
+
+        StartCoroutine(CheckForWinConditionCoroutine());
     }
 
     /**
@@ -67,6 +72,19 @@ public abstract class GameManagerBase : Photon.PunBehaviour {
      */
     protected virtual void EndGame() {
         gameState = GAME_STATE.ENDED;
+
+        StartCoroutine(CountdownToLeaveRoom());
+    }
+
+    /**
+     * This method makes the local player leaves the room back to the lobby.
+     * This method will always be called after the game has ended and the
+     * countdown to leave has elapsed.
+     */
+    private void LeaveRoom() {
+        UIManager.Instance.ResetCursor();
+
+        PhotonNetwork.LeaveRoom();
     }
 
     /**
@@ -75,10 +93,40 @@ public abstract class GameManagerBase : Photon.PunBehaviour {
      */
     private IEnumerator CheckForWinConditionCoroutine() {
         while (gameState != GAME_STATE.ENDED) {
-            CheckForWinCondition();
+            if (CheckForWinCondition()) {
+                EndGame();
+            }
 
             yield return new WaitForSeconds(winCheckInterval);
         }
+    }
+
+    /**
+     * This method does a countdown before starting the game while announcing 
+     * the current countdown progress to the UIManager.
+     */
+    private IEnumerator CountdownToStartGameCoroutine() {
+        for (int i = countdownToStartGame; i > 0; i--) {
+            UIManager.Instance.announcementText.text = "Game starting in\n" + i.ToString();
+            yield return new WaitForSecondsRealtime(1.0f);
+        }
+        UIManager.Instance.announcementText.text = "";
+
+        StartGame();
+    }
+
+    /**
+     * This method does a countdown before leaving the room back to lobby 
+     * while announcing the current countdown progress to the UIManager.
+     */
+    private IEnumerator CountdownToLeaveRoom() {
+        for (int i = countdownToLeave; i > 0; i--) {
+            UIManager.Instance.announcementText.text = "Leaving room in\n" + i.ToString();
+            yield return new WaitForSecondsRealtime(1.0f);
+        }
+        UIManager.Instance.announcementText.text = "";
+
+        LeaveRoom();
     }
 
 }

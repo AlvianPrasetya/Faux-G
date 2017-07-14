@@ -8,6 +8,7 @@ public class UIManager : MonoBehaviour {
     
     public Text targetInfoText;
     public Text standingsText;
+    public Text announcementText;
 
     private static UIManager instance;
 
@@ -41,6 +42,11 @@ public class UIManager : MonoBehaviour {
         set {
             playerCamera = value;
         }
+    }
+
+    public void ResetCursor() {
+        isCursorLocked = false;
+        UpdateCursorState();
     }
 
     private void InputToggleCursor() {

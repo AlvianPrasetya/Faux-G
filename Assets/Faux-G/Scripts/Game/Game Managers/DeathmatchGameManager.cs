@@ -26,8 +26,8 @@ public class DeathmatchGameManager : GameManagerBase {
 		sceneCamera = Camera.main;
 	}
 
-    protected override void CheckForWinCondition() {
-
+    protected override bool CheckForWinCondition() {
+        return false;
     }
 
     protected override void StartGame() {
@@ -72,7 +72,7 @@ public class DeathmatchGameManager : GameManagerBase {
 	}
 
     private void Spawn() {
-		int spawnPointId = UnityEngine.Random.Range(0, spawnPoints.Length);
+		int spawnPointId = Random.Range(0, spawnPoints.Length);
 		localPlayer = PhotonNetwork.Instantiate(
 			Utils.Resource.PLAYER,
 			spawnPoints[spawnPointId].position,
