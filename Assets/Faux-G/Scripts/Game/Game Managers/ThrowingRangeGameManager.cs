@@ -24,6 +24,12 @@ public class ThrowingRangeGameManager : GameManagerBase {
         standings = new Dictionary<PhotonPlayer, int>();
     }
 
+    protected override void Start() {
+        base.Start();
+
+        UIManager.Instance.announcementText.text = string.Format("First to reach {0} points win!", pointsToWin);
+    }
+
     public override void OnPhotonPlayerDisconnected(PhotonPlayer player) {
         // Remove player from standings when disconnected
         standings.Remove(player);

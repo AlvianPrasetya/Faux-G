@@ -15,8 +15,10 @@ public abstract class GameManagerBase : Photon.PunBehaviour {
         ENDED // ENDED state, the game has ended due to reaching a winning condition
     }
 
+    public int delayToCountdownToStartGame;
     public int countdownToStartGame;
     public int winCheckInterval;
+    public int delayToCountdownToLeave;
     public int countdownToLeave;
     
     protected GAME_STATE gameState;
@@ -106,6 +108,8 @@ public abstract class GameManagerBase : Photon.PunBehaviour {
      * the current countdown progress to the UIManager.
      */
     private IEnumerator CountdownToStartGameCoroutine() {
+        yield return new WaitForSecondsRealtime(delayToCountdownToStartGame);
+
         for (int i = countdownToStartGame; i > 0; i--) {
             UIManager.Instance.announcementText.text = "Game starting in\n" + i.ToString();
             yield return new WaitForSecondsRealtime(1.0f);
@@ -120,6 +124,8 @@ public abstract class GameManagerBase : Photon.PunBehaviour {
      * while announcing the current countdown progress to the UIManager.
      */
     private IEnumerator CountdownToLeaveRoom() {
+        yield return new WaitForSecondsRealtime(delayToCountdownToLeave);
+
         for (int i = countdownToLeave; i > 0; i--) {
             UIManager.Instance.announcementText.text = "Leaving room in\n" + i.ToString();
             yield return new WaitForSecondsRealtime(1.0f);
