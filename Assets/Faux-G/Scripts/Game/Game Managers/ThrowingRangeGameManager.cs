@@ -2,7 +2,7 @@
 
 public class ThrowingRangeGameManager : GameManagerBase {
     
-    public Transform[] spawnPoints;
+    public Spawner[] spawners;
     public Camera sceneCamera;
 
     private GameObject localPlayer;
@@ -27,13 +27,10 @@ public class ThrowingRangeGameManager : GameManagerBase {
     }
 
     private void Spawn() {
-        int spawnPointId = Random.Range(0, spawnPoints.Length);
-        localPlayer = PhotonNetwork.Instantiate(
-            Utils.Resource.PLAYER,
-            spawnPoints[spawnPointId].position,
-            spawnPoints[spawnPointId].rotation,
-            0
-        );
+        int spawnerId = Random.Range(0, spawners.Length);
+
+        localPlayer = spawners[spawnerId].NetworkedSpawn(Utils.Resource.PLAYER, 0);
+
         playerCamera = localPlayer.GetComponentInChildren<Camera>();
         UIManager.Instance.PlayerCamera = playerCamera;
 
