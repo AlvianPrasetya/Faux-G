@@ -13,7 +13,7 @@ public class DeathmatchGameManager : GameManagerBase {
 	private GameObject localPlayer;
 	private Camera playerCamera;
 
-    public static DeathmatchGameManager Instance {
+    public new static DeathmatchGameManager Instance {
         get {
             return instance;
         }

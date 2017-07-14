@@ -1,10 +1,21 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class DummyThrowable : ThrowableBase, IPoolable {
-    
+
+    private Behaviour halo;
+
+    // Stale dummy throwable could not interact with hit areas
+    private bool stale;
+
     public void Pool() {
         // TODO: Implement pooling routine
+    }
+
+    protected override void Awake() {
+        base.Awake();
+
+        halo = (Behaviour) GetComponent("Halo");
+        halo.enabled = false;
     }
 
     public override void Release(Vector3 throwPosition, Quaternion throwRotation, 
@@ -18,11 +29,33 @@ public class DummyThrowable : ThrowableBase, IPoolable {
         rigidbody.isKinematic = false;
         gravityBody.enabled = true;
 
+        // Enable halo upon release
+        stale = false;
+        halo.enabled = true;
+
         rigidbody.AddForce(throwDirection * throwForce, ForceMode.Impulse);
     }
 
     protected override void OnCollisionEnter(Collision collision) {
-        // Does nothing on collision
+        if (PhotonNetwork.player == Owner) {
+            // Only evaluate collisions locally (authoritative observer rule)
+            GameObject collidingGameObject = collision.gameObject;
+            
+            PhotonView collidingPhotonView = collidingGameObject.GetComponentInParent<PhotonView>();
+            if (collidingPhotonView != null && collidingPhotonView.owner == Owner) {
+                // Ignore self collision
+                return;
+            }
+
+            HitArea collidingHitArea = collidingGameObject.GetComponent<HitArea>();
+            if (collidingHitArea != null && !stale) {
+                collidingHitArea.OnThrowableCollision(this);
+
+                // Disable halo upon collision with hit area
+                stale = true;
+                halo.enabled = false;
+            }
+        }
     }
 
 }

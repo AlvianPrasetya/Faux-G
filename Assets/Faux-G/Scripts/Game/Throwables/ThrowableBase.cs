@@ -6,12 +6,15 @@
  */
 public abstract class ThrowableBase : MonoBehaviour {
 
-    // The owner of this throwable object (the player spawning this object).
-    private PhotonPlayer owner;
+    // The points/damage value when this throwable collides with something
+    public int onHitValue;
 
     protected new Collider collider;
     protected new Rigidbody rigidbody;
     protected GravityBody gravityBody;
+
+    // The owner of this throwable object (the player spawning this object).
+    private PhotonPlayer owner;
 
     public PhotonPlayer Owner {
         get {

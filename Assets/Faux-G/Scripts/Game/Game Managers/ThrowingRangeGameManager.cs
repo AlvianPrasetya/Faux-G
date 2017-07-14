@@ -4,12 +4,15 @@ public class ThrowingRangeGameManager : GameManagerBase {
     
     public Spawner[] spawners;
     public Camera sceneCamera;
+    public ThrowingRangeTarget throwingRangeTarget;
 
     private GameObject localPlayer;
     private Camera playerCamera;
 
     protected override void Awake() {
         base.Awake();
+
+        throwingRangeTarget.HitCallback = AddPoints;
     }
 
     protected override void CheckForWinCondition() {
@@ -35,6 +38,10 @@ public class ThrowingRangeGameManager : GameManagerBase {
         UIManager.Instance.PlayerCamera = playerCamera;
 
         sceneCamera.gameObject.SetActive(false);
+    }
+
+    private void AddPoints(PhotonPlayer player, int points) {
+        Logger.Log(string.Format("Adding {0} points for {1}", points, player.NickName));
     }
 
 }
