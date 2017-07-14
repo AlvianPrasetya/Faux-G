@@ -37,24 +37,24 @@ public class DummyThrowable : ThrowableBase, IPoolable {
     }
 
     protected override void OnCollisionEnter(Collision collision) {
-        if (PhotonNetwork.player == Owner) {
-            // Only evaluate collisions locally (authoritative observer rule)
-            GameObject collidingGameObject = collision.gameObject;
+        GameObject collidingGameObject = collision.gameObject;
             
-            PhotonView collidingPhotonView = collidingGameObject.GetComponentInParent<PhotonView>();
-            if (collidingPhotonView != null && collidingPhotonView.owner == Owner) {
-                // Ignore self collision
-                return;
-            }
+        PhotonView collidingPhotonView = collidingGameObject.GetComponentInParent<PhotonView>();
+        if (collidingPhotonView != null && collidingPhotonView.owner == Owner) {
+            // Ignore self collision
+            return;
+        }
 
-            HitArea collidingHitArea = collidingGameObject.GetComponent<HitArea>();
-            if (collidingHitArea != null && !stale) {
+        HitArea collidingHitArea = collidingGameObject.GetComponent<HitArea>();
+        if (collidingHitArea != null && !stale) {
+            if (PhotonNetwork.player == Owner) {
+                // Only evaluate collisions with hit area locally (authoritative observer rule)
                 collidingHitArea.OnThrowableCollision(this);
-
-                // Disable halo upon collision with hit area
-                stale = true;
-                halo.enabled = false;
             }
+
+            // Disable halo upon collision with hit area
+            stale = true;
+            halo.enabled = false;
         }
     }
 
