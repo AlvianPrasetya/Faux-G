@@ -5,10 +5,6 @@ public class LoginManager : Photon.PunBehaviour {
 
 	public Text loginStatusText;
 
-	/*
-	 * MONOBEHAVIOUR LIFECYCLE
-	 */
-
 	void Awake() {
 		PhotonNetwork.logLevel = PhotonLogLevel.ErrorsOnly;
 		PhotonNetwork.autoJoinLobby = false;
@@ -19,10 +15,6 @@ public class LoginManager : Photon.PunBehaviour {
 		loginStatusText.text = "Connecting to Server";
 		PhotonNetwork.ConnectUsingSettings(Utils.GAME_VERSION);
 	}
-
-	/*
-	 * PHOTON LIFECYCLE
-	 */
 
 	public override void OnConnectedToPhoton() {
 		Logger.Log("Connected to Server");

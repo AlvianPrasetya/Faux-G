@@ -14,10 +14,6 @@ public class RoomManager : Photon.PunBehaviour {
 
 	private List<PlayerEntry> playerEntries;
 
-	/*
-	 * MONOBEHAVIOUR LIFECYCLE
-	 */
-
 	void Awake() {
 		PhotonNetwork.automaticallySyncScene = true;
 
@@ -31,10 +27,6 @@ public class RoomManager : Photon.PunBehaviour {
 		textRoomName.text = PhotonNetwork.room.Name;
 		RefreshPlayerList();
 	}
-
-	/*
-	 * PHOTON LIFECYCLE
-	 */
 	
 	public override void OnLeftRoom() {
 		Logger.Log("Left room");
@@ -48,10 +40,6 @@ public class RoomManager : Photon.PunBehaviour {
 	public override void OnPhotonPlayerDisconnected(PhotonPlayer leavingPlayer) {
 		RefreshPlayerList();
 	}
-
-	/*
-	 * HELPER METHODS
-	 */
 
 	private void RefreshPlayerList() {
 		Logger.Log("Refreshing player list");

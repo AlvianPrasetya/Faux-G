@@ -27,10 +27,6 @@ public class LobbyManager : Photon.PunBehaviour {
 	
 	private List<RoomEntry> roomEntries;
 
-	/*
-	 * MONOBEHAVIOUR LIFECYCLE
-	 */
-
 	void Awake() {
 		buttonRoomNumber.onClick.AddListener(SortByRoomNumber);
 		buttonRoomName.onClick.AddListener(SortByRoomName);
@@ -47,10 +43,6 @@ public class LobbyManager : Photon.PunBehaviour {
 	void Start() {
 		RefreshRoomList();
 	}
-
-	/*
-	 * PHOTON LIFECYCLE
-	 */
 
 	public override void OnReceivedRoomListUpdate() {
 		RefreshRoomList();
@@ -72,10 +64,6 @@ public class LobbyManager : Photon.PunBehaviour {
 	public override void OnPhotonJoinRoomFailed(object[] codeAndMsg) {
 		Logger.Log("Failed to join room");
 	}
-
-	/*
-	 * HELPER METHODS
-	 */
 
 	private void SortByRoomNumber() {
 		Logger.Log("Sorting by room number");

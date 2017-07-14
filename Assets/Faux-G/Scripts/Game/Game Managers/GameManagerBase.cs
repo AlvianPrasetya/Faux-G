@@ -1,12 +1,13 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 /**
  * This is the base abstract class for game managers. The implementing class
  * controls all the lifecycles of the game and what to do on such events.
  * New game managers are to implement this abstract class accordingly.
  */
-public abstract class GameManagerBase : MonoBehaviour {
+public abstract class GameManagerBase : Photon.PunBehaviour {
 
     public enum GAME_STATE {
         WAITING, // WAITING state, the state before the game starts (waiting for players)
@@ -16,7 +17,7 @@ public abstract class GameManagerBase : MonoBehaviour {
     }
 
     public float winCheckInterval;
-
+    
     protected GAME_STATE gameState;
 
     private static GameManagerBase instance;
@@ -30,8 +31,9 @@ public abstract class GameManagerBase : MonoBehaviour {
     protected virtual void Awake() {
         PhotonNetwork.sendRate = Utils.Network.SEND_RATE;
         PhotonNetwork.sendRateOnSerialize = Utils.Network.SEND_RATE_ON_SERIALIZE;
-
+        
         gameState = GAME_STATE.WAITING;
+
         instance = this;
 
         StartCoroutine(CheckForWinConditionCoroutine());
