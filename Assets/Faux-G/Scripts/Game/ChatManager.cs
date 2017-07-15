@@ -34,9 +34,16 @@ public class ChatManager : Photon.PunBehaviour {
     }
 
     public void SendChatMessage(PhotonPlayer sendingPlayer, string message) {
+        // TODO: Message preprocessing and recipient identification before sending
+
         photonView.RPC("RpcSendChatMessage", PhotonTargets.All, sendingPlayer.ID, message);
     }
 
+    /**
+     * This method queues the specified message into the message queue for display on 
+     * the chat tab. It will also delete the oldest message when the message count 
+     * reaches maxChatMessages.
+     */
     private void QueueMessage(Message queuedMessage) {
         messageQueue.Enqueue(queuedMessage);
         if (messageQueue.Count > maxChatMessages) {
