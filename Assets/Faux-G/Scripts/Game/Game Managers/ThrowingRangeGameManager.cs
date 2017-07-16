@@ -70,7 +70,7 @@ public class ThrowingRangeGameManager : GameManagerBase {
 
     private void UpdateStandings() {
         // Copy standings to a key value pair list
-        List<KeyValuePair<PhotonPlayer, int>> standingsList = standings.ToList<KeyValuePair<PhotonPlayer, int>>();
+        List<KeyValuePair<PhotonPlayer, int>> standingsList = standings.ToList();
 
         // Sort standings list by points (value)
         standingsList.Sort((x, y) => y.Value.CompareTo(x.Value));
