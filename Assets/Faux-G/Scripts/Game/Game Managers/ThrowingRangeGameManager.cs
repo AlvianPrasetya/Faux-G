@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -36,6 +35,13 @@ public class ThrowingRangeGameManager : GameManagerBase {
         OnStandingsUpdated();
     }
 
+    protected override void StartGame() {
+        base.StartGame();
+
+        Spawn();
+        AddPoints(PhotonNetwork.player, 0);
+    }
+
     protected override bool CheckForWinCondition() {
         foreach (KeyValuePair<PhotonPlayer, int> standingsEntry in standings) {
             PhotonPlayer player = standingsEntry.Key;
@@ -48,17 +54,6 @@ public class ThrowingRangeGameManager : GameManagerBase {
         }
 
         return false;
-    }
-
-    protected override void StartGame() {
-        base.StartGame();
-
-        Spawn();
-        AddPoints(PhotonNetwork.player, 0);
-    }
-
-    protected override void EndGame() {
-        base.EndGame();
     }
 
     private void Spawn() {
@@ -89,6 +84,8 @@ public class ThrowingRangeGameManager : GameManagerBase {
         }
 
         UIManager.Instance.standingsText.text = standingsText;
+
+        CheckForWinCondition();
     }
 
     private void AddPoints(PhotonPlayer player, int points) {

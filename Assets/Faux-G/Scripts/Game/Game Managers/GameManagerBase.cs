@@ -17,7 +17,6 @@ public abstract class GameManagerBase : Photon.PunBehaviour {
 
     public int delayToCountdownToStartGame;
     public int countdownToStartGame;
-    public int winCheckInterval;
     public int delayToCountdownToLeave;
     public int countdownToLeave;
     
@@ -49,22 +48,12 @@ public abstract class GameManagerBase : Photon.PunBehaviour {
     }
 
     /**
-     * This method checks for a winning condition within the current game.
-     * Classes implementing this abstract class should override this method 
-     * to implement the checking logic and return a boolean indicating whether 
-     * the game has been won.
-     */
-    protected abstract bool CheckForWinCondition();
-
-    /**
      * This method starts the currently waiting game.
      * Classes implementing this abstract class should override this method 
      * to implement more start game logic.
      */
     protected virtual void StartGame() {
         gameState = GAME_STATE.RUNNING;
-
-        StartCoroutine(CheckForWinConditionCoroutine());
     }
 
     /**
@@ -79,6 +68,15 @@ public abstract class GameManagerBase : Photon.PunBehaviour {
     }
 
     /**
+     * This method checks for a winning condition within the current game.
+     * Classes implementing this abstract class should override this method 
+     * to implement the checking logic and return a boolean indicating whether 
+     * the game has been won.
+     * This method should be called whenever the game score state is changed.
+     */
+    protected abstract bool CheckForWinCondition();
+
+    /**
      * This method makes the local player leaves the room back to the lobby.
      * This method will always be called after the game has ended and the
      * countdown to leave has elapsed.
@@ -87,20 +85,6 @@ public abstract class GameManagerBase : Photon.PunBehaviour {
         UIManager.Instance.ResetCursor();
 
         PhotonNetwork.LeaveRoom();
-    }
-
-    /**
-     * This IEnumerator periodically checks for winning condition every 
-     * winCheckInterval seconds and while the gameState is not ENDED.
-     */
-    private IEnumerator CheckForWinConditionCoroutine() {
-        while (gameState != GAME_STATE.ENDED) {
-            if (CheckForWinCondition()) {
-                EndGame();
-            }
-
-            yield return new WaitForSeconds(winCheckInterval);
-        }
     }
 
     /**
