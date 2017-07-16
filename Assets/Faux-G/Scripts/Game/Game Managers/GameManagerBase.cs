@@ -11,6 +11,7 @@ public abstract class GameManagerBase : Photon.PunBehaviour {
     public delegate void OnStandingsUpdatedCallback(string standingsString);
     public delegate void OnLeftRoomCallback();
 
+
     public enum GAME_STATE {
         WAITING, // WAITING state, the state before the game starts (waiting for players)
         RUNNING, // RUNNING state, the normal running state of the game
@@ -22,10 +23,10 @@ public abstract class GameManagerBase : Photon.PunBehaviour {
     public ChatManager chatManager;
     public AttractorManager attractorManager;
 
-    public int delayToCountdownToStartGame;
-    public int countdownToStartGame;
-    public int delayToCountdownToLeave;
-    public int countdownToLeave;
+    public int delayToStartGameCountdown;
+    public int startGameCountdown;
+    public int delayToLeaveRoomCountdown;
+    public int leaveRoomCountdown;
     
     protected GAME_STATE gameState;
     
@@ -45,7 +46,7 @@ public abstract class GameManagerBase : Photon.PunBehaviour {
     }
 
     protected virtual void Start() {
-        StartCoroutine(CountdownToStartGameCoroutine());
+        StartCoroutine(StartGameCountdownCoroutine());
     }
 
     public override void OnLeftRoom() {
@@ -89,7 +90,7 @@ public abstract class GameManagerBase : Photon.PunBehaviour {
     protected virtual void EndGame() {
         gameState = GAME_STATE.ENDED;
 
-        StartCoroutine(CountdownToLeaveRoom());
+        StartCoroutine(LeaveRoomCountdownCoroutine());
     }
 
     /**
@@ -114,14 +115,14 @@ public abstract class GameManagerBase : Photon.PunBehaviour {
      * This method does a countdown before starting the game while announcing 
      * the current countdown progress to the UIManager.
      */
-    private IEnumerator CountdownToStartGameCoroutine() {
-        yield return new WaitForSecondsRealtime(delayToCountdownToStartGame);
+    private IEnumerator StartGameCountdownCoroutine() {
+        yield return new WaitForSecondsRealtime(delayToStartGameCountdown);
 
-        for (int i = countdownToStartGame; i > 0; i--) {
-            uiManager.Announce("Game starting in\n" + i.ToString());
+        for (int i = startGameCountdown; i > 0; i--) {
+            uiManager.Announce("Game starting in...\n" + i.ToString());
             yield return new WaitForSecondsRealtime(1.0f);
         }
-        uiManager.Announce("");
+        uiManager.Announce("START");
 
         StartGame();
     }
@@ -130,14 +131,13 @@ public abstract class GameManagerBase : Photon.PunBehaviour {
      * This method does a countdown before leaving the room back to lobby 
      * while announcing the current countdown progress to the UIManager.
      */
-    private IEnumerator CountdownToLeaveRoom() {
-        yield return new WaitForSecondsRealtime(delayToCountdownToLeave);
+    private IEnumerator LeaveRoomCountdownCoroutine() {
+        yield return new WaitForSecondsRealtime(delayToLeaveRoomCountdown);
 
-        for (int i = countdownToLeave; i > 0; i--) {
-            uiManager.Announce("Leaving room in\n" + i.ToString());
+        for (int i = leaveRoomCountdown; i > 0; i--) {
+            uiManager.Announce("Leaving room in...\n" + i.ToString());
             yield return new WaitForSecondsRealtime(1.0f);
         }
-        uiManager.Announce("");
 
         LeaveRoom();
     }

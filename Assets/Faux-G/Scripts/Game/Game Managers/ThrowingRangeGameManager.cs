@@ -26,7 +26,7 @@ public class ThrowingRangeGameManager : GameManagerBase {
     protected override void Start() {
         base.Start();
 
-        uiManager.Announce(string.Format("First to reach {0} points win!", pointsToWin));
+        uiManager.Announce(string.Format("Reach {0} points to win", pointsToWin));
     }
 
     public override void OnPhotonPlayerDisconnected(PhotonPlayer player) {

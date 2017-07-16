@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
+using System.Collections;
 
 /**
  * This class controls UI behaviour during the game.
@@ -13,6 +14,8 @@ public class UIManager : MonoBehaviour {
     public Text announcementText;
     public Text chatText;
     public InputField chatInputField;
+
+    public float announcementFadeTime;
     
     private bool isCursorLocked;
     private OnChatMessageSentCallback chatMessageSentCallback;
@@ -44,6 +47,7 @@ public class UIManager : MonoBehaviour {
 
     public void Announce(string announcementString) {
         announcementText.text = announcementString;
+        StartCoroutine(FadeAnnouncementCoroutine());
     }
 
     public void ResetCursor() {
@@ -108,6 +112,27 @@ public class UIManager : MonoBehaviour {
 
             chatInputField.text = "";
         }
+    }
+
+    private IEnumerator FadeAnnouncementCoroutine() {
+        float currentFadeTime = announcementFadeTime;
+
+        while (currentFadeTime > 0.0f) {
+            announcementText.color = new Color(
+                announcementText.color.r, 
+                announcementText.color.g, 
+                announcementText.color.b, 
+                currentFadeTime / announcementFadeTime);
+            currentFadeTime -= Time.deltaTime;
+            yield return null;
+        }
+
+        // Ensure alpha is 0 before coroutine is finished
+        announcementText.color = new Color(
+                announcementText.color.r,
+                announcementText.color.g,
+                announcementText.color.b,
+                0.0f);
     }
 
 }
