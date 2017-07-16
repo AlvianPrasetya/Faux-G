@@ -7,11 +7,13 @@ public class HitArea : MonoBehaviour {
     // The points/damage multiplier when this hit area is collided with
     public int onHitMultiplier;
 
-    private OnHitAreaHitCallback hitCallback;
+    private OnHitAreaHitCallback hitAreaHitCallback;
 
-    public OnHitAreaHitCallback HitCallback {
-        set {
-            hitCallback = value;
+    public void AddHitAreaHitCallback(OnHitAreaHitCallback hitAreaHitCallback) {
+        if (this.hitAreaHitCallback == null) {
+            this.hitAreaHitCallback = hitAreaHitCallback;
+        } else {
+            this.hitAreaHitCallback += hitAreaHitCallback;
         }
     }
 
@@ -19,7 +21,9 @@ public class HitArea : MonoBehaviour {
         PhotonPlayer collidingThrowableOwner = collidingThrowable.Owner;
         int onHitValue = collidingThrowable.onHitValue;
 
-        hitCallback(collidingThrowableOwner, onHitValue * onHitMultiplier);
+        if (hitAreaHitCallback != null) {
+            hitAreaHitCallback(collidingThrowableOwner, onHitValue * onHitMultiplier);
+        }
     }
 
 }

@@ -16,28 +16,6 @@ public abstract class ThrowableBase : MonoBehaviour {
     // The owner of this throwable object (the player spawning this object).
     private PhotonPlayer owner;
 
-    public PhotonPlayer Owner {
-        get {
-            return owner;
-        }
-
-        set {
-            owner = value;
-        }
-    }
-
-    public Collider Collider {
-        get {
-            return collider;
-        }
-    }
-
-    public Rigidbody Rigidbody {
-        get {
-            return rigidbody;
-        }
-    }
-
     protected virtual void Awake() {
         collider = GetComponent<Collider>();
         rigidbody = GetComponent<Rigidbody>();
@@ -62,5 +40,27 @@ public abstract class ThrowableBase : MonoBehaviour {
      * described within this method.
      */
     protected abstract void OnCollisionEnter(Collision collision);
+
+    public PhotonPlayer Owner {
+        get {
+            return owner;
+        }
+
+        set {
+            owner = value;
+        }
+    }
+
+    public Collider Collider {
+        get {
+            return collider;
+        }
+    }
+
+    public Rigidbody Rigidbody {
+        get {
+            return rigidbody;
+        }
+    }
 
 }

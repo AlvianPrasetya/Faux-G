@@ -2,6 +2,8 @@
 
 public class ChatManager : Photon.PunBehaviour {
 
+    public delegate void OnMessageQueuedCallback(string chatString);
+
     private struct Message {
 
         public PhotonPlayer sendingPlayer;
@@ -17,20 +19,19 @@ public class ChatManager : Photon.PunBehaviour {
     // The maximum amount of chat messages before older messages are deleted
     public int maxChatMessages;
 
-    private static ChatManager instance;
-
     private Queue messageQueue;
-
-    public static ChatManager Instance {
-        get {
-            return instance;
-        }
-    }
+    private OnMessageQueuedCallback messageQueuedCallback;
 
     void Awake() {
-        instance = this;
-
         messageQueue = new Queue();
+    }
+
+    public void AddMessageQueuedCallback(OnMessageQueuedCallback messageQueuedCallback) {
+        if (this.messageQueuedCallback == null) {
+            this.messageQueuedCallback = messageQueuedCallback;
+        } else {
+            this.messageQueuedCallback += messageQueuedCallback;
+        }
     }
 
     public void SendChatMessage(PhotonPlayer sendingPlayer, string message) {
@@ -50,12 +51,14 @@ public class ChatManager : Photon.PunBehaviour {
             messageQueue.Dequeue();
         }
 
-        string chatText = "";
+        string chatString = "";
         foreach (Message message in messageQueue) {
-            chatText += message.sendingPlayer.NickName + ": " + message.message + "\n";
+            chatString += message.sendingPlayer.NickName + ": " + message.message + "\n";
         }
 
-        UIManager.Instance.chatText.text = chatText;
+        if (messageQueuedCallback != null) {
+            messageQueuedCallback(chatString);
+        }
     }
 
     [PunRPC]

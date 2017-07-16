@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 public class ThrowingRangeGameManager : GameManagerBase {
-    
+
     public Spawner[] spawners;
     public Camera sceneCamera;
     public ThrowingRangeTarget throwingRangeTarget;
@@ -18,7 +18,7 @@ public class ThrowingRangeGameManager : GameManagerBase {
     protected override void Awake() {
         base.Awake();
 
-        throwingRangeTarget.HitCallback = AddPoints;
+        throwingRangeTarget.AddTargetHitCallback(AddPoints);
 
         standings = new Dictionary<PhotonPlayer, int>();
     }
@@ -26,13 +26,13 @@ public class ThrowingRangeGameManager : GameManagerBase {
     protected override void Start() {
         base.Start();
 
-        UIManager.Instance.announcementText.text = string.Format("First to reach {0} points win!", pointsToWin);
+        uiManager.Announce(string.Format("First to reach {0} points win!", pointsToWin));
     }
 
     public override void OnPhotonPlayerDisconnected(PhotonPlayer player) {
         // Remove player from standings when disconnected
         standings.Remove(player);
-        OnStandingsUpdated();
+        UpdateStandings();
     }
 
     protected override void StartGame() {
@@ -61,13 +61,14 @@ public class ThrowingRangeGameManager : GameManagerBase {
 
         localPlayer = spawners[spawnerId].NetworkedSpawn(Utils.Resource.PLAYER, 0);
 
-        playerCamera = localPlayer.GetComponentInChildren<Camera>();
-        UIManager.Instance.PlayerCamera = playerCamera;
-
         sceneCamera.gameObject.SetActive(false);
     }
 
-    private void OnStandingsUpdated() {
+    private void AddPoints(PhotonPlayer player, int points) {
+        photonView.RPC("RpcAddPoints", PhotonTargets.AllBuffered, player.ID, points);
+    }
+
+    private void UpdateStandings() {
         // Copy standings to a key value pair list
         List<KeyValuePair<PhotonPlayer, int>> standingsList = standings.ToList<KeyValuePair<PhotonPlayer, int>>();
 
@@ -83,17 +84,13 @@ public class ThrowingRangeGameManager : GameManagerBase {
             standingsText += (i + 1) + ". " + player.NickName + " -- " + points + " pts\n";
         }
 
-        UIManager.Instance.standingsText.text = standingsText;
-
-        CheckForWinCondition();
-    }
-
-    private void AddPoints(PhotonPlayer player, int points) {
-        photonView.RPC("RpcAddPoints", PhotonTargets.AllBuffered, player.ID, points);
+        if (standingsUpdatedCallback != null) {
+            standingsUpdatedCallback(standingsText);
+        }
     }
 
     private void AnnounceWinner(PhotonPlayer winningPlayer) {
-        UIManager.Instance.announcementText.text = winningPlayer.NickName + " wins!";
+        uiManager.Announce(winningPlayer.NickName + " wins!");
     }
 
     [PunRPC]
@@ -105,9 +102,11 @@ public class ThrowingRangeGameManager : GameManagerBase {
         standings.TryGetValue(targetPlayer, out oldPoints);
 
         standings[targetPlayer] = oldPoints + points;
-        
-        // Callback
-        OnStandingsUpdated();
+
+        UpdateStandings();
+        if (CheckForWinCondition()) {
+            EndGame();
+        }
     }
 
 }

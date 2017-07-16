@@ -5,23 +5,20 @@ using UnityEngine.UI;
  * This class controls UI behaviour during the game.
  */
 public class UIManager : MonoBehaviour {
-    
+
+    public delegate void OnChatMessageSentCallback(PhotonPlayer sendingPlayer, string message);
+
     public Text targetInfoText;
     public Text standingsText;
     public Text announcementText;
-
     public Text chatText;
     public InputField chatInputField;
-
-    private static UIManager instance;
-
+    
     private bool isCursorLocked;
-    private Camera playerCamera;
+    private OnChatMessageSentCallback chatMessageSentCallback;
 
     void Awake() {
         chatInputField.interactable = false;
-
-        instance = this;
 
         isCursorLocked = true;
     }
@@ -35,24 +32,31 @@ public class UIManager : MonoBehaviour {
          * issue on WebGL.
          */
         UpdateCursorState();
-        UpdateTargetInfoText();
     }
 
-    public static UIManager Instance {
-        get {
-            return instance;
+    public void AddChatMessageSentCallback(OnChatMessageSentCallback chatMessageSentCallback) {
+        if (this.chatMessageSentCallback == null) {
+            this.chatMessageSentCallback = chatMessageSentCallback;
+        } else {
+            this.chatMessageSentCallback += chatMessageSentCallback;
         }
     }
 
-    public Camera PlayerCamera {
-        set {
-            playerCamera = value;
-        }
+    public void Announce(string announcementString) {
+        announcementText.text = announcementString;
     }
 
     public void ResetCursor() {
         isCursorLocked = false;
         UpdateCursorState();
+    }
+
+    public void UpdateStandingsText(string standingsString) {
+        standingsText.text = standingsString;
+    }
+
+    public void UpdateChatText(string chatString) {
+        chatText.text = chatString;
     }
 
     private void InputToggleCursor() {
@@ -82,32 +86,6 @@ public class UIManager : MonoBehaviour {
         }
     }
 
-    /**
-     * This method updates the text that indicates target's name based on the entity
-     * currently pointed by the camera.
-     */
-    private void UpdateTargetInfoText() {
-        if (playerCamera == null) {
-            return;
-        }
-
-        targetInfoText.text = "";
-
-        RaycastHit hitInfo;
-        bool hitSomething = Physics.Raycast(
-            playerCamera.transform.position,
-            playerCamera.transform.forward,
-            out hitInfo,
-            Mathf.Infinity,
-            Utils.Layer.TERRAIN | Utils.Layer.DETECT_THROWABLE);
-        if (hitSomething) {
-            PlayerController targetPlayerController = hitInfo.transform.GetComponentInParent<PlayerController>();
-            if (targetPlayerController != null) {
-                targetInfoText.text = targetPlayerController.NickName;
-            }
-        }
-    }
-
     private void CheckChatInputField() {
         if (chatInputField.interactable) {
             SendChatMessage();
@@ -123,7 +101,10 @@ public class UIManager : MonoBehaviour {
     private void SendChatMessage() {
         if (chatInputField.text != "") {
             Logger.Log("Sending chat message " + chatInputField.text);
-            ChatManager.Instance.SendChatMessage(PhotonNetwork.player, chatInputField.text);
+
+            if (chatMessageSentCallback != null) {
+                chatMessageSentCallback(PhotonNetwork.player, chatInputField.text);
+            }
 
             chatInputField.text = "";
         }

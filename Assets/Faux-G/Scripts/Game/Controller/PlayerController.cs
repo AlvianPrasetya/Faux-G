@@ -7,12 +7,6 @@ public class PlayerController : Photon.MonoBehaviour {
 	private new Rigidbody rigidbody;
 	private GravityBody gravityBody;
 
-	public string NickName {
-        get {
-            return photonView.owner.NickName;
-        }
-    }
-
 	void Awake() {
 		rigidbody = GetComponent<Rigidbody>();
 		gravityBody = GetComponent<GravityBody>();
@@ -33,5 +27,11 @@ public class PlayerController : Photon.MonoBehaviour {
             gravityBody.enabled = false;
         }
 	}
+
+    public string NickName {
+        get {
+            return photonView.owner.NickName;
+        }
+    }
 
 }

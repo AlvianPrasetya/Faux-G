@@ -12,17 +12,11 @@ public class ThrowingRangeTarget : MonoBehaviour {
 
     private Vector3 angularVelocity;
 
-    private OnTargetHitCallback hitCallback;
-
-    public OnTargetHitCallback HitCallback {
-        set {
-            hitCallback = value;
-        }
-    }
+    private OnTargetHitCallback targetHitCallback;
 
     void Awake() {
         foreach (HitArea hitArea in hitAreas) {
-            hitArea.HitCallback = OnHitAreaHit;
+            hitArea.AddHitAreaHitCallback(OnHitAreaHit);
         }
     }
 
@@ -32,7 +26,7 @@ public class ThrowingRangeTarget : MonoBehaviour {
         }
     }
 
-    private void FixedUpdate() {
+    void FixedUpdate() {
         if (PhotonNetwork.isMasterClient) {
             transform.Rotate(transform.right, angularVelocity.x * Time.fixedDeltaTime, Space.World);
             transform.Rotate(transform.up, angularVelocity.y * Time.fixedDeltaTime, Space.World);
@@ -40,8 +34,18 @@ public class ThrowingRangeTarget : MonoBehaviour {
         }
     }
 
+    public void AddTargetHitCallback(OnTargetHitCallback targetHitCallback) {
+        if (this.targetHitCallback == null) {
+            this.targetHitCallback = targetHitCallback;
+        } else {
+            this.targetHitCallback += targetHitCallback;
+        }
+    }
+
     private void OnHitAreaHit(PhotonPlayer hittingPlayer, int points) {
-        hitCallback(hittingPlayer, points);
+        if (targetHitCallback != null) {
+            targetHitCallback(hittingPlayer, points);
+        }
     }
 
     private IEnumerator ChangeAngularVelocityCoroutine() {

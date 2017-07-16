@@ -1,25 +1,29 @@
 using UnityEngine;
-using System.Collections;
 
+/**
+ * This class controls the health behaviour and logic of an entity. It also manages 
+ * how damages and deaths are handled within different entities through the declared 
+ * callbacks.
+ */
 public class Health : Photon.MonoBehaviour {
 
-	public delegate void HealthUpdateCallback(float currentHealth, float maxHealth);
-	public delegate void DeathCallback();
+	public delegate void OnHealthUpdatedCallback(float currentHealth, float maxHealth);
+	public delegate void OnDeathCallback();
 
 	public float maxHealth;
 
 	private float currentHealth;
-	private bool isDead;
+	private bool dead;
 	private PhotonPlayer lastDamager;
-	private HealthUpdateCallback healthUpdateCallback;
-	private DeathCallback deathCallback;
+	private OnHealthUpdatedCallback healthUpdatedCallback;
+	private OnDeathCallback deathCallback;
 
 	void Awake() {
 		currentHealth = maxHealth;
-		isDead = false;
+		dead = false;
 
 		if (photonView.isMine) {
-			healthUpdateCallback(currentHealth, maxHealth);
+			healthUpdatedCallback(currentHealth, maxHealth);
 		}
 	}
 
@@ -29,13 +33,31 @@ public class Health : Photon.MonoBehaviour {
 		}
 	}
 
-	public void SetHealthUpdateCallback(HealthUpdateCallback callback) {
-		healthUpdateCallback = callback;
-	}
+    public bool Dead {
+        get {
+            return dead;
+        }
+    }
 
-	public void SetDeathCallback(DeathCallback callback) {
-		deathCallback = callback;
-	}
+    public OnHealthUpdatedCallback HealthUpdatedCallback {
+        get {
+            return healthUpdatedCallback;
+        }
+
+        set {
+            healthUpdatedCallback = value;
+        }
+    }
+
+    public OnDeathCallback DeathCallback {
+        get {
+            return deathCallback;
+        }
+
+        set {
+            deathCallback = value;
+        }
+    }
 
 	public void Damage(float damage, PhotonPlayer damager) {
 		if (!photonView.isMine) {
@@ -45,32 +67,33 @@ public class Health : Photon.MonoBehaviour {
 		photonView.RPC("RpcDamage", PhotonTargets.All, damage, damager.ID);
 	}
 
-	[PunRPC]
-	private void RpcDamage(float damage, int damagerId) {
-		PhotonPlayer damager = PhotonPlayer.Find(damagerId);
-		LocalDamage(damage, damager);
-	}
-
 	private void LocalDamage(float damage, PhotonPlayer damager) {
-		if (isDead) {
-			return;
-		}
-
-		currentHealth = Mathf.Clamp(currentHealth - damage, 0.0f, maxHealth);
-		lastDamager = damager;
-
-		if (photonView.isMine) {
-			if (healthUpdateCallback != null) {
-				healthUpdateCallback(currentHealth, maxHealth);
-			}
-
-			if (currentHealth == 0.0f) {
-				isDead = true;
-				if (deathCallback != null) {
-					deathCallback();
-				}
-			}
-		}
+		
 	}
+
+    [PunRPC]
+    private void RpcDamage(float damage, int damagerId) {
+        if (dead) {
+            return;
+        }
+
+        PhotonPlayer damagingPlayer = PhotonPlayer.Find(damagerId);
+
+        currentHealth = Mathf.Clamp(currentHealth - damage, 0.0f, maxHealth);
+        lastDamager = damagingPlayer;
+
+        if (photonView.isMine) {
+            if (healthUpdatedCallback != null) {
+                healthUpdatedCallback(currentHealth, maxHealth);
+            }
+
+            if (currentHealth == 0.0f) {
+                dead = true;
+                if (deathCallback != null) {
+                    deathCallback();
+                }
+            }
+        }
+    }
 
 }

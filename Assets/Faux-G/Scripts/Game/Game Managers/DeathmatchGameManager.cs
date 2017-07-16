@@ -7,22 +7,14 @@ using System.Collections;
 public class DeathmatchGameManager : GameManagerBase {
     
 	public Transform[] spawnPoints;
-
-	private static DeathmatchGameManager instance;
+    
 	private Camera sceneCamera;
 	private GameObject localPlayer;
 	private Camera playerCamera;
 
-    public new static DeathmatchGameManager Instance {
-        get {
-            return instance;
-        }
-    }
-
     protected override void Awake() {
         base.Awake();
 
-		instance = this;
 		sceneCamera = Camera.main;
 	}
 
@@ -79,11 +71,8 @@ public class DeathmatchGameManager : GameManagerBase {
 			spawnPoints[spawnPointId].rotation,
 			0
 		);
-		playerCamera = localPlayer.GetComponentInChildren<Camera>();
-        UIManager.Instance.PlayerCamera = playerCamera;
 
         sceneCamera.gameObject.SetActive(false);
-		playerCamera.gameObject.SetActive(true);
 	}
 
 	private IEnumerator WaitForSpawn(float waitTime) {

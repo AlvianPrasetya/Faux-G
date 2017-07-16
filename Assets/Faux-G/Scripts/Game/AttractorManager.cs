@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections.Generic;
 
 public class AttractorManager : MonoBehaviour {
 
@@ -7,14 +6,14 @@ public class AttractorManager : MonoBehaviour {
 
     private static AttractorManager instance;
 
+    void Awake() {
+        instance = this;
+    }
+
     public static AttractorManager Instance {
         get {
             return instance;
         }
-    }
-
-    void Awake() {
-        instance = this;
     }
 
 }

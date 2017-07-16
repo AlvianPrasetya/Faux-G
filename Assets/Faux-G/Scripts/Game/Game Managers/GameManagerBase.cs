@@ -8,6 +8,9 @@ using System.Collections;
  */
 public abstract class GameManagerBase : Photon.PunBehaviour {
 
+    public delegate void OnStandingsUpdatedCallback(string standingsString);
+    public delegate void OnLeftRoomCallback();
+
     public enum GAME_STATE {
         WAITING, // WAITING state, the state before the game starts (waiting for players)
         RUNNING, // RUNNING state, the normal running state of the game
@@ -15,28 +18,30 @@ public abstract class GameManagerBase : Photon.PunBehaviour {
         ENDED // ENDED state, the game has ended due to reaching a winning condition
     }
 
+    public UIManager uiManager;
+    public ChatManager chatManager;
+    public AttractorManager attractorManager;
+
     public int delayToCountdownToStartGame;
     public int countdownToStartGame;
     public int delayToCountdownToLeave;
     public int countdownToLeave;
     
     protected GAME_STATE gameState;
-
-    private static GameManagerBase instance;
-
-    public static GameManagerBase Instance {
-        get {
-            return instance;
-        }
-    }
+    
+    protected OnStandingsUpdatedCallback standingsUpdatedCallback;
+    private OnLeftRoomCallback leftRoomCallback;
 
     protected virtual void Awake() {
         PhotonNetwork.sendRate = Utils.Network.SEND_RATE;
         PhotonNetwork.sendRateOnSerialize = Utils.Network.SEND_RATE_ON_SERIALIZE;
-        
-        gameState = GAME_STATE.WAITING;
 
-        instance = this;
+        AddLeftRoomCallback(uiManager.ResetCursor);
+        AddStandingsUpdatedCallback(uiManager.UpdateStandingsText);
+        uiManager.AddChatMessageSentCallback(chatManager.SendChatMessage);
+        chatManager.AddMessageQueuedCallback(uiManager.UpdateChatText);
+
+        gameState = GAME_STATE.WAITING;
     }
 
     protected virtual void Start() {
@@ -44,7 +49,27 @@ public abstract class GameManagerBase : Photon.PunBehaviour {
     }
 
     public override void OnLeftRoom() {
+        if (leftRoomCallback != null) {
+            leftRoomCallback();
+        }
+
         PhotonNetwork.LoadLevel(Utils.Scene.LOBBY);
+    }
+
+    public void AddStandingsUpdatedCallback(OnStandingsUpdatedCallback standingsUpdatedCallback) {
+        if (this.standingsUpdatedCallback == null) {
+            this.standingsUpdatedCallback = standingsUpdatedCallback;
+        } else {
+            this.standingsUpdatedCallback += standingsUpdatedCallback;
+        }
+    }
+
+    public void AddLeftRoomCallback(OnLeftRoomCallback leftRoomCallback) {
+        if (this.leftRoomCallback == null) {
+            this.leftRoomCallback = leftRoomCallback;
+        } else {
+            this.leftRoomCallback += leftRoomCallback;
+        }
     }
 
     /**
@@ -82,8 +107,6 @@ public abstract class GameManagerBase : Photon.PunBehaviour {
      * countdown to leave has elapsed.
      */
     private void LeaveRoom() {
-        UIManager.Instance.ResetCursor();
-
         PhotonNetwork.LeaveRoom();
     }
 
@@ -95,10 +118,10 @@ public abstract class GameManagerBase : Photon.PunBehaviour {
         yield return new WaitForSecondsRealtime(delayToCountdownToStartGame);
 
         for (int i = countdownToStartGame; i > 0; i--) {
-            UIManager.Instance.announcementText.text = "Game starting in\n" + i.ToString();
+            uiManager.Announce("Game starting in\n" + i.ToString());
             yield return new WaitForSecondsRealtime(1.0f);
         }
-        UIManager.Instance.announcementText.text = "";
+        uiManager.Announce("");
 
         StartGame();
     }
@@ -111,10 +134,10 @@ public abstract class GameManagerBase : Photon.PunBehaviour {
         yield return new WaitForSecondsRealtime(delayToCountdownToLeave);
 
         for (int i = countdownToLeave; i > 0; i--) {
-            UIManager.Instance.announcementText.text = "Leaving room in\n" + i.ToString();
+            uiManager.Announce("Leaving room in\n" + i.ToString());
             yield return new WaitForSecondsRealtime(1.0f);
         }
-        UIManager.Instance.announcementText.text = "";
+        uiManager.Announce("");
 
         LeaveRoom();
     }

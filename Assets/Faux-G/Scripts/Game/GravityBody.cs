@@ -1,5 +1,4 @@
 using UnityEngine;
-using System.Collections.Generic;
 
 public class GravityBody : Photon.MonoBehaviour {
 
@@ -12,11 +11,7 @@ public class GravityBody : Photon.MonoBehaviour {
 	private Vector3 lastGravityDirection;
 	private Vector3 gravityDirection;
 	private float referenceAngle;
-
-	/*
-	 * MONOBEHAVIOUR LIFECYCLE
-	 */
-
+    
 	void Awake() {
 		rigidbody = GetComponent<Rigidbody>();
 
