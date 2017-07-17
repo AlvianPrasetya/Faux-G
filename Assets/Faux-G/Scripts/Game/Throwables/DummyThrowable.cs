@@ -1,12 +1,21 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
+using System.Collections;
 
 public class DummyThrowable : ThrowableBase {
+
+    public float timeBeforeDespawn;
 
     private Behaviour halo;
 
     // Stale dummy throwable could not interact with hit areas
     private bool stale;
+
+    public override void Initialize() {
+        Awake();
+    }
+
+    public override void CleanUp() {
+    }
 
     protected override void Awake() {
         base.Awake();
@@ -31,6 +40,8 @@ public class DummyThrowable : ThrowableBase {
         halo.enabled = true;
 
         rigidbody.AddForce(throwDirection * throwForce, ForceMode.Impulse);
+
+        StartCoroutine(DespawnCoroutine());
     }
 
     protected override void OnCollisionEnter(Collision collision) {
@@ -53,6 +64,16 @@ public class DummyThrowable : ThrowableBase {
             stale = true;
             halo.enabled = false;
         }
+    }
+
+    private IEnumerator DespawnCoroutine() {
+        float timeBeforeDespawn = this.timeBeforeDespawn;
+        while (timeBeforeDespawn >= 0.0f) {
+            timeBeforeDespawn -= Time.deltaTime;
+            yield return null;
+        }
+
+        Pool();
     }
 
 }

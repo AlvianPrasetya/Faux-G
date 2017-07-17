@@ -16,6 +16,14 @@ public class Tracer : ThrowableBase {
     private bool spawnTrace;
     private Queue<GameObject> traces;
 
+    public override void Initialize() {
+        Awake();
+    }
+
+    public override void CleanUp() {
+        traces = null;
+    }
+
     protected override void Awake() {
         base.Awake();
 

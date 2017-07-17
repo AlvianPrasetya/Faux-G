@@ -16,12 +16,6 @@ public abstract class ThrowableBase : PoolableBase {
     // The owner of this throwable object (the player spawning this object).
     private PhotonPlayer owner;
 
-    public override void Initialize() {
-    }
-
-    public override void CleanUp() {
-    }
-
     protected virtual void Awake() {
         collider = GetComponent<Collider>();
         rigidbody = GetComponent<Rigidbody>();
