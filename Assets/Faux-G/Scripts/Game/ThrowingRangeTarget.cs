@@ -1,23 +1,28 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class ThrowingRangeTarget : MonoBehaviour {
+public class ThrowingRangeTarget : Photon.MonoBehaviour {
 
     public delegate void OnTargetHitCallback(PhotonPlayer hittingPlayer, int points);
 
     public float maxRotateSpeed;
     public float changeAngularVelocityInterval;
+    public float knockbackDistance;
+    public Vector3 minPosition;
+    public Vector3 maxPosition;
 
     public HitArea[] hitAreas;
 
     private Vector3 angularVelocity;
-
+    private Vector3 targetPosition;
     private OnTargetHitCallback targetHitCallback;
 
     void Awake() {
         foreach (HitArea hitArea in hitAreas) {
-            hitArea.AddHitAreaHitCallback(OnHitAreaHit);
+            hitArea.AddHitAreaCollidedCallback(OnHitAreaHit);
         }
+
+        targetPosition = transform.position;
     }
 
     void Start() {
@@ -31,6 +36,8 @@ public class ThrowingRangeTarget : MonoBehaviour {
             transform.Rotate(transform.right, angularVelocity.x * Time.fixedDeltaTime, Space.World);
             transform.Rotate(transform.up, angularVelocity.y * Time.fixedDeltaTime, Space.World);
             transform.Rotate(transform.forward, angularVelocity.z * Time.fixedDeltaTime, Space.World);
+
+            transform.Translate((targetPosition - transform.position) * Time.fixedDeltaTime, Space.World);
         }
     }
 
@@ -42,10 +49,12 @@ public class ThrowingRangeTarget : MonoBehaviour {
         }
     }
 
-    private void OnHitAreaHit(PhotonPlayer hittingPlayer, int points) {
+    private void OnHitAreaHit(PhotonPlayer hittingPlayer, Collision collision, int points) {
         if (targetHitCallback != null) {
             targetHitCallback(hittingPlayer, points);
         }
+
+        photonView.RPC("RpcKnockback", PhotonNetwork.masterClient, -collision.contacts[0].normal);
     }
 
     private IEnumerator ChangeAngularVelocityCoroutine() {
@@ -57,6 +66,15 @@ public class ThrowingRangeTarget : MonoBehaviour {
 
             yield return new WaitForSeconds(changeAngularVelocityInterval);
         }
+    }
+
+    [PunRPC]
+    private void RpcKnockback(Vector3 knockbackDirection) {
+        Vector3 knockbackVector = knockbackDirection * knockbackDistance;
+        targetPosition = new Vector3(
+            Mathf.Clamp(targetPosition.x + knockbackVector.x, minPosition.x, maxPosition.x),
+            Mathf.Clamp(targetPosition.y + knockbackVector.y, minPosition.y, maxPosition.y),
+            Mathf.Clamp(targetPosition.z + knockbackVector.z, minPosition.z, maxPosition.z));
     }
 
 }

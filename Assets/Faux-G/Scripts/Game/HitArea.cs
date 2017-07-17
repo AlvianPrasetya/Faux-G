@@ -2,27 +2,27 @@ using UnityEngine;
 
 public class HitArea : MonoBehaviour {
 
-    public delegate void OnHitAreaHitCallback(PhotonPlayer hittingPlayer, int value);
+    public delegate void OnHitAreaCollidedCallback(PhotonPlayer hittingPlayer, Collision collision, int value);
 
     // The points/damage multiplier when this hit area is collided with
     public int onHitMultiplier;
 
-    private OnHitAreaHitCallback hitAreaHitCallback;
+    private OnHitAreaCollidedCallback hitAreaCollidedCallback;
 
-    public void AddHitAreaHitCallback(OnHitAreaHitCallback hitAreaHitCallback) {
-        if (this.hitAreaHitCallback == null) {
-            this.hitAreaHitCallback = hitAreaHitCallback;
+    public void AddHitAreaCollidedCallback(OnHitAreaCollidedCallback hitAreaCollidedCallback) {
+        if (this.hitAreaCollidedCallback == null) {
+            this.hitAreaCollidedCallback = hitAreaCollidedCallback;
         } else {
-            this.hitAreaHitCallback += hitAreaHitCallback;
+            this.hitAreaCollidedCallback += hitAreaCollidedCallback;
         }
     }
 
-    public void OnThrowableCollision(ThrowableBase collidingThrowable) {
+    public void OnThrowableCollision(ThrowableBase collidingThrowable, Collision collision) {
         PhotonPlayer collidingThrowableOwner = collidingThrowable.Owner;
         int onHitValue = collidingThrowable.onHitValue;
 
-        if (hitAreaHitCallback != null) {
-            hitAreaHitCallback(collidingThrowableOwner, onHitValue * onHitMultiplier);
+        if (hitAreaCollidedCallback != null) {
+            hitAreaCollidedCallback(collidingThrowableOwner, collision, onHitValue * onHitMultiplier);
         }
     }
 
