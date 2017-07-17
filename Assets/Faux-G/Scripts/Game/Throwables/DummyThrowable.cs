@@ -1,15 +1,12 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
-public class DummyThrowable : ThrowableBase, IPoolable {
+public class DummyThrowable : ThrowableBase {
 
     private Behaviour halo;
 
     // Stale dummy throwable could not interact with hit areas
     private bool stale;
-
-    public void Pool() {
-        // TODO: Implement pooling routine
-    }
 
     protected override void Awake() {
         base.Awake();

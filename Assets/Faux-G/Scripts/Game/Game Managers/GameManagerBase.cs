@@ -11,7 +11,6 @@ public abstract class GameManagerBase : Photon.PunBehaviour {
     public delegate void OnStandingsUpdatedCallback(string standingsString);
     public delegate void OnLeftRoomCallback();
 
-
     public enum GAME_STATE {
         WAITING, // WAITING state, the state before the game starts (waiting for players)
         RUNNING, // RUNNING state, the normal running state of the game
@@ -22,6 +21,7 @@ public abstract class GameManagerBase : Photon.PunBehaviour {
     public UIManager uiManager;
     public ChatManager chatManager;
     public AttractorManager attractorManager;
+    public ObjectPoolManager objectPoolManager;
 
     public int delayToStartGameCountdown;
     public int startGameCountdown;
@@ -33,6 +33,8 @@ public abstract class GameManagerBase : Photon.PunBehaviour {
     protected OnStandingsUpdatedCallback standingsUpdatedCallback;
     private OnLeftRoomCallback leftRoomCallback;
 
+    private static GameManagerBase instance;
+
     protected virtual void Awake() {
         PhotonNetwork.sendRate = Utils.Network.SEND_RATE;
         PhotonNetwork.sendRateOnSerialize = Utils.Network.SEND_RATE_ON_SERIALIZE;
@@ -43,6 +45,8 @@ public abstract class GameManagerBase : Photon.PunBehaviour {
         chatManager.AddMessageQueuedCallback(uiManager.UpdateChatText);
 
         gameState = GAME_STATE.WAITING;
+
+        instance = this;
     }
 
     protected virtual void Start() {
@@ -55,6 +59,12 @@ public abstract class GameManagerBase : Photon.PunBehaviour {
         }
 
         PhotonNetwork.LoadLevel(Utils.Scene.LOBBY);
+    }
+
+    public static GameManagerBase Instance {
+        get {
+            return instance;
+        }
     }
 
     public void AddStandingsUpdatedCallback(OnStandingsUpdatedCallback standingsUpdatedCallback) {

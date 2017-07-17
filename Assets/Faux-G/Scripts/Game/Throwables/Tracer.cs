@@ -6,7 +6,7 @@ using System.Collections.Generic;
  * This class controls the behaviour of a Tracer (trace spawner) that indicates 
  * the trajectory of the current Throwable based on the charged throw force.
  */
-public class Tracer : ThrowableBase, IPoolable {
+public class Tracer : ThrowableBase {
 
     public GameObject tracePrefab;
 
@@ -15,10 +15,6 @@ public class Tracer : ThrowableBase, IPoolable {
     private long lastTraceSpawnTimeMs;
     private bool spawnTrace;
     private Queue<GameObject> traces;
-
-    public void Pool() {
-        // TODO: Implement pooling routine
-    }
 
     protected override void Awake() {
         base.Awake();
@@ -73,7 +69,7 @@ public class Tracer : ThrowableBase, IPoolable {
             yield return new WaitForSeconds(traceSpawnInterval);
         }
 
-        Destroy(gameObject);
+        Pool();
     }
 
 }

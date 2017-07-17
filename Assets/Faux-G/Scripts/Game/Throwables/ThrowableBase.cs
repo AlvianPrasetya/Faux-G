@@ -4,7 +4,7 @@
  * This abstract class describes the mandatory properties and behavioural skeletons of a throwable 
  * object. New throwables are to implement this abstract class accordingly.
  */
-public abstract class ThrowableBase : MonoBehaviour {
+public abstract class ThrowableBase : PoolableBase {
 
     // The points/damage value when this throwable collides with something
     public int onHitValue;
@@ -15,6 +15,12 @@ public abstract class ThrowableBase : MonoBehaviour {
 
     // The owner of this throwable object (the player spawning this object).
     private PhotonPlayer owner;
+
+    public override void Initialize() {
+    }
+
+    public override void CleanUp() {
+    }
 
     protected virtual void Awake() {
         collider = GetComponent<Collider>();

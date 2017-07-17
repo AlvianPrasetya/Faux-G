@@ -138,7 +138,9 @@ public class ThrowController : Photon.MonoBehaviour {
     private void HaltThrowable() {
         if (throwableState == THROWABLE_STATE.CHARGING) {
             // Instantiate tracer
-            activeTracer = Instantiate(tracerPrefab, throwableSpawner.position, throwableSpawner.rotation);
+            activeTracer = (Tracer) GameManagerBase.Instance.objectPoolManager
+                .GetObjectPool(tracerPrefab)
+                .Unpool(throwableSpawner.position, throwableSpawner.rotation);
 
             // Copy physical properties from preparedThrowable to activeTracer
             activeTracer.transform.localScale = preparedThrowable.transform.localScale;
@@ -217,8 +219,10 @@ public class ThrowController : Photon.MonoBehaviour {
     [PunRPC]
     private void RpcPrepareThrowable(int eventTimeMs, int throwableId) {
         // TODO: Trigger preparing throwable animation
-        ThrowableBase throwable = Instantiate(throwables[throwableId],
-            throwableSpawner.position, throwableSpawner.rotation, throwableSpawner);
+
+        ThrowableBase throwable = (ThrowableBase) GameManagerBase.Instance.objectPoolManager
+            .GetObjectPool(throwables[throwableId])
+            .Unpool(throwableSpawner.position, throwableSpawner.rotation, throwableSpawner);
         throwable.Owner = photonView.owner;
 
         throwableState = THROWABLE_STATE.PREPARED;
