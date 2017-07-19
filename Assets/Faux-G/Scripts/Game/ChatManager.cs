@@ -36,8 +36,16 @@ public class ChatManager : Photon.PunBehaviour {
 
     public void SendChatMessage(PhotonPlayer sendingPlayer, string message) {
         // TODO: Message preprocessing and recipient identification before sending
-
-        photonView.RPC("RpcSendChatMessage", PhotonTargets.All, sendingPlayer.ID, message);
+        // Sending a private message
+        if (message.StartsWith("@")) {
+            foreach(PhotonPlayer targetPlayer in PhotonNetwork.otherPlayers) {
+                if (message.StartsWith("@" + targetPlayer.NickName)){
+                    photonView.RPC("RpcSendChatMessage", targetPlayer, sendingPlayer.ID, message);
+                }
+            }
+        } else {
+            photonView.RPC("RpcSendChatMessage", PhotonTargets.All, sendingPlayer.ID, message);
+        }
     }
 
     /**
