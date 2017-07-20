@@ -1,6 +1,12 @@
 using UnityEngine;
 using System.Collections.Generic;
 
+/**
+ * This method defines the routines that synchronize transforms (position and rotation 
+ * information) across the network. Interpolation and extrapolation logics are also 
+ * defined within this class. Entities using SyncTransform must have a PhotonView that 
+ * observes this script for the synchronization to work.
+ */
 public class SyncTransform : Photon.MonoBehaviour, IPunObservable {
 
 	private struct PositionData {
