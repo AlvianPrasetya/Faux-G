@@ -18,6 +18,7 @@ public abstract class GameManagerBase : Photon.PunBehaviour {
         ENDED // ENDED state, the game has ended due to reaching a winning condition
     }
 
+    public NetworkManager networkManager;
     public UIManager uiManager;
     public ChatManager chatManager;
     public AttractorManager attractorManager;

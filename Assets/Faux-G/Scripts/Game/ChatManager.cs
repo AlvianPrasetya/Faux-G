@@ -1,6 +1,6 @@
 ﻿using System.Collections;
 
-public class ChatManager : Photon.PunBehaviour {
+public class ChatManager : Photon.MonoBehaviour {
 
     public delegate void OnMessageQueuedCallback(string chatString);
 
