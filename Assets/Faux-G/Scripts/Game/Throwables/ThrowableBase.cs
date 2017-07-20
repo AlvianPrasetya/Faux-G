@@ -28,11 +28,16 @@ public abstract class ThrowableBase : PoolableBase {
     }
 
     /**
-     * This abstract method describes the "releasing" behaviour of this throwable (the moment 
+     * This virtual method describes the "releasing" behaviour of this throwable (the moment 
      * when the throwable is released from the arms of the owner towards the targeted direction).
      */
-    public abstract void Release(Vector3 throwPosition, Quaternion throwRotation,
-        Vector3 throwDirection, float throwForce);
+    public virtual void Release(Vector3 throwPosition, Quaternion throwRotation,
+        Vector3 throwDirection, float throwForce) {
+        // Enable physics upon release
+        collider.enabled = true;
+        rigidbody.isKinematic = false;
+        gravityBody.enabled = true;
+    }
 
     /**
      * This abstract method extends Unity's OnCollisionEnter that describes the behaviour of this 

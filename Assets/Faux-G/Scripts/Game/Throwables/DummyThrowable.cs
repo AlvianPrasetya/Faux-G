@@ -26,14 +26,11 @@ public class DummyThrowable : ThrowableBase {
 
     public override void Release(Vector3 throwPosition, Quaternion throwRotation, 
         Vector3 throwDirection, float throwForce) {
+        base.Release(throwPosition, throwRotation, throwDirection, throwForce);
+
         transform.parent = null;
         transform.position = throwPosition;
         transform.rotation = throwRotation;
-
-        // Enable physics upon release
-        collider.enabled = true;
-        rigidbody.isKinematic = false;
-        gravityBody.enabled = true;
 
         // Enable halo upon release
         stale = false;
