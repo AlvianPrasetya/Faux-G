@@ -8,76 +8,73 @@ using System.Collections.Generic;
  */
 public class Tracer : ThrowableBase {
 
-    public GameObject tracePrefab;
+	public GameObject tracePrefab;
 
-    public float traceSpawnInterval;
+	public float traceSpawnInterval;
 
-    private long lastTraceSpawnTimeMs;
-    private bool spawnTrace;
-    private Queue<GameObject> traces;
+	private long lastTraceSpawnTimeMs;
+	private bool spawnTrace;
+	private Queue<GameObject> traces;
 
-    public override void Initialize() {
-        Awake();
-    }
+	public override void Initialize() {
+		Awake();
+	}
 
-    public override void CleanUp() {
-        traces = null;
-    }
+	public override void CleanUp() {
+		traces = null;
+	}
 
-    protected override void Awake() {
-        base.Awake();
+	protected override void Awake() {
+		base.Awake();
 
-        lastTraceSpawnTimeMs = PhotonNetwork.ServerTimestamp;
-        spawnTrace = false;
-        traces = new Queue<GameObject>();
-    }
-    
-    void FixedUpdate() {
-        if (spawnTrace) {
-            SpawnTraceOnSpawnInterval();
-        }
-    }
+		lastTraceSpawnTimeMs = PhotonNetwork.ServerTimestamp;
+		spawnTrace = false;
+		traces = new Queue<GameObject>();
+	}
+	
+	void FixedUpdate() {
+		if (spawnTrace) {
+			SpawnTraceOnSpawnInterval();
+		}
+	}
 
-    public override void Release(Vector3 throwPosition, Quaternion throwRotation,
-        Vector3 throwDirection, float throwForce) {
-        transform.parent = null;
-        transform.position = throwPosition;
-        transform.rotation = throwRotation;
+	public override void Release(Vector3 throwPosition, Quaternion throwRotation,
+		Vector3 throwDirection, float throwForce) {
+		base.Release(throwPosition, throwRotation, throwDirection, throwForce);
 
-        // Enable physics upon release
-        collider.enabled = true;
-        rigidbody.isKinematic = false;
-        gravityBody.enabled = true;
+		transform.parent = null;
+		transform.position = throwPosition;
+		transform.rotation = throwRotation;
 
-        rigidbody.AddForce(throwDirection * throwForce, ForceMode.Impulse);
+		rigidbody.AddForce(throwDirection * throwForce, ForceMode.Impulse);
 
-        spawnTrace = true;
-    }
+		spawnTrace = true;
+	}
 
-    protected override void OnCollisionEnter(Collision collision) {
-        // TODO: Disable physics upon impact
-    }
+	protected override void OnCollisionEnter(Collision collision) {
+		// TODO: Disable physics upon impact
+	}
 
-    public void Despawn() {
-        spawnTrace = false;
-        StartCoroutine(DespawnCoroutine());
-    }
+	public void Despawn() {
+		spawnTrace = false;
+		StartCoroutine(DespawnCoroutine());
+	}
 
-    private void SpawnTraceOnSpawnInterval() {
-        long currentTimeMs = PhotonNetwork.ServerTimestamp;
-        if (currentTimeMs - lastTraceSpawnTimeMs >= traceSpawnInterval * 1000) {
-            traces.Enqueue(Instantiate(tracePrefab, transform.position, transform.rotation));
-            lastTraceSpawnTimeMs = currentTimeMs;
-        }
-    }
+	private void SpawnTraceOnSpawnInterval() {
+		long currentTimeMs = PhotonNetwork.ServerTimestamp;
+		if (currentTimeMs - lastTraceSpawnTimeMs >= traceSpawnInterval * 1000) {
+			traces.Enqueue(Instantiate(tracePrefab, transform.position, transform.rotation));
+			lastTraceSpawnTimeMs = currentTimeMs;
+		}
+	}
 
-    private IEnumerator DespawnCoroutine() {
-        while (traces.Count != 0) {
-            Destroy(traces.Dequeue());
-            yield return new WaitForSeconds(traceSpawnInterval);
-        }
+	private IEnumerator DespawnCoroutine() {
+		while (traces.Count != 0) {
+			Destroy(traces.Dequeue());
+			yield return new WaitForSeconds(traceSpawnInterval);
+		}
 
-        Pool();
-    }
+		Pool();
+	}
 
 }

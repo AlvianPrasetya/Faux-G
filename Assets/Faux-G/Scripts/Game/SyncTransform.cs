@@ -1,38 +1,50 @@
 using UnityEngine;
 using System.Collections.Generic;
 
+/**
+ * This method defines the routines that synchronize transforms (position and rotation 
+ * information) across the network. Interpolation and extrapolation logics are also 
+ * defined within this class. Entities using SyncTransform must have a PhotonView that 
+ * observes this script for the synchronization to work.
+ */
 public class SyncTransform : Photon.MonoBehaviour, IPunObservable {
 
-	public List<Transform> positionTransforms;
-	public List<Transform> rotationTransforms;
-	
 	private struct PositionData {
 		public int packetNum;
-		public int timestamp;
+		public int timestampMs;
 		public Vector3 position;
 
-		public PositionData(int packetNum, int timestamp, Vector3 position) {
+		public PositionData(int packetNum, int timestampMs, Vector3 position) {
 			this.packetNum = packetNum;
-			this.timestamp = timestamp;
+			this.timestampMs = timestampMs;
 			this.position = position;
 		}
 	}
-	
+
 	private struct RotationData {
 		public int packetNum;
-		public int timestamp;
+		public int timestampMs;
 		public Quaternion rotation;
 
-		public RotationData(int packetNum, int timestamp, Quaternion rotation) {
+		public RotationData(int packetNum, int timestampMs, Quaternion rotation) {
 			this.packetNum = packetNum;
-			this.timestamp = timestamp;
+			this.timestampMs = timestampMs;
 			this.rotation = rotation;
 		}
 	}
-	
+
+	public List<Transform> positionTransforms;
+	public List<Transform> rotationTransforms;
+	public bool extrapolatePosition;
+	public bool extrapolateRotation;
+
+	// Sender parameters
+	private int senderPacketNum;
+
+	// Receiver parameters
 	private List<LinkedList<PositionData>> positionBuffers;
 	private List<LinkedList<RotationData>> rotationBuffers;
-	private int sendPacketNum;
+	private int receiverPacketNum;
 
 	void Awake() {
 		positionBuffers = new List<LinkedList<PositionData>>();
@@ -46,7 +58,8 @@ public class SyncTransform : Photon.MonoBehaviour, IPunObservable {
 			rotationBuffers.Add(new LinkedList<RotationData>());
 		}
 
-		sendPacketNum = 0;
+		senderPacketNum = 0;
+		receiverPacketNum = 0;
 	}
 
 	void Update() {
@@ -54,31 +67,68 @@ public class SyncTransform : Photon.MonoBehaviour, IPunObservable {
 			return;
 		}
 
-		int renderTimestamp = PhotonNetwork.ServerTimestamp - Utils.Network.SYNC_DELAY;
+		// Calculate render timestamp based on base sync delay and full trip latency from remote to local
+		int remoteToServerLatency = GameManagerBase.Instance.networkManager.GetPlayerLatency(photonView.owner);
+		int serverToLocalLatency = GameManagerBase.Instance.networkManager.GetPlayerLatency(PhotonNetwork.player);
+		int syncDelay = Utils.Network.BASE_SYNC_DELAY + remoteToServerLatency + serverToLocalLatency;
+		int renderTimestamp = PhotonNetwork.ServerTimestamp - syncDelay;
+
 		SyncTransformPositions(renderTimestamp);
 		SyncTransformRotations(renderTimestamp);
 	}
 
 	public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info) {
 		if (stream.isWriting) {
-			foreach (Transform positionTransform in positionTransforms) {
-				stream.SendNext(sendPacketNum);
-				stream.SendNext(positionTransform.position);
-			}
-
-			foreach (Transform rotationTransform in rotationTransforms) {
-				stream.SendNext(sendPacketNum);
-				stream.SendNext(rotationTransform.rotation);
-			}
-
-			sendPacketNum++;
+			WritePhotonSerializeView(stream, info);
 		} else {
-			int timestamp = PhotonNetwork.ServerTimestamp;
+			ReadPhotonSerializeView(stream, info);
+		}
+	}
 
+	/**
+	 * This method writes into the photon serialized stream.
+	 * This method will be called PhotonNetwork.sendRateOnSerialize times per second on 
+	 * the local instance of this photonView.
+	 */
+	private void WritePhotonSerializeView(PhotonStream stream, PhotonMessageInfo info) {
+		stream.SendNext(senderPacketNum);
+		stream.SendNext(PhotonNetwork.ServerTimestamp);
+
+		foreach (Transform positionTransform in positionTransforms) {
+			stream.SendNext(positionTransform.position);
+		}
+
+		foreach (Transform rotationTransform in rotationTransforms) {
+			stream.SendNext(rotationTransform.rotation);
+		}
+
+		senderPacketNum++;
+	}
+
+	/**
+	 * This method reads from the photon serialized stream.
+	 * This method will be called PhotonNetwork.sendRateOnSerialize times per second on 
+	 * the remote instances of this photonView.
+	 */
+	private void ReadPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info) {
+		int packetNum = (int) stream.ReceiveNext();
+		int timestampMs = (int) stream.ReceiveNext();
+
+		if (packetNum < receiverPacketNum) {
+			// Data are stale, discard them
 			for (int i = 0; i < positionTransforms.Count; i++) {
-				int packetNum = (int) stream.ReceiveNext();
+				stream.ReceiveNext();
+			}
+
+			for (int i = 0; i < rotationTransforms.Count; i++) {
+				stream.ReceiveNext();
+			}
+		} else {
+			// Data are fresh, queue them
+			for (int i = 0; i < positionTransforms.Count; i++) {
 				Vector3 position = (Vector3) stream.ReceiveNext();
-				positionBuffers[i].AddLast(new PositionData(packetNum, timestamp, position));
+
+				positionBuffers[i].AddLast(new PositionData(packetNum, timestampMs, position));
 
 				if (positionBuffers[i].Count > Utils.Network.SYNC_BUFFER_SIZE) {
 					positionBuffers[i].RemoveFirst();
@@ -86,112 +136,99 @@ public class SyncTransform : Photon.MonoBehaviour, IPunObservable {
 			}
 
 			for (int i = 0; i < rotationTransforms.Count; i++) {
-				int packetNum = (int) stream.ReceiveNext();
 				Quaternion rotation = (Quaternion) stream.ReceiveNext();
-				rotationBuffers[i].AddLast(new RotationData(packetNum, timestamp, rotation));
+
+				rotationBuffers[i].AddLast(new RotationData(packetNum, timestampMs, rotation));
 
 				if (rotationBuffers[i].Count > Utils.Network.SYNC_BUFFER_SIZE) {
 					rotationBuffers[i].RemoveFirst();
 				}
 			}
+
+			receiverPacketNum = packetNum;
 		}
 	}
 
 	private void SyncTransformPositions(int renderTimestamp) {
 		for (int i = 0; i < positionTransforms.Count; i++) {
-			for (LinkedListNode<PositionData> currentNode = positionBuffers[i].Last;
-				currentNode != null;
-				currentNode = currentNode.Previous) {
-				if (currentNode.Value.timestamp < renderTimestamp) {
-					LinkedListNode<PositionData> nextNode = currentNode.Next;
-					if (nextNode == null) {
-						// Extrapolate from pair of data
-						LinkedListNode<PositionData> previousNode = currentNode.Previous;
-						if (previousNode == null) {
-							// Previous node is null, not enough information to extrapolate
-							break;
-						}
+			if (positionBuffers[i].Count == 0) {
+				continue;
+			}
 
-						int currentPacketNum = currentNode.Value.packetNum;
-						int currentTimestamp = currentNode.Value.timestamp;
-						Vector3 currentPosition = currentNode.Value.position;
+			// Seek pivot node - the node which timestamp is right before the render timestamp
+			LinkedListNode<PositionData> pivotNode = positionBuffers[i].Last;
+			while (pivotNode.Previous != null && pivotNode.Value.timestampMs >= renderTimestamp) {
+				pivotNode = pivotNode.Previous;
+			}
 
-						int previousPacketNum = previousNode.Value.packetNum;
-						int previousTimestamp = previousNode.Value.timestamp;
-						Vector3 previousPosition = previousNode.Value.position;
+			LinkedListNode<PositionData> interpolationNode = pivotNode.Next;
+			LinkedListNode<PositionData> extrapolationNode = pivotNode.Previous;
 
-						Vector3 dPosition = (currentPosition - previousPosition) * Utils.Network.SEND_RATE_ON_SERIALIZE
-                            / (currentPacketNum - previousPacketNum) / 1000.0f;
-						positionTransforms[i].position = previousPosition
-							+ dPosition * (renderTimestamp - previousTimestamp);
-					} else {
-						// Interpolate between pair of data
-						int currentTimestamp = currentNode.Value.timestamp;
-						int nextTimestamp = nextNode.Value.timestamp;
-						positionTransforms[i].position = Vector3.Lerp(
-							currentNode.Value.position,
-							nextNode.Value.position,
-							(float) (renderTimestamp - currentTimestamp) / (nextTimestamp - currentTimestamp)
-						);
-					}
-
-					break;
-				}
+			if (interpolationNode != null) {
+				// Interpolate between pivotNode and interpolationNode
+				positionTransforms[i].position = InterpolatePosition(
+					new PositionData[] { pivotNode.Value, interpolationNode.Value }, renderTimestamp);
+			} else if (extrapolationNode != null && extrapolatePosition) {
+				// Extrapolate between extrapolationNode and pivotNode
+				positionTransforms[i].position = ExtrapolatePosition(
+					new PositionData[] { extrapolationNode.Value, pivotNode.Value }, renderTimestamp);
 			}
 		}
 	}
 
 	private void SyncTransformRotations(int renderTimestamp) {
 		for (int i = 0; i < rotationTransforms.Count; i++) {
-			for (LinkedListNode<RotationData> currentNode = rotationBuffers[i].Last;
-				currentNode != null;
-				currentNode = currentNode.Previous) {
-				if (currentNode.Value.timestamp < renderTimestamp) {
-					LinkedListNode<RotationData> nextNode = currentNode.Next;
-					if (nextNode == null) {
-						// Extrapolate from pair of data
-						LinkedListNode<RotationData> previousNode = currentNode.Previous;
-						if (previousNode == null) {
-							// Previous node is null, not enough information to extrapolate
-							break;
-						}
+			if (rotationBuffers[i].Count == 0) {
+				continue;
+			}
 
-						int currentPacketNum = currentNode.Value.packetNum;
-						int currentTimestamp = currentNode.Value.timestamp;
-						Quaternion currentRotation = currentNode.Value.rotation;
+			// Seek pivot node - the node which timestamp is right before the render timestamp
+			LinkedListNode<RotationData> pivotNode = rotationBuffers[i].Last;
+			while (pivotNode.Previous != null && pivotNode.Value.timestampMs >= renderTimestamp) {
+				pivotNode = pivotNode.Previous;
+			}
 
-						int previousPacketNum = currentNode.Value.packetNum;
-						int previousTimestamp = previousNode.Value.timestamp;
-						Quaternion previousRotation = previousNode.Value.rotation;
+			LinkedListNode<RotationData> interpolationNode = pivotNode.Next;
+			LinkedListNode<RotationData> extrapolationNode = pivotNode.Previous;
 
-						Quaternion deltaRotation = currentRotation * Quaternion.Inverse(previousRotation);
-						float deltaTime = (float) (renderTimestamp - previousTimestamp) * Utils.Network.SEND_RATE_ON_SERIALIZE
-                            / (currentPacketNum - previousPacketNum) / 1000.0f;
-
-						float deltaAngle;
-						Vector3 deltaAxis;
-						deltaRotation.ToAngleAxis(out deltaAngle, out deltaAxis);
-
-						if (deltaAngle > 180.0f) {
-							deltaAngle = deltaAngle - 360.0f;
-						}
-						deltaAngle = deltaAngle * deltaTime % 360.0f;
-						rotationTransforms[i].rotation = Quaternion.AngleAxis(deltaAngle, deltaAxis) * previousRotation;
-					} else {
-						// Interpolate between pair of data
-						int currentTimestamp = currentNode.Value.timestamp;
-						int nextTimestamp = nextNode.Value.timestamp;
-						rotationTransforms[i].rotation = Quaternion.Slerp(
-							currentNode.Value.rotation,
-							nextNode.Value.rotation,
-							(float) (renderTimestamp - currentTimestamp) / (nextTimestamp - currentTimestamp)
-						);
-					}
-
-					break;
-				}
+			if (interpolationNode != null) {
+				// Interpolate between pivotNode and interpolationNode
+				rotationTransforms[i].rotation = InterpolateRotation(
+					new RotationData[] { pivotNode.Value, interpolationNode.Value }, renderTimestamp);
+			} else if (extrapolationNode != null && extrapolateRotation) {
+				// Extrapolate between extrapolationNode and pivotNode
+				rotationTransforms[i].rotation = ExtrapolateRotation(
+					new RotationData[] { extrapolationNode.Value, pivotNode.Value }, renderTimestamp);
 			}
 		}
+	}
+
+	private Vector3 InterpolatePosition(PositionData[] positionData, int targetTimestamp) {
+		float interpolationFactor = (float) (targetTimestamp - positionData[0].timestampMs)
+			/ (positionData[1].timestampMs - positionData[0].timestampMs);
+
+		return Vector3.Lerp(positionData[0].position, positionData[1].position, interpolationFactor);
+	}
+
+	private Vector3 ExtrapolatePosition(PositionData[] positionData, int targetTimestamp) {
+		float extrapolationFactor = (float) (targetTimestamp - positionData[0].timestampMs)
+			/ (positionData[1].timestampMs - positionData[0].timestampMs);
+
+		return Vector3.LerpUnclamped(positionData[0].position, positionData[1].position, extrapolationFactor);
+	}
+
+	private Quaternion InterpolateRotation(RotationData[] rotationData, int targetTimestamp) {
+		float interpolationFactor = (float) (targetTimestamp - rotationData[0].timestampMs)
+			/ (rotationData[1].timestampMs - rotationData[0].timestampMs);
+
+		return Quaternion.Slerp(rotationData[0].rotation, rotationData[1].rotation, interpolationFactor);
+	}
+
+	private Quaternion ExtrapolateRotation(RotationData[] rotationData, int targetTimestamp) {
+		float extrapolationFactor = (float) (targetTimestamp - rotationData[0].timestampMs)
+			/ (rotationData[1].timestampMs - rotationData[0].timestampMs);
+
+		return Quaternion.SlerpUnclamped(rotationData[0].rotation, rotationData[1].rotation, extrapolationFactor);
 	}
 
 }

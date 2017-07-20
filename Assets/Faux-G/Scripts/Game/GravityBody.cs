@@ -11,7 +11,7 @@ public class GravityBody : Photon.MonoBehaviour {
 	private Vector3 lastGravityDirection;
 	private Vector3 gravityDirection;
 	private float referenceAngle;
-    
+	
 	void Awake() {
 		rigidbody = GetComponent<Rigidbody>();
 
@@ -20,26 +20,26 @@ public class GravityBody : Photon.MonoBehaviour {
 	}
 
 	void FixedUpdate() {
-        lastGravityDirection = gravityDirection;
+		lastGravityDirection = gravityDirection;
 
-        // Apply gravitational force
-        ApplyGravitationalForce();
+		// Apply gravitational force
+		ApplyGravitationalForce();
 
 		// Apply gravitational torque
 		ApplyGravitationalTorque();
 	}
 
-    private void ApplyGravitationalForce() {
-        Vector3 netForceVector = Vector3.zero;
-        foreach (AttractorBase attractor in AttractorManager.Instance.attractors) {
-            netForceVector += attractor.CalculateGravitationalForce(transform.position, rigidbody.mass);
-        }
+	private void ApplyGravitationalForce() {
+		Vector3 netForceVector = Vector3.zero;
+		foreach (AttractorBase attractor in AttractorManager.Instance.attractors) {
+			netForceVector += attractor.CalculateGravitationalForce(transform.position, rigidbody.mass);
+		}
 
-        rigidbody.AddForce(netForceVector, ForceMode.Acceleration);
+		rigidbody.AddForce(netForceVector, ForceMode.Acceleration);
 
-        // Update gravity direction
-        gravityDirection = netForceVector.normalized;
-    }
+		// Update gravity direction
+		gravityDirection = netForceVector.normalized;
+	}
 
 	private void ApplyGravitationalTorque() {
 		float gravityChangeAngle = Vector3.Angle(lastGravityDirection, gravityDirection);
