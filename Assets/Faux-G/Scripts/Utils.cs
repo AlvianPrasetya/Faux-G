@@ -11,8 +11,8 @@ public class Utils : MonoBehaviour {
 	    public static readonly int SEND_RATE = 15;
 	    public static readonly int SEND_RATE_ON_SERIALIZE = 15;
 
-	    // The delay (ms) used to sync RPCs and serializations between clients
-	    public static int SYNC_DELAY = 150;
+	    // The base delay (ms) used to sync serializations between clients
+	    public static int BASE_SYNC_DELAY = 67;
 	    public static int SYNC_BUFFER_SIZE = 10;
     }
 
