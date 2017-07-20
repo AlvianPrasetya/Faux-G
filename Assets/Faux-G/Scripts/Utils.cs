@@ -5,18 +5,18 @@ public class Utils : MonoBehaviour {
 	
 	public static readonly string GAME_VERSION = "v0.1";
 
-    public static readonly float RESPAWN_TIME = 5.0f;
+	public static readonly float RESPAWN_TIME = 5.0f;
 
-    public class Network {
-	    public static readonly int SEND_RATE = 15;
-	    public static readonly int SEND_RATE_ON_SERIALIZE = 15;
+	public class Network {
+		public static readonly int SEND_RATE = 15;
+		public static readonly int SEND_RATE_ON_SERIALIZE = 15;
 
-	    // The base delay (ms) used to sync serializations between clients
-	    public static int BASE_SYNC_DELAY = 67;
-	    public static int SYNC_BUFFER_SIZE = 10;
-    }
+		// The base delay (ms) used to sync serializations between clients
+		public static int BASE_SYNC_DELAY = 67;
+		public static int SYNC_BUFFER_SIZE = 10;
+	}
 
-    public class Scene {
+	public class Scene {
 		public static readonly string LOGIN = "Login";
 		public static readonly string LOBBY = "Lobby";
 		public static readonly string ROOM = "Room";
@@ -58,19 +58,19 @@ public class Utils : MonoBehaviour {
 		};
 	}
 
-    public class Physics {
-        // G is scaled 5 * 1e5 times to compensate the mass and radii difference between the real and in-game worlds
-        public static readonly float G = 3.37e-5f;
+	public class Physics {
+		// G is scaled 5 * 1e5 times to compensate the mass and radii difference between the real and in-game worlds
+		public static readonly float G = 3.37e-5f;
 
-        // Golden ratio (Greek Phi)
-        public static readonly float PHI = 1.618f;
-    }
+		// Golden ratio (Greek Phi)
+		public static readonly float PHI = 1.618f;
+	}
 
-    public class Value {
-	    public static readonly float PI = Mathf.Acos(-1);
-    }
+	public class Value {
+		public static readonly float PI = Mathf.Acos(-1);
+	}
 
-    public static IEnumerator TransformLerpPosition(Transform targetTransform, Vector3 startPosition,
+	public static IEnumerator TransformLerpPosition(Transform targetTransform, Vector3 startPosition,
 		Vector3 endPosition, float lerpTime) {
 		float time = 0.0f;
 		while (time < 1.0f) {

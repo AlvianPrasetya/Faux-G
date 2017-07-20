@@ -2,18 +2,18 @@
 
 public class AttractorManager : MonoBehaviour {
 
-    public AttractorBase[] attractors;
+	public AttractorBase[] attractors;
 
-    private static AttractorManager instance;
+	private static AttractorManager instance;
 
-    void Awake() {
-        instance = this;
-    }
+	void Awake() {
+		instance = this;
+	}
 
-    public static AttractorManager Instance {
-        get {
-            return instance;
-        }
-    }
+	public static AttractorManager Instance {
+		get {
+			return instance;
+		}
+	}
 
 }

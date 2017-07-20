@@ -33,31 +33,31 @@ public class Health : Photon.MonoBehaviour {
 		}
 	}
 
-    public bool Dead {
-        get {
-            return dead;
-        }
-    }
+	public bool Dead {
+		get {
+			return dead;
+		}
+	}
 
-    public OnHealthUpdatedCallback HealthUpdatedCallback {
-        get {
-            return healthUpdatedCallback;
-        }
+	public OnHealthUpdatedCallback HealthUpdatedCallback {
+		get {
+			return healthUpdatedCallback;
+		}
 
-        set {
-            healthUpdatedCallback = value;
-        }
-    }
+		set {
+			healthUpdatedCallback = value;
+		}
+	}
 
-    public OnDeathCallback DeathCallback {
-        get {
-            return deathCallback;
-        }
+	public OnDeathCallback DeathCallback {
+		get {
+			return deathCallback;
+		}
 
-        set {
-            deathCallback = value;
-        }
-    }
+		set {
+			deathCallback = value;
+		}
+	}
 
 	public void Damage(float damage, PhotonPlayer damager) {
 		if (!photonView.isMine) {
@@ -71,29 +71,29 @@ public class Health : Photon.MonoBehaviour {
 		
 	}
 
-    [PunRPC]
-    private void RpcDamage(float damage, int damagerId) {
-        if (dead) {
-            return;
-        }
+	[PunRPC]
+	private void RpcDamage(float damage, int damagerId) {
+		if (dead) {
+			return;
+		}
 
-        PhotonPlayer damagingPlayer = PhotonPlayer.Find(damagerId);
+		PhotonPlayer damagingPlayer = PhotonPlayer.Find(damagerId);
 
-        currentHealth = Mathf.Clamp(currentHealth - damage, 0.0f, maxHealth);
-        lastDamager = damagingPlayer;
+		currentHealth = Mathf.Clamp(currentHealth - damage, 0.0f, maxHealth);
+		lastDamager = damagingPlayer;
 
-        if (photonView.isMine) {
-            if (healthUpdatedCallback != null) {
-                healthUpdatedCallback(currentHealth, maxHealth);
-            }
+		if (photonView.isMine) {
+			if (healthUpdatedCallback != null) {
+				healthUpdatedCallback(currentHealth, maxHealth);
+			}
 
-            if (currentHealth == 0.0f) {
-                dead = true;
-                if (deathCallback != null) {
-                    deathCallback();
-                }
-            }
-        }
-    }
+			if (currentHealth == 0.0f) {
+				dead = true;
+				if (deathCallback != null) {
+					deathCallback();
+				}
+			}
+		}
+	}
 
 }
