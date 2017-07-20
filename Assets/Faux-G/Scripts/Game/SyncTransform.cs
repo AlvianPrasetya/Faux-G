@@ -145,9 +145,13 @@ public class SyncTransform : Photon.MonoBehaviour, IPunObservable {
 
 	private void SyncTransformPositions(int renderTimestamp) {
 		for (int i = 0; i < positionTransforms.Count; i++) {
-			LinkedListNode<PositionData> pivotNode = positionBuffers[i].Last;
+			if (positionBuffers[i].Count == 0) {
+				continue;
+			}
+
 			// Seek pivot node - the node which timestamp is right before the render timestamp
-			while (pivotNode != null && pivotNode.Value.timestampMs >= renderTimestamp) {
+			LinkedListNode<PositionData> pivotNode = positionBuffers[i].Last;
+			while (pivotNode.Previous != null && pivotNode.Value.timestampMs >= renderTimestamp) {
 				pivotNode = pivotNode.Previous;
 			}
 
@@ -168,9 +172,13 @@ public class SyncTransform : Photon.MonoBehaviour, IPunObservable {
 
 	private void SyncTransformRotations(int renderTimestamp) {
 		for (int i = 0; i < rotationTransforms.Count; i++) {
-			LinkedListNode<RotationData> pivotNode = rotationBuffers[i].Last;
+			if (rotationBuffers[i].Count == 0) {
+				continue;
+			}
+
 			// Seek pivot node - the node which timestamp is right before the render timestamp
-			while (pivotNode != null && pivotNode.Value.timestampMs >= renderTimestamp) {
+			LinkedListNode<RotationData> pivotNode = rotationBuffers[i].Last;
+			while (pivotNode.Previous != null && pivotNode.Value.timestampMs >= renderTimestamp) {
 				pivotNode = pivotNode.Previous;
 			}
 
