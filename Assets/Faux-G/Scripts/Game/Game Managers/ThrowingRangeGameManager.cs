@@ -5,13 +5,9 @@ using System.Linq;
 public class ThrowingRangeGameManager : GameManagerBase {
 
 	public Spawner[] spawners;
-	public Camera sceneCamera;
 	public ThrowingRangeTarget throwingRangeTarget;
 	
 	public int pointsToWin;
-
-	private GameObject localPlayer;
-	private Camera playerCamera;
 
 	private Dictionary<PhotonPlayer, int> standings;
 
@@ -59,9 +55,7 @@ public class ThrowingRangeGameManager : GameManagerBase {
 	private void Spawn() {
 		int spawnerId = Random.Range(0, spawners.Length);
 
-		localPlayer = spawners[spawnerId].NetworkedSpawn(Utils.Resource.PLAYER, 0);
-
-		sceneCamera.gameObject.SetActive(false);
+		spawners[spawnerId].NetworkedSpawn(Utils.Resource.PLAYER, 0);
 	}
 
 	private void AddPoints(PhotonPlayer player, int points) {
