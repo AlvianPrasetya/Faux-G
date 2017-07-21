@@ -14,7 +14,6 @@ public class ThrowController : Photon.MonoBehaviour {
 
 	public Transform throwableSpawner;
 	public Transform armPivot;
-	public Camera playerCamera;
 	public Tracer tracerPrefab;
 
 	public ThrowableBase[] throwables;
