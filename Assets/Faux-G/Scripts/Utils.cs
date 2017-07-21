@@ -63,7 +63,7 @@ public class Utils : MonoBehaviour {
 		public static readonly float G = 3.37e-5f;
 
 		// Golden ratio (Greek Phi)
-		public static readonly float PHI = 1.618f;
+		public static readonly float PHI = (1.0f + Mathf.Sqrt(5.0f)) / 2.0f;
 	}
 
 	public class Value {
