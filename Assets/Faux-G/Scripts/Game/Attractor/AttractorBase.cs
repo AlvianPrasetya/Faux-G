@@ -1,13 +1,19 @@
 ﻿using UnityEngine;
 
+/**
+ * This class describes the common behaviour of all attractor bodies.
+ */
 public abstract class AttractorBase : MonoBehaviour {
 
-	protected new Rigidbody rigidbody;
+	// Mass of this attractor in kg
+	public float mass;
 
-	protected virtual void Awake() {
-		rigidbody = GetComponent<Rigidbody>();
-	}
-
+	/**
+	 * This method calculates the exerted gravitational force against a body of given mass and euclidean 
+	 * position. The direction of force exerted depends on the topography of the implementing attractor.
+	 * Classes implementing this abstract class are to implement this method depending on the gravitational 
+	 * behaviour of the object.
+	 */
 	public abstract Vector3 CalculateGravitationalForce(Vector3 attractedPosition, float attractedMass);
 
 	/**
@@ -16,7 +22,7 @@ public abstract class AttractorBase : MonoBehaviour {
 	 * of the gravity calculation process.
 	 */
 	protected Vector3 CalculateGravitationalForce(Vector3 direction, float attractedMass, float distance) {
-		return direction * Utils.Physics.G * rigidbody.mass* attractedMass
+		return direction * Utils.Physics.G * mass * attractedMass
 			/ Mathf.Pow(distance, Utils.Physics.PHI);
 	}
 
