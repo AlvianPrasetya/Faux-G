@@ -61,9 +61,6 @@ public class Utils : MonoBehaviour {
 	public class Physics {
 		// Gravitational constant (big G)
 		public static readonly float G = 6.754e-11f;
-
-		// Golden ratio (Greek Phi)
-		public static readonly float PHI = (1.0f + Mathf.Sqrt(5.0f)) / 2.0f;
 	}
 
 	public class Value {

@@ -22,8 +22,7 @@ public abstract class AttractorBase : MonoBehaviour {
 	 * of the gravity calculation process.
 	 */
 	protected Vector3 CalculateGravitationalForce(Vector3 direction, float attractedMass, float distance) {
-		return direction * Utils.Physics.G * mass * attractedMass
-			/ Mathf.Pow(distance, Utils.Physics.PHI);
+		return direction * Utils.Physics.G * mass * attractedMass / (distance * distance);
 	}
 
 }
