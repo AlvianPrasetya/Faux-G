@@ -17,7 +17,7 @@ public abstract class AttractorBase : MonoBehaviour {
 	public abstract Vector3 CalculateGravitationalForce(Vector3 attractedPosition, float attractedMass);
 
 	/**
-	 * This method calculates the exerted gravitational force using modified "Newtonian" physics.
+	 * This method calculates the exerted gravitational force using Newtonian physics.
 	 * All classes implementing the AttractorBase class should call this method at the very end 
 	 * of the gravity calculation process.
 	 */
