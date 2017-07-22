@@ -59,8 +59,8 @@ public class Utils : MonoBehaviour {
 	}
 
 	public class Physics {
-		// G is scaled 5 * 1e5 times to compensate the mass and radii difference between the real and in-game worlds
-		public static readonly float G = 3.37e-5f;
+		// Gravitational constant (big G)
+		public static readonly float G = 6.754e-11f;
 
 		// Golden ratio (Greek Phi)
 		public static readonly float PHI = (1.0f + Mathf.Sqrt(5.0f)) / 2.0f;
